@@ -21,7 +21,7 @@ public class BotBits {
     public CANSparkMax rightShooter;
     public CANEncoder encoder;
         
-    public void BotBits () {
+    public BotBits () {
     }
 
     public void init() {
