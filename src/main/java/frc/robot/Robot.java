@@ -12,17 +12,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends TimedRobot {
 
-  private BotBits botBits = new BotBits();;
+  private BotBits botBits = new BotBits();
 
   public double m_setpoint = 0.25;  
   public double m_speed = 0.0;
   public boolean m_enable = false;
 
-  final int PAD_Y = 4 ;
-  final int PAD_X = 3 ;
-  final int PAD_A = 1 ;
-  final int PAD_B = 2 ;
-  
   @Override
   public void robotInit() {
 
@@ -36,32 +31,32 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     
-    if (botBits.stick.getRawButton(PAD_B)) {
+    if (botBits.b()) {
       m_setpoint +=  0.002;
     }
     
-    if (botBits.stick.getRawButton(PAD_X)) {
+    if (botBits.x()) {
       m_setpoint -=  0.002;
     }
 
-    if (m_setpoint > 1.0 ) m_setpoint = 1.0;
+    if (m_setpoint > 1.0 ) 
+      m_setpoint = 1.0;
     if (m_setpoint < 0) m_setpoint = 0;
 
     SmartDashboard.putNumber("Setpoint", m_setpoint * 100);
    
     
-    if (botBits.stick.getRawButton(PAD_Y)) {
+    if (botBits.y()){
       m_enable = true;
-    } else if (botBits.stick.getRawButton(PAD_A)){
+    } else if (botBits.a()){
       m_enable = false;
     }
 
     if (m_enable) {
-      botBits.leftShooter.set(m_setpoint);
-      botBits.leftShooter.set(-m_setpoint);
+      botBits.setShooterSpeed(m_setpoint);
+    
     } else {
-      botBits.leftShooter.set(0);
-      botBits.leftShooter.set(0);     
+      botBits.setShooterSpeed(0); 
     }
 
     botBits.show();

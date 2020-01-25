@@ -15,13 +15,18 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 public class BotBits {
 
     public Joystick stick;
-    public static final int leftShooterCANid = 11;
-    public static final int rightShooterCANid = 12;
     public CANSparkMax leftShooter; 
     public CANSparkMax rightShooter;
     public CANEncoder encoder;
+    
+    final int PAD_Y = 4 ;
+    final int PAD_X = 3 ;
+    final int PAD_A = 1 ;
+    final int PAD_B = 2 ;
+    public static final int leftShooterCANid = 11;
+    public static final int rightShooterCANid = 12;
         
-    public BotBits () {
+    public  BotBits () {
     }
 
     public void init() {
@@ -41,4 +46,24 @@ public class BotBits {
        SmartDashboard.putNumber("Speed", encoder.getVelocity());
     }
     
+    public void setShooterSpeed (double speed){
+        leftShooter.set(speed);
+        rightShooter.set(-speed);
+    }
+
+    public boolean y(){
+        return stick.getRawButton(PAD_Y);
+    }
+
+    public boolean x(){
+        return stick.getRawButton(PAD_X);
+    }
+
+    public boolean a(){
+        return stick.getRawButton(PAD_A);
+    }
+
+    public boolean b(){
+        return stick.getRawButton(PAD_B);
+    }
 }
