@@ -45,7 +45,7 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("Setpoint", m_setpoint * 100);
    
-    
+    //control shooter speed
     if (botBits.y()){
       m_enable = true;
     } else if (botBits.a()){
@@ -58,6 +58,10 @@ public class Robot extends TimedRobot {
     } else {
       botBits.setShooterSpeed(0); 
     }
+    
+    // control Ball delivery
+
+    botBits.runTransfer(botBits.rightBumper());
 
     botBits.show();
     
