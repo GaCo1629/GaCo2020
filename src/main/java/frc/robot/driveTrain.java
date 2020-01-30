@@ -34,9 +34,6 @@ public class driveTrain {
         //initialize 3 right side motors
         //initialize 3 right side motors
         //initialize gyro
-
-        //initialize needed controller buttons
-
     }
 
     //check to see if the robot is turning
@@ -54,14 +51,17 @@ public class driveTrain {
 
     }
 
+    //use the target heading and robot heading to modify the yaw value to continue driving strait
     public void autoCorrect(){
 
     }
 
+    //use the curretn heading and target heading to turn the robot to the target heading
     public void turnToHeading(double tragetHeading){
 
     }
 
+    //move the left and right motor position to target positions
     public void moveToPosition(double leftTarget, double rightTarget){
 
     }
