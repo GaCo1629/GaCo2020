@@ -39,14 +39,17 @@ public class driveTrain {
 
     }
 
+    //check to see if the robot is turning
     public void isTurning(){
 
     }
 
+    //return the currnet heading of the robot
     public void getRobotHeading(){
 
     }
 
+    //use the controller values to set axial and yaw values
     public void driveRobot(){
 
     }
@@ -60,7 +63,7 @@ public class driveTrain {
     }
 
     public void moveToPosition(double leftTarget, double rightTarget){
-        
+
     }
 
     public void move(){
