@@ -2,4 +2,4 @@ https://www.revrobotics.com/content/sw/max/sdk/REVRobotics.json
 http://www.ctr-electronics.com/control-system/motor-control/talon-srx.html#product_tabs_technical_resources
 
 Can Bus Ids
-Talon: 10-19 Spark Max: 20-
+Talon: 10-19 Spark Max: 20-29
