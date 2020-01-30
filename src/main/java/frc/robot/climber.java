@@ -16,14 +16,33 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // Public class to contain all the hardware elements (BotBits)
 public class climber {
 
+    //constructor
     public  climber () {
     }
 
     public void init() {
+        //initialize both climbing motors
+        //initalize center of gravity adjustor motor
+    }
+
+    //extnnd up to get ready to climb
+    public void extendUp(){
+
+    }
+
+    //reset the climber to its origional position
+    public void reset(){
+
+    }
+
+    //pull down on climber with full power
+    public void climb(){
 
     }
 
     public void move() {
-
+        //Driver 2 - (Button) Extend Up Climber
+        //Driver 2 - (Button) Climb up
+        //Driver 2 (Stick/buttons) reposition robot position
     }
 }
