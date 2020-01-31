@@ -15,6 +15,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class DriveTrain {
 
+    /**CANids
+    *leftDriveMasterCANid  = 1;
+    *leftDriveFrontCANid   = 2;
+    *leftDriveBackCANid    = 3;
+    *rightDriveMasterCANid = 4;
+    *rightDriveFrontCANid  = 5;
+    *rightDriveBackCANid   = 6;
+    */
+
     DriverStation driverStation;
 
     //declaring motors
@@ -33,15 +42,15 @@ public class DriveTrain {
     private final int rightDriveFrontCANid  = 5;
     private final int rightDriveBackCANid   = 6;
     
-    final double REDUCED_POWER_LEVEL  = .6;
-    final double BASELINE_POWER_LEVEL = .8;
-    final double EXTRA_POWER_LEVEL    =  1;
+    private final double REDUCED_POWER_LEVEL  = .6;
+    private final double BASELINE_POWER_LEVEL = .8;
+    private final double EXTRA_POWER_LEVEL    =  1;
 
-    double axialPower;
-    double yawPower;
+    private double axialPower;
+    private double yawPower;
 
-    double robotHeading;
-    double targetHeading;
+    private double robotHeading;
+    private double targetHeading;
 
     //constructor
     public  DriveTrain () {
@@ -51,13 +60,12 @@ public class DriveTrain {
     public void init(DriverStation driverStation){
         this.driverStation = driverStation;
 
-        leftDriveMaster = new CANSparkMax(leftDriveMasterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-        leftDriveFront = new CANSparkMax(leftDriveFrontCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-        leftDriveBack = new CANSparkMax(leftDriveBackCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-
+        leftDriveMaster  = new CANSparkMax(leftDriveMasterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        leftDriveFront   = new CANSparkMax(leftDriveFrontCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        leftDriveBack    = new CANSparkMax(leftDriveBackCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
         rightDriveMaster = new CANSparkMax(rightDriveMasterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-        rightDriveFront = new CANSparkMax(rightDriveFrontCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-        rightDriveBack = new CANSparkMax(rightDriveBackCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        rightDriveFront  = new CANSparkMax(rightDriveFrontCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        rightDriveBack   = new CANSparkMax(rightDriveBackCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
 
     }
 
