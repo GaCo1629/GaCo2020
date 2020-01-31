@@ -17,6 +17,22 @@ public class DriveTrain {
 
     DriverStation driverStation;
 
+    //declaring motors
+    //one master and two slaves per side
+    private CANSparkMax leftDriveMaster;
+    private CANSparkMax leftDriveFront;
+    private CANSparkMax leftDriveBack;
+    private CANSparkMax rightDriveMaster;
+    private CANSparkMax rightDriveFront;
+    private CANSparkMax rightDriveBack;
+
+    private final int leftDriveMasterCANid  = 1;
+    private final int leftDriveFrontCANid   = 2;
+    private final int leftDriveBackCANid    = 3;
+    private final int rightDriveMasterCANid = 4;
+    private final int rightDriveFrontCANid  = 5;
+    private final int rightDriveBackCANid   = 6;
+    
     final double REDUCED_POWER_LEVEL  = .6;
     final double BASELINE_POWER_LEVEL = .8;
     final double EXTRA_POWER_LEVEL    =  1;
@@ -35,9 +51,14 @@ public class DriveTrain {
     public void init(DriverStation driverStation){
         this.driverStation = driverStation;
 
-        //initialize 3 right side motors
-        //initialize 3 right side motors
-        //initialize gyro
+        leftDriveMaster = new CANSparkMax(leftDriveMasterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        leftDriveFront = new CANSparkMax(leftDriveFrontCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        leftDriveBack = new CANSparkMax(leftDriveBackCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+
+        rightDriveMaster = new CANSparkMax(rightDriveMasterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        rightDriveFront = new CANSparkMax(rightDriveFrontCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        rightDriveBack = new CANSparkMax(rightDriveBackCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+
     }
 
     //check to see if the robot is turning
