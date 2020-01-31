@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -24,7 +25,7 @@ public class DriveTrain {
     *rightDriveBackCANid   = 6;
     */
 
-    DriverStation driverStation;
+    private DriverStation driverStation;
 
     //declaring motors
     //one master and two slaves per side
@@ -34,6 +35,12 @@ public class DriveTrain {
     private CANSparkMax rightDriveMaster;
     private CANSparkMax rightDriveFront;
     private CANSparkMax rightDriveBack;
+
+    private CANEncoder leftDriveEncoder;
+    private CANEncoder rightDriveEncoder;
+
+    //gyro
+    private AHRS ahrs; 
 
     private final int leftDriveMasterCANid  = 1;
     private final int leftDriveFrontCANid   = 2;
@@ -66,6 +73,9 @@ public class DriveTrain {
         rightDriveMaster = new CANSparkMax(rightDriveMasterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
         rightDriveFront  = new CANSparkMax(rightDriveFrontCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
         rightDriveBack   = new CANSparkMax(rightDriveBackCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+
+        leftDriveEncoder  = leftDriveMaster.getEncoder();
+        rightDriveEncoder = rightDriveMaster.getEncoder();
 
     }
 
