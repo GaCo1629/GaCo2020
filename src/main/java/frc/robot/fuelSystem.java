@@ -13,14 +13,17 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class fuelSystem {
+public class FuelSystem {
 
+    DriverStation driverStation;
+    
     //constructor
-    public  fuelSystem () {
+    public  FuelSystem () {
     }
 
     //initalize fuel system 
-    public void init(){
+    public void init(DriverStation driverStation){
+        this.driverStation = driverStation;
         //initalize Collector motor
         //initalize Collector Psunamatic
         //initalize Both Transfer Motors

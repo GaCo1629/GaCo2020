@@ -6,12 +6,16 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import frc.robot.driveTrain;
+
+
 /**
  * This is a demo program showing the use of the RobotDrive class, specifically
  * it contains the code necessary to operate a robot with tank drive.
  */
 public class Robot extends TimedRobot {
 
+  private driverStation  driverStation  = new driverStation();
   private driveTrain     driveTrain     = new driveTrain();
   private fuelSystem     fuelSystem     = new fuelSystem();
   private colorWheel     colorWheel     = new colorWheel();
@@ -21,10 +25,11 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     //initalize all classes
-    driveTrain.init();
-    fuelSystem.init();
-    colorWheel.init();
-    climber.init();
+    driverStation.init();
+    driveTrain.init(driverStation);
+    fuelSystem.init(driverStation);
+    colorWheel.init(driverStation);
+    climber.init(driverStation);
     
   }
 

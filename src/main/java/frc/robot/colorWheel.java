@@ -14,13 +14,17 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // Public class to contain all the hardware elements (BotBits)
-public class colorWheel {
+public class ColorWheel {
+
+    DriverStation driverStation;
 
     // constructor
-    public colorWheel() {
+    public ColorWheel() {
     }
 
-    public void init() {
+    public void init(DriverStation driverStation) {
+        this.driverStation = driverStation;
+
         //initialize motor to spin wheel
         //initialize psunamatics to push out wheel spinner
         //initialize camera/color sensor

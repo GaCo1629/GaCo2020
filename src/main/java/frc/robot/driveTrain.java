@@ -13,7 +13,9 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class driveTrain {
+public class DriveTrain {
+
+    DriverStation driverStation;
 
     final double REDUCED_POWER_LEVEL  = .6;
     final double BASELINE_POWER_LEVEL = .8;
@@ -26,11 +28,13 @@ public class driveTrain {
     double targetHeading;
 
     //constructor
-    public  driveTrain () {
+    public  DriveTrain () {
     }
 
     //initalize hardware for the drive train
-    public void init(){
+    public void init(DriverStation driverStation){
+        this.driverStation = driverStation;
+
         //initialize 3 right side motors
         //initialize 3 right side motors
         //initialize gyro

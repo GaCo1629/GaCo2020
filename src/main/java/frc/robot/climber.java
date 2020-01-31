@@ -14,13 +14,17 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // Public class to contain all the hardware elements (BotBits)
-public class climber {
+public class Climber {
 
-    //constructor
-    public  climber () {
+    DriverStation driverStation;
+
+    // constructor
+    public Climber(){
     }
 
-    public void init() {
+
+    public void init(DriverStation driverStation) {
+        this.driverStation = driverStation;
         //initialize both climbing motors
         //initalize center of gravity adjustor motor
     }
