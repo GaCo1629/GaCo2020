@@ -16,32 +16,69 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class FuelSystem {
 
     DriverStation driverStation;
-    
+
+    private CANSparkMax turret;
+    private TalonSRX lowerTransfer;
+    private TalonSRX upperTransfer;
+    private TalonSRX collecter;
+    private CANSparkMax leftShooter; 
+    private CANSparkMax rightShooter;
+    private CANEncoder shooterEncoder;
+    private  topBreak;
+    private bottemBreak;     
+
+    final double TRANSFER_SPEED = 0.7;
+    final double SHOOTER_SPEED = 0.7;
+    private static final int leftShooterCANid = 20;
+    private static final int rightShooterCANid = 21;
+
     //constructor
     public  FuelSystem () {
+        
     }
 
     //initalize fuel system 
     public void init(DriverStation driverStation){
         this.driverStation = driverStation;
-        //initalize Collector motor
-        //initalize Collector Psunamatic
-        //initalize Both Transfer Motors
-        //initalize Both Shooter Motors
-        //initalize Turret Spinner Motor
-        //initalize Back Plate Motor?
-        //initalize Front Limelight
-        //initalize Back Limelight
+      // initialize motor
+
+      leftShooter = new CANSparkMax(leftShooterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+      rightShooter = new CANSparkMax(rightShooterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+      leftShooter.restoreFactoryDefaults();
+      rightShooter.restoreFactoryDefaults();
+      rightShooter.setInverted(true);
+  
+        
+        // Encoder object created to display position/velocity values
+        shooterEncoder = leftShooter.getEncoder();    
+
+        //talon
+        upperTransfer = new TalonSRX(10);
+        upperTransfer.set(ControlMode.PercentOutput, 10);
+
+        lowerTransfer = new TalonSRX(11);
+        lowerTransfer.set(ControlMode.PercentOutput, 11);
+
+        collecter = new TalonSRX(12);
+        collecter.set(ControlMode.PercentOutput, 12);
     }
+    
 
     //turn the turret to a given angle
     public void turnTurretTo(double angle){
 
     }
+    public void runTransfer (boolean run){
+        if (run) {
+            upperTransfer.set(ControlMode.PercentOutput, TRANSFER_SPEED);
+            lowerTransfer.set(ControlMode.PercentOutput, TRANSFER_SPEED);
+     }
+    }
 
     //set the shooter to a given speed in RPM
-    public void setShooterToSpeed(){
-
+    public void setShooterSpeed (double speed){
+        leftShooter.set(speed);
+        rightShooter.set(speed);
     }
 
     //use a pid loop to tune the target speed
