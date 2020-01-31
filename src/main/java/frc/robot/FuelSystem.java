@@ -24,13 +24,17 @@ public class FuelSystem {
     private CANSparkMax leftShooter; 
     private CANSparkMax rightShooter;
     private CANEncoder shooterEncoder;
-    private  topBreak;
-    private bottemBreak;     
+  
 
     final double TRANSFER_SPEED = 0.7;
     final double SHOOTER_SPEED = 0.7;
     private static final int leftShooterCANid = 20;
     private static final int rightShooterCANid = 21;
+
+    public double m_setpoint = 0.25;  
+    public double m_speed = 0.0;
+    public boolean m_enable = false;
+  
 
     //constructor
     public  FuelSystem () {
@@ -47,6 +51,8 @@ public class FuelSystem {
       leftShooter.restoreFactoryDefaults();
       rightShooter.restoreFactoryDefaults();
       rightShooter.setInverted(true);
+
+      
   
         
         // Encoder object created to display position/velocity values
@@ -61,6 +67,8 @@ public class FuelSystem {
 
         collecter = new TalonSRX(12);
         collecter.set(ControlMode.PercentOutput, 12);
+
+        
     }
     
 
@@ -165,5 +173,11 @@ public class FuelSystem {
         //Driver 2 - (button) collector on/off
         //Driver 2 (button) run storage system
     }
+    public void show() {
+        SmartDashboard.putNumber("Speed", shooterEncoder.getVelocity());
+          // display PID coefficients on SmartDashboard
+     
 
+     }
+     
 }
