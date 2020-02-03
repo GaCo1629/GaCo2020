@@ -93,6 +93,21 @@ public class FuelSystem {
         rightShooter.set(speed);
     }
 
+    public void changeShooterSetpoint(){
+        if (driverStation.b()) {
+            m_setpoint +=  0.002;
+          }
+          
+          if (driverStation.x()) {
+            m_setpoint -=  0.002;
+          }
+      
+          if (m_setpoint > 1.0 ) 
+            m_setpoint = 1.0;
+          if (m_setpoint < 0) m_setpoint = 0;
+      
+    }
+
     //use a pid loop to tune the target speed
     public void tuneShooterSpeedPID(){
 
@@ -168,6 +183,22 @@ public class FuelSystem {
 
     }
 
+    public void shooterOn(){
+        if (driverStation.y()){
+            m_enable = true;
+          } else if (driverStation.a()){
+            m_enable = false;
+        }
+      
+        if (m_enable) {
+            setShooterSpeed(m_setpoint);
+          
+          } else {
+            setShooterSpeed(0); 
+          }
+      
+    }
+
 
     public void move(){
         //Driver 1 - (button/trigger) track and collect
@@ -176,6 +207,8 @@ public class FuelSystem {
         //Driver 2 - (button) put down/up collector
         //Driver 2 - (button) collector on/off
         //Driver 2 (button) run storage system
+        shooterOn();  
+        changeShooterSetpoint();
     }
     public void show() {
         SmartDashboard.putNumber("Speed", shooterEncoder.getVelocity());
