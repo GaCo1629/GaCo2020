@@ -51,9 +51,9 @@ public class DriveTrain {
     private final int rightDriveFrontCANid  = 5;
     private final int rightDriveBackCANid   = 6;
     
-    private final double REDUCED_POWER_LEVEL  = .6;
-    private final double BASELINE_POWER_LEVEL = .8;
-    private final double EXTRA_POWER_LEVEL    =  1;
+    private final double REDUCED_POWER_LEVEL  = .5;
+    private final double BASELINE_POWER_LEVEL = .7;
+    private final double EXTRA_POWER_LEVEL    = .9;
 
     private double axial  = 0;
     private double yaw    = 0;
@@ -72,13 +72,26 @@ public class DriveTrain {
     public void init(DriverStation driverStation){
         this.driverStation = driverStation;
 
-        leftDriveMaster  = new CANSparkMax(leftDriveMasterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-        leftDriveFront   = new CANSparkMax(leftDriveFrontCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-        leftDriveBack    = new CANSparkMax(leftDriveBackCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        leftDriveMaster  = new CANSparkMax(leftDriveMasterCANid,  CANSparkMaxLowLevel.MotorType.kBrushless);
+        leftDriveFront   = new CANSparkMax(leftDriveFrontCANid,   CANSparkMaxLowLevel.MotorType.kBrushless);
+        leftDriveBack    = new CANSparkMax(leftDriveBackCANid,    CANSparkMaxLowLevel.MotorType.kBrushless);
         rightDriveMaster = new CANSparkMax(rightDriveMasterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-        rightDriveFront  = new CANSparkMax(rightDriveFrontCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-        rightDriveBack   = new CANSparkMax(rightDriveBackCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        rightDriveFront  = new CANSparkMax(rightDriveFrontCANid,  CANSparkMaxLowLevel.MotorType.kBrushless);
+        rightDriveBack   = new CANSparkMax(rightDriveBackCANid,   CANSparkMaxLowLevel.MotorType.kBrushless);
 
+        leftDriveMaster.restoreFactoryDefaults();
+        leftDriveFront.restoreFactoryDefaults();
+        leftDriveBack.restoreFactoryDefaults();
+        rightDriveMaster.restoreFactoryDefaults();
+        rightDriveFront.restoreFactoryDefaults();
+        rightDriveBack.restoreFactoryDefaults();
+
+        //invert right motors so that positive values move the robot forward 
+        rightDriveMaster.setInverted(true);
+        rightDriveFront.setInverted(true);
+        rightDriveBack.setInverted(true);
+
+        //set encoders for drivetrain
         leftDriveEncoder  = leftDriveMaster.getEncoder();
         rightDriveEncoder = rightDriveMaster.getEncoder();
 
@@ -87,7 +100,6 @@ public class DriveTrain {
           } catch (RuntimeException ex ) {
             //insert report on driver station saying an error has occured
         }
-
     }
 
     //check to see if the robot is turning
@@ -118,6 +130,7 @@ public class DriveTrain {
         absoluteHeading = gyro.getAngle();
     }
 
+    //update robot heading
     public void getRobotHeading(){
         robotHeading = angleWrap180(robotHeading + robotHeadingModifier);
     }
@@ -125,18 +138,19 @@ public class DriveTrain {
     //resets gyro and sets headings to zero
     public void resetHeading() {
         gyro.zeroYaw();
-        robotHeading  = 0;
-        targetHeading = 0;
+        robotHeading         = 0;
+        targetHeading        = 0;
         robotHeadingModifier = 0;
     }
 
+    //sets heading to input value
     public void setHeading(double newHeading){
         resetHeading();
         robotHeadingModifier = newHeading;
     }
 
     //use the target heading and robot heading to modify the yaw value to continue driving strait
-    public void autoCorrect(){
+    public void holdHeading(){
 
     }
 
