@@ -183,6 +183,15 @@ public class FuelSystem {
 
     }
 
+    public void runTransfer(){
+        
+
+
+
+    
+
+    }
+
     public void shooterOn(){
         if (driverStation.y()){
             m_enable = true;

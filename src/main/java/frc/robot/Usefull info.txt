@@ -3,4 +3,12 @@ http://devsite.ctr-electronics.com/maven/release/com/ctre/phoenix/Phoenix-latest
 https://www.kauailabs.com/dist/frc/2020/navx_frc.json
 
 Can Bus Ids
-Talon: 10-19 Spark Max: 20-29
+Talon: 10-19 
+
+neos: 20-29
+
+soliniods
+
+lime light
+
+color sensors
