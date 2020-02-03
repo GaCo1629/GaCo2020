@@ -68,6 +68,10 @@ public class FuelSystem {
         collecter = new TalonSRX(12);
         collecter.set(ControlMode.PercentOutput, 12);
 
+        SmartDashboard.putNumber("Setpoint", 0);
+        SmartDashboard.putNumber("Speed", 0);
+
+
         
     }
     
@@ -80,7 +84,7 @@ public class FuelSystem {
         if (run) {
             upperTransfer.set(ControlMode.PercentOutput, TRANSFER_SPEED);
             lowerTransfer.set(ControlMode.PercentOutput, TRANSFER_SPEED);
-     }
+         }
     }
 
     //set the shooter to a given speed in RPM
