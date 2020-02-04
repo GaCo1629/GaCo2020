@@ -218,7 +218,7 @@ public class FuelSystem extends Subsystem {
       
     }
 
-
+    @Override
     public void teleopPeriodic(){
         //Driver 1 - (button/trigger) track and collect
         //Driver 1 (button) fire 1
@@ -230,6 +230,8 @@ public class FuelSystem extends Subsystem {
         changeShooterSetpoint();
         runTransfer(driverStation.rightTrigger());
     }
+
+
     public void show() {
         SmartDashboard.putNumber("Speed", shooterEncoder.getVelocity());
           // display PID coefficients on SmartDashboard
