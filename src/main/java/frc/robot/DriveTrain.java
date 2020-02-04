@@ -18,12 +18,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class DriveTrain extends Subsystem{
 
     /**CANids
-    *leftDriveMasterCANid  = ?;
-    *leftDriveFrontCANid   = ?;
-    *leftDriveBackCANid    = ?;
-    *rightDriveMasterCANid = ?;
-    *rightDriveFrontCANid  = ?;
-    *rightDriveBackCANid   = ?;
+    leftDriveMasterCANid  = 13
+    leftDriveFrontCANid   = 12
+    leftDriveBackCANid    = 14
+    rightDriveMasterCANid = 16
+    rightDriveFrontCANid  = 17
+    rightDriveBackCANid   = 15
     */
 
     private DriverStation driverStation;
