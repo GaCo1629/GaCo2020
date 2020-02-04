@@ -97,7 +97,7 @@ public class ColorWheel {
     }
 
 
-    public void move() {
+    public void teleopPeriodic() {
         //Driver 2 - (Button) extend out mechanism
         //Driver 2 - (Button) Spin wheel 3.5 rotations
         //Driver 2 - (Button) Spin wheel to red

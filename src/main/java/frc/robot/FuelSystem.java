@@ -209,7 +209,7 @@ public class FuelSystem {
     }
 
 
-    public void move(){
+    public void teleopPeriodic(){
         //Driver 1 - (button/trigger) track and collect
         //Driver 1 (button) fire 1
         //Driver 1 (trigger) fire all

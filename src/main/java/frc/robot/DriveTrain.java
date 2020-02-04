@@ -13,6 +13,8 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
 
 
+
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -91,6 +93,13 @@ public class DriveTrain {
         rightDriveFront.setInverted(true);
         rightDriveBack.setInverted(true);
 
+        leftDriveFront.follow(leftDriveMaster);
+        leftDriveBack.follow(leftDriveMaster);
+
+        rightDriveBack.follow(rightDriveMaster);
+        rightDriveFront.follow(rightDriveMaster);
+
+
         //set encoders for drivetrain
         leftDriveEncoder  = leftDriveMaster.getEncoder();
         rightDriveEncoder = rightDriveMaster.getEncoder();
@@ -164,6 +173,11 @@ public class DriveTrain {
 
     }
 
+    public void moveRobot(){
+        setVectorsToController();
+
+    }
+
     public double angleWrap180(double angle){
             while(angle <= -180){
                 angle += 360;
@@ -174,7 +188,7 @@ public class DriveTrain {
             return angle;
     }
 
-    public void move(){
+    public void teleopPeriodic(){
     //Driver 1 - left stick y drive forward/backward
     //Driver 1 - right stick x turn left/right
     //Driver 1 - (Button) Power mode

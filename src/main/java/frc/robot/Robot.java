@@ -35,10 +35,10 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
 
-    driveTrain.move();
-    fuelSystem.move();
-    colorWheel.move();
-    climber.move();
+    driveTrain.teleopPeriodic();
+    fuelSystem.teleopPeriodic();
+    colorWheel.teleopPeriodic();
+    climber.teleopPeriodic();
     
   }      
 }

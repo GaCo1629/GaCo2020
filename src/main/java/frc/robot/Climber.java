@@ -44,7 +44,7 @@ public class Climber {
 
     }
 
-    public void move() {
+    public void teleopPeriodic() {
         //Driver 2 - (Button) Extend Up Climber
         //Driver 2 - (Button) Climb up
         //Driver 2 (Stick/buttons) reposition robot position
