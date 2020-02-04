@@ -23,8 +23,8 @@ Talon: 10-19
 neos: 20-29
 
 soliniods
-
-    colorArm              = 2/3;  
+    collecterState        = 0/1
+    colorArm              = 2/3
 
 lime light
 
