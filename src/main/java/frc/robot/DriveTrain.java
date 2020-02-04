@@ -18,15 +18,15 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class DriveTrain {
+public class DriveTrain extends Subsystem{
 
     /**CANids
-    *leftDriveMasterCANid  = 1;
-    *leftDriveFrontCANid   = 2;
-    *leftDriveBackCANid    = 3;
-    *rightDriveMasterCANid = 4;
-    *rightDriveFrontCANid  = 5;
-    *rightDriveBackCANid   = 6;
+    *leftDriveMasterCANid  = ?;
+    *leftDriveFrontCANid   = ?;
+    *leftDriveBackCANid    = ?;
+    *rightDriveMasterCANid = ?;
+    *rightDriveFrontCANid  = ?;
+    *rightDriveBackCANid   = ?;
     */
 
     private DriverStation driverStation;
@@ -188,6 +188,7 @@ public class DriveTrain {
             return angle;
     }
 
+    @Override
     public void teleopPeriodic(){
     //Driver 1 - left stick y drive forward/backward
     //Driver 1 - right stick x turn left/right
