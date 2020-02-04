@@ -43,20 +43,20 @@ public class DriveTrain extends Subsystem{
     //gyro
     private AHRS gyro; 
 
-    private final int leftDriveMasterCANid  = 1;
-    private final int leftDriveFrontCANid   = 2;
-    private final int leftDriveBackCANid    = 3;
-    private final int rightDriveMasterCANid = 4;
-    private final int rightDriveFrontCANid  = 5;
-    private final int rightDriveBackCANid   = 6;
+    private final int leftDriveMasterCANid  = 13;
+    private final int leftDriveFrontCANid   = 12;
+    private final int leftDriveBackCANid    = 14;
+    private final int rightDriveMasterCANid = 16;
+    private final int rightDriveFrontCANid  = 17;
+    private final int rightDriveBackCANid   = 15;
     
-    private final double AXIAL_SLOW_POWER_LEVEL    = .5;
-    private final double AXIAL_REGULAR_POWER_LEVEL = .7;
-    private final double AXIAL_FAST_POWER_LEVEL    = .9;
+    private final double AXIAL_SLOW_POWER_LEVEL    = .2;
+    private final double AXIAL_REGULAR_POWER_LEVEL = .3;
+    private final double AXIAL_FAST_POWER_LEVEL    = .4;
 
-    private final double YAW_SLOW_POWER_LEVEL    = .5;
-    private final double YAW_REGULAR_POWER_LEVEL = .7;
-    private final double YAW_FAST_POWER_LEVEL    = .9;
+    private final double YAW_SLOW_POWER_LEVEL    = .1;
+    private final double YAW_REGULAR_POWER_LEVEL = .2;
+    private final double YAW_FAST_POWER_LEVEL    = .3;
 
     private final double GYRO_SCALE           =  1.00;
     private final double HEADING_GAIN         = .01; //tweak this value to increase or decreasu auto correct power
@@ -194,9 +194,9 @@ public class DriveTrain extends Subsystem{
     public void moveRobot(){
         adjustPowerLevel();
         setVectorsToController();
-        getRobotHeading();
-        isTurning();
-        holdHeading();
+        //getRobotHeading();
+        //isTurning();
+        //holdHeading();
 
         yaw   *= yawPowerLevel;
         axial *= axialPowerLevel;
@@ -236,8 +236,69 @@ public class DriveTrain extends Subsystem{
 
     }
 
+    /**
+     * left master  - dpad up
+     * left front   - dpad right
+     * left back    - dpad left
+     * 
+     * right master - y
+     * right front  - a
+     * right back   - x
+     */
+    public void driveMotorTest(){
+
+    /*
+        if(driverStation.dpadUp()){
+            leftDriveMaster.set(.1);
+        }else{
+            leftDriveMaster.set(0);
+        }
+
+        if(driverStation.dpadLeft()){
+            leftDriveBack.set(.1);
+        }else{
+            leftDriveBack.set(0);
+        }
+
+        if(driverStation.dpadRight()){
+            leftDriveFront.set(.1);
+        }else{
+            leftDriveFront.set(0);
+        }
+
+        if(driverStation.x()){
+            rightDriveBack.set(.1);
+        }else{
+            rightDriveBack.set(0);
+        }
+
+        if(driverStation.a()){
+            rightDriveFront.set(.1);
+        }else{
+            rightDriveFront.set(0);
+        }
+
+        if(driverStation.y()){
+            rightDriveMaster.set(.1);
+        }else{
+            rightDriveMaster.set(0);
+        }
+    */
+
+    /*
+        double left    = driverStation.getLeftStickY();
+        double right   = driverStation.getRightStickY();
+
+        rightDriveMaster.set(right);
+
+        leftDriveMaster.set(left);
+    */
+
+    }
+
     @Override
     public void teleopPeriodic(){
+
         moveRobot();
 
     //Driver 1 - left stick y drive forward/backward

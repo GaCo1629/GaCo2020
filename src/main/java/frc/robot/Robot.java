@@ -26,9 +26,9 @@ public class Robot extends TimedRobot {
     //initalize all classes
     driverStation.init();
     driveTrain.init(driverStation);
-    fuelSystem.init(driverStation);
-    colorWheel.init(driverStation);
-    climber.init(driverStation);
+    //fuelSystem.init(driverStation);
+    //colorWheel.init(driverStation);
+    //climber.init(driverStation);
     
   }
 
@@ -36,9 +36,9 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
 
     driveTrain.teleopPeriodic();
-    fuelSystem.teleopPeriodic();
-    colorWheel.teleopPeriodic();
-    climber.teleopPeriodic();
+    //fuelSystem.teleopPeriodic();
+    //colorWheel.teleopPeriodic();
+    //climber.teleopPeriodic();
     
   }      
 }
