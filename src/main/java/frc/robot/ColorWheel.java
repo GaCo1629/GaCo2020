@@ -79,8 +79,8 @@ public class ColorWheel {
 
         colorMotorCircumference = colorMotorDiameter * Math.PI;
         colorWheelCircumference = colorWheelDiameter * Math.PI;
-        maxRPM = (60 * colorWheelCircumference)/colorMotorCircumference;
-        maxPower = (maxRPM)/5676;
+        maxRPM      = (60 * colorWheelCircumference)/colorMotorCircumference;
+        maxPower    = (maxRPM)/5676;
 
         //Find the maximum speed at which the wheel is allowed to spin.
 
@@ -96,34 +96,46 @@ public class ColorWheel {
     //run the motor and use the sensor/camera so that the table turns 3.5 rotations
     public void turnRotations(){
         wheelCount = 0;
+        //Reset the wheel count for use
         colorArm.set(DoubleSolenoid.Value.kForward);
-        detectedColor = m_colorSensor.getColor();
-        firstMatch = m_colorMatcher.matchClosestColor(detectedColor);
+        detectedColor   = m_colorSensor.getColor();
+        firstMatch      = m_colorMatcher.matchClosestColor(detectedColor);
+        //put out the color arm and save the first color
         colorMotor.set(maxPower);
+        //Turn on the motor to max power (im currently looking into a way to set a max RPM value)
         while (wheelCount < 7){
             detectedColor = m_colorSensor.getColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
+            //Save the current color
             if (match != prevMatch){
+                //If the robot is looking at a different color than it just was, continue
                 if (match.color == firstMatch.color){
                     wheelCount++;
+                    //if the color currently being looked at is the first color, add one to wheel count
                 }
             }
             prevMatch = match;
+            //set the current color to the previous color
         }
+        //when 3.5 rotations have occured, exit the loop
         colorMotor.set(0);
         colorArm.set(DoubleSolenoid.Value.kReverse);
+        //turn the motor off and retract 
     }
 
     //run the motor and use the sensor/camera so that the table turns to red
     public void turnToRed(){
         wheelCount = 0;
+        //re sets wheelFount for use
         colorArm.set(DoubleSolenoid.Value.kForward);
         colorMotor.set(maxPower * 0.5);
+        //extends the color arm and sets the power to half the max RPM
         while (wheelCount < 1){
             detectedColor = m_colorSensor.getColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
             if (match.color == kBlueTarget){
                 wheelCount++;
+                //if the color is equal to the necessary ofset, exit the loop
             }
         }
         colorMotor.set(0);
@@ -134,13 +146,16 @@ public class ColorWheel {
     //run the motor and use the sensor/camera so that the table turns to blue
     public void turnToBlue(){
         wheelCount = 0;
+        //re sets wheelFount for use
         colorArm.set(DoubleSolenoid.Value.kForward);
         colorMotor.set(maxPower * 0.5);
+        //extends the color arm and sets the power to half the max RPM
         while (wheelCount < 1){
             detectedColor = m_colorSensor.getColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
             if (match.color == kRedTarget){
                 wheelCount++;
+                //if the color is equal to the necessary ofset, exit the loop
             }
         }
         colorMotor.set(0);
@@ -150,13 +165,16 @@ public class ColorWheel {
     //run the motor and use the sensor/camera so that the table turns to green
     public void turnToGreen(){
         wheelCount = 0;
+        //re sets wheelFount for use
         colorArm.set(DoubleSolenoid.Value.kForward);
         colorMotor.set(maxPower * 0.5);
+        //extends the color arm and sets the power to half the max RPM
         while (wheelCount < 1){
             detectedColor = m_colorSensor.getColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
             if (match.color == kYellowTarget){
                 wheelCount++;
+                //if the color is equal to the necessary ofset, exit the loop
             }
         }
         colorMotor.set(0);
@@ -166,13 +184,16 @@ public class ColorWheel {
     //run the motor and use the sensor/camera so that the table turns to yellow
     public void turnToYellow(){
         wheelCount = 0;
+        //re sets wheelFount for use
         colorArm.set(DoubleSolenoid.Value.kForward);
         colorMotor.set(maxPower * 0.5);
+        //extends the color arm and sets the power to half the max RPM
         while (wheelCount < 1){
             detectedColor = m_colorSensor.getColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
             if (match.color == kGreenTarget){
                 wheelCount++;
+                //if the color is equal to the necessary ofset, exit the loop
             }
         }
         colorMotor.set(0);
