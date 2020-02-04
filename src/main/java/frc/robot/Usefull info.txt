@@ -1,14 +1,34 @@
 https://www.revrobotics.com/content/sw/max/sdk/REVRobotics.json
 http://devsite.ctr-electronics.com/maven/release/com/ctre/phoenix/Phoenix-latest.json
 https://www.kauailabs.com/dist/frc/2020/navx_frc.json
+http://revrobotics.com/content/sw/color-sensor-v3/sdk/REVColorSensorV3.json
 
-Can Bus Ids
+
+CAN Bus Ids
+    leftDriveMasterCANid  = 1
+    leftDriveFrontCANid   = 2
+    leftDriveBackCANid    = 3
+    rightDriveMasterCANid = 4
+    rightDriveFrontCANid  = 5
+    rightDriveBackCANid   = 6
+    colorMotor            = 7
+    turret                = 8
+    leftShooter           = 9
+    rightShooter          = 10
+
 Talon: 10-19 
+    lowerTransfer         = 1
+    upperTransfer         = 2
+    collecter             = 3
+
 
 neos: 20-29
 
 soliniods
+    collecterState        = 0/1
+    colorArm              = 2/3
 
 lime light
+
 
 color sensors

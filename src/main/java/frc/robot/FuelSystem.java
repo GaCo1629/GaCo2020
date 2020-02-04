@@ -2,6 +2,8 @@
 /* Copyright (c) 2020 GaCo. All Rights Reserved.                              */
 /*----------------------------------------------------------------------------*/
 
+
+
 package frc.robot;
 
 import com.revrobotics.CANEncoder;
@@ -10,10 +12,22 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class FuelSystem {
+/* 
+upper transfer 10
+lower transfer 11
+collecter 12
+left shooter 20
+right shooter 21
+turret 22
+collecterleft 0,1
+collector right 0,1
+*/
+
+public class FuelSystem extends Subsystem {
 
     DriverStation driverStation;
 
@@ -24,6 +38,8 @@ public class FuelSystem {
     private CANSparkMax leftShooter; 
     private CANSparkMax rightShooter;
     private CANEncoder shooterEncoder;
+    private DoubleSolenoid collecterState;
+
   
 
     final double TRANSFER_SPEED = 0.7;
@@ -60,17 +76,18 @@ public class FuelSystem {
 
         //talon
         upperTransfer = new TalonSRX(10);
-        upperTransfer.set(ControlMode.PercentOutput, 10);
+        upperTransfer.set(ControlMode.PercentOutput,0);
 
         lowerTransfer = new TalonSRX(11);
-        lowerTransfer.set(ControlMode.PercentOutput, 11);
+        lowerTransfer.set(ControlMode.PercentOutput, 0);
 
         collecter = new TalonSRX(12);
-        collecter.set(ControlMode.PercentOutput, 12);
+        collecter.set(ControlMode.PercentOutput, 0);
+
+        collecterState = new DoubleSolenoid(1,0,1);
 
         SmartDashboard.putNumber("Setpoint", 0);
         SmartDashboard.putNumber("Speed", 0);
-
 
         
     }
@@ -183,14 +200,7 @@ public class FuelSystem {
 
     }
 
-    public void runTransfer(){
-        
-
-
-
-    
-
-    }
+   
 
     public void shooterOn(){
         if (driverStation.y()){
@@ -208,7 +218,7 @@ public class FuelSystem {
       
     }
 
-
+    @Override
     public void teleopPeriodic(){
         //Driver 1 - (button/trigger) track and collect
         //Driver 1 (button) fire 1
@@ -218,7 +228,10 @@ public class FuelSystem {
         //Driver 2 (button) run storage system
         shooterOn();  
         changeShooterSetpoint();
+        runTransfer(driverStation.rightTrigger());
     }
+
+
     public void show() {
         SmartDashboard.putNumber("Speed", shooterEncoder.getVelocity());
           // display PID coefficients on SmartDashboard
