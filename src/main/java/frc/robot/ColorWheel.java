@@ -116,22 +116,67 @@ public class ColorWheel {
 
     //run the motor and use the sensor/camera so that the table turns to red
     public void turnToRed(){
+        wheelCount = 0;
+        colorArm.set(DoubleSolenoid.Value.kForward);
+        colorMotor.set(maxPower * 0.5);
+        while (wheelCount < 1){
+            detectedColor = m_colorSensor.getColor();
+            match = m_colorMatcher.matchClosestColor(detectedColor);
+            if (match.color == kBlueTarget){
+                wheelCount++;
+            }
+        }
+        colorMotor.set(0);
+        colorArm.set(DoubleSolenoid.Value.kReverse);
 
     }
 
     //run the motor and use the sensor/camera so that the table turns to blue
     public void turnToBlue(){
-        
+        wheelCount = 0;
+        colorArm.set(DoubleSolenoid.Value.kForward);
+        colorMotor.set(maxPower * 0.5);
+        while (wheelCount < 1){
+            detectedColor = m_colorSensor.getColor();
+            match = m_colorMatcher.matchClosestColor(detectedColor);
+            if (match.color == kRedTarget){
+                wheelCount++;
+            }
+        }
+        colorMotor.set(0);
+        colorArm.set(DoubleSolenoid.Value.kReverse);
     }
 
     //run the motor and use the sensor/camera so that the table turns to green
     public void turnToGreen(){
-        
+        wheelCount = 0;
+        colorArm.set(DoubleSolenoid.Value.kForward);
+        colorMotor.set(maxPower * 0.5);
+        while (wheelCount < 1){
+            detectedColor = m_colorSensor.getColor();
+            match = m_colorMatcher.matchClosestColor(detectedColor);
+            if (match.color == kYellowTarget){
+                wheelCount++;
+            }
+        }
+        colorMotor.set(0);
+        colorArm.set(DoubleSolenoid.Value.kReverse);
     }
 
     //run the motor and use the sensor/camera so that the table turns to yellow
     public void turnToYellow(){
-        
+        wheelCount = 0;
+        colorArm.set(DoubleSolenoid.Value.kForward);
+        colorMotor.set(maxPower * 0.5);
+        while (wheelCount < 1){
+            detectedColor = m_colorSensor.getColor();
+            match = m_colorMatcher.matchClosestColor(detectedColor);
+            if (match.color == kGreenTarget){
+                wheelCount++;
+            }
+        }
+        colorMotor.set(0);
+        colorArm.set(DoubleSolenoid.Value.kReverse);
     }
 
 
