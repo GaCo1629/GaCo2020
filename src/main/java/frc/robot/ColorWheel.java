@@ -31,7 +31,7 @@ public class ColorWheel {
     private CANEncoder colorMotorEncoder;
     //private Solenoid colorArm;
     private DoubleSolenoid colorArm;
-    private final int colorMotorCANid  = 26;
+    private final int colorMotorCANid  = 22;
     
     private final I2C.Port i2cPort = I2C.Port.kOnboard;
     private final ColorSensorV3 m_colorSensor = new ColorSensorV3(i2cPort);
