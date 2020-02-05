@@ -17,11 +17,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /* 
 upper transfer 10
 lower transfer 11
-collecter 12
+collector 12
 left shooter 20
 right shooter 21
 turret 22
-collecterleft 0,1
+collectorleft 0,1
 collector right 0,1
 */
 
@@ -32,22 +32,22 @@ public class FuelSystem extends Subsystem {
     private CANSparkMax turret;
     private VictorSP lowerTransfer;
     private VictorSP upperTransfer;
-    private VictorSP collecter;
+    private VictorSP collector;
     private CANSparkMax leftShooter; 
     private CANSparkMax rightShooter;
     private CANEncoder shooterEncoder;
-    private DoubleSolenoid collecterState;
+    private DoubleSolenoid collectorState;
 
   
 
     final double TRANSFER_SPEED = 0.5;
     final double COLLECTOR_SPEED = 0.2;
-    private static final int leftShooterCANid = 21;
-    private static final int rightShooterCANid = 20;
-    private static final int turretCanId =10;
-    private static final int collecterCanId = 1;
-    private static final int upperTransferCanId =3;
-    private static final int lowerTransferCanId = 2;
+    private static final int L_SHOOTER_ID = 21;
+    private static final int R_SHOOTER_ID = 20;
+    private static final int TURRET_ID =10;
+    private static final int COLLECTOR_ID = 1;
+    private static final int U_TRANSFER_ID=3;
+    private static final int L_TRANSFER_ID= 2;
 
 
 
@@ -66,8 +66,8 @@ public class FuelSystem extends Subsystem {
         this.driverStation = driverStation;
         // initialize motor
 
-        leftShooter  = new CANSparkMax(leftShooterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-        rightShooter = new CANSparkMax(rightShooterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        leftShooter  = new CANSparkMax(L_SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+        rightShooter = new CANSparkMax(R_SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         
         leftShooter.restoreFactoryDefaults();
         rightShooter.restoreFactoryDefaults();
@@ -79,14 +79,14 @@ public class FuelSystem extends Subsystem {
         shooterEncoder = leftShooter.getEncoder();    
 
         //Victor SP
-        upperTransfer = new VictorSP(upperTransferCanId);
-        lowerTransfer = new VictorSP(lowerTransferCanId);
+        upperTransfer = new VictorSP(U_TRANSFER_ID);
+        lowerTransfer = new VictorSP(L_TRANSFER_ID);
 
-        collecter = new VictorSP(collecterCanId);
+        collector = new VictorSP(COLLECTOR_ID);
 
         lowerTransfer.setInverted(true);
 
-       // collecterState = new DoubleSolenoid(1,0,1);
+       // collectorState = new DoubleSolenoid(1,0,1);
 
         SmartDashboard.putNumber("Setpoint", 0);
         SmartDashboard.putNumber("Speed", 0);
@@ -111,9 +111,9 @@ public class FuelSystem extends Subsystem {
 
     public void runCollector (boolean run){
       if (run) {
-          collecter.set(COLLECTOR_SPEED);
+          collector.set(COLLECTOR_SPEED);
       }else{
-       collecter.set(0);
+       collector.set(0);
       }
   }
 
