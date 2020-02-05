@@ -9,11 +9,9 @@ package frc.robot;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /* 
@@ -32,9 +30,9 @@ public class FuelSystem extends Subsystem {
     DriverStation driverStation;
 
     private CANSparkMax turret;
-    private TalonSRX lowerTransfer;
-    private TalonSRX upperTransfer;
-    private TalonSRX collecter;
+    private VictorSP lowerTransfer;
+    private VictorSP upperTransfer;
+    private VictorSP collecter;
     private CANSparkMax leftShooter; 
     private CANSparkMax rightShooter;
     private CANEncoder shooterEncoder;
@@ -42,12 +40,18 @@ public class FuelSystem extends Subsystem {
 
   
 
-    final double TRANSFER_SPEED = 0.7;
-    final double SHOOTER_SPEED = 0.7;
-    private static final int leftShooterCANid = 20;
-    private static final int rightShooterCANid = 21;
+    final double TRANSFER_SPEED = 0.5;
+    final double COLLECTOR_SPEED = 0.2;
+    private static final int leftShooterCANid = 21;
+    private static final int rightShooterCANid = 20;
+    private static final int turretCanId =10;
+    private static final int collecterCanId = 1;
+    private static final int upperTransferCanId =3;
+    private static final int lowerTransferCanId = 2;
 
-    public double m_setpoint = 0.25;  
+
+
+    public double m_setpoint = 0.1;  
     public double m_speed = 0.0;
     public boolean m_enable = false;
   
@@ -60,31 +64,29 @@ public class FuelSystem extends Subsystem {
     //initalize fuel system 
     public void init(DriverStation driverStation){
         this.driverStation = driverStation;
-      // initialize motor
+        // initialize motor
 
-      leftShooter = new CANSparkMax(leftShooterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-      rightShooter = new CANSparkMax(rightShooterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-      leftShooter.restoreFactoryDefaults();
-      rightShooter.restoreFactoryDefaults();
-      rightShooter.setInverted(true);
-
-      
-  
+        leftShooter  = new CANSparkMax(leftShooterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
+        rightShooter = new CANSparkMax(rightShooterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
         
+        leftShooter.restoreFactoryDefaults();
+        rightShooter.restoreFactoryDefaults();
+        
+        leftShooter.setInverted(true);
+      
+      
         // Encoder object created to display position/velocity values
         shooterEncoder = leftShooter.getEncoder();    
 
-        //talon
-        upperTransfer = new TalonSRX(10);
-        upperTransfer.set(ControlMode.PercentOutput,0);
+        //Victor SP
+        upperTransfer = new VictorSP(upperTransferCanId);
+        lowerTransfer = new VictorSP(lowerTransferCanId);
 
-        lowerTransfer = new TalonSRX(11);
-        lowerTransfer.set(ControlMode.PercentOutput, 0);
+        collecter = new VictorSP(collecterCanId);
 
-        collecter = new TalonSRX(12);
-        collecter.set(ControlMode.PercentOutput, 0);
+        lowerTransfer.setInverted(true);
 
-        collecterState = new DoubleSolenoid(1,0,1);
+       // collecterState = new DoubleSolenoid(1,0,1);
 
         SmartDashboard.putNumber("Setpoint", 0);
         SmartDashboard.putNumber("Speed", 0);
@@ -99,10 +101,21 @@ public class FuelSystem extends Subsystem {
     }
     public void runTransfer (boolean run){
         if (run) {
-            upperTransfer.set(ControlMode.PercentOutput, TRANSFER_SPEED);
-            lowerTransfer.set(ControlMode.PercentOutput, TRANSFER_SPEED);
-         }
+            upperTransfer.set(TRANSFER_SPEED);
+            lowerTransfer.set(TRANSFER_SPEED);
+        }else{
+          upperTransfer.set(0);
+            lowerTransfer.set(0);
+        }
     }
+
+    public void runCollector (boolean run){
+      if (run) {
+          collecter.set(COLLECTOR_SPEED);
+      }else{
+       collecter.set(0);
+      }
+  }
 
     //set the shooter to a given speed in RPM
     public void setShooterSpeed (double speed){
@@ -229,13 +242,17 @@ public class FuelSystem extends Subsystem {
         shooterOn();  
         changeShooterSetpoint();
         runTransfer(driverStation.rightTrigger());
+        runCollector(driverStation.rightTrigger());
+      
+        show();
     }
 
 
     public void show() {
-        SmartDashboard.putNumber("Speed", shooterEncoder.getVelocity());
           // display PID coefficients on SmartDashboard
-     
+          SmartDashboard.putNumber("Setpoint", m_setpoint);
+          SmartDashboard.putNumber("Speed", shooterEncoder.getVelocity());
+          SmartDashboard.putBoolean("enable", m_enable);
 
      }
      

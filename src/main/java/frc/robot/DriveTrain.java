@@ -47,7 +47,7 @@ public class DriveTrain extends Subsystem{
     private final int leftDriveFrontCANid   = 12;
     private final int leftDriveBackCANid    = 14;
     private final int rightDriveMasterCANid = 16;
-    private final int rightDriveFrontCANid  = 17;
+    private final int rightDriveFrontCANid  = 17; 
     private final int rightDriveBackCANid   = 15;
     
     private final double AXIAL_SLOW_POWER_LEVEL    = .2;
