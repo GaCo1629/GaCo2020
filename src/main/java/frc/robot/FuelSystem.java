@@ -40,8 +40,10 @@ public class FuelSystem extends Subsystem {
 
   
 
-    final double TRANSFER_SPEED = 0.5;
+    final double TRANSFER_SPEED = 1;
     final double COLLECTOR_SPEED = 0.2;
+    final double TURRETT_SPEED = 0.1;
+    
     private static final int L_SHOOTER_ID = 21;
     private static final int R_SHOOTER_ID = 20;
     private static final int TURRET_ID =10;
@@ -68,7 +70,8 @@ public class FuelSystem extends Subsystem {
 
         leftShooter  = new CANSparkMax(L_SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
         rightShooter = new CANSparkMax(R_SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
-        
+        turret = new CANSparkMax(TURRET_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+
         leftShooter.restoreFactoryDefaults();
         rightShooter.restoreFactoryDefaults();
         
@@ -99,6 +102,19 @@ public class FuelSystem extends Subsystem {
     public void turnTurretTo(double angle){
 
     }
+
+    //turn turret
+    public void turnTurret (){
+
+      if (driverStation.dpadLeft()) {
+        turret.set(-TURRETT_SPEED);
+    }else if (driverStation.dpadRight()){
+      turret.set(TURRETT_SPEED);
+    }else{
+      turret.set(0);
+    }
+    }
+
     public void runTransfer (boolean run){
         if (run) {
             upperTransfer.set(TRANSFER_SPEED);
@@ -243,6 +259,7 @@ public class FuelSystem extends Subsystem {
         changeShooterSetpoint();
         runTransfer(driverStation.rightTrigger());
         runCollector(driverStation.rightTrigger());
+        turnTurret();
       
         show();
     }
