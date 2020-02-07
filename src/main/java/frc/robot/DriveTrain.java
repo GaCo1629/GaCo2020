@@ -225,6 +225,13 @@ public class DriveTrain extends Subsystem{
             return angle;
     }
 
+    public void adjustDrivePowerToAvoidTipping(double newAxial){
+
+        if(Math.abs(newAxial - axial) >= .05){
+            
+        }
+    }
+
     
     //use the curretn heading and target heading to turn the robot to the target heading
     public void turnToHeading(double tragetHeading){
