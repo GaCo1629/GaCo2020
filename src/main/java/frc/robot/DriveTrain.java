@@ -47,8 +47,8 @@ public class DriveTrain extends Subsystem{
     private final int rightDriveBackCANid   = 15;
     
     private final double AXIAL_SLOW_POWER_LEVEL    = .2;
-    private final double AXIAL_REGULAR_POWER_LEVEL = .3;
-    private final double AXIAL_FAST_POWER_LEVEL    = .6;
+    private final double AXIAL_REGULAR_POWER_LEVEL = .2;
+    private final double AXIAL_FAST_POWER_LEVEL    = .8;
 
     private final double YAW_SLOW_POWER_LEVEL    = .1;
     private final double YAW_REGULAR_POWER_LEVEL = .2;
@@ -57,7 +57,7 @@ public class DriveTrain extends Subsystem{
     private final double GYRO_SCALE                     =  1.00;
     private final double HEADING_GAIN                   = .01; //tweak this value to increase or decreasu auto correct power
     private final double MAX_AUTOCORRECT_YAW            = .5;
-    private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = .5;
+    private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = .80;
 
     private double axialPowerLevel = AXIAL_REGULAR_POWER_LEVEL;
     private double yawPowerLevel   = YAW_REGULAR_POWER_LEVEL;
