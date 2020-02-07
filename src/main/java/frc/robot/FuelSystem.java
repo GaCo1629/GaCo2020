@@ -292,6 +292,7 @@ public class FuelSystem extends Subsystem {
           SmartDashboard.putNumber("Setpoint", m_setpoint);
           SmartDashboard.putNumber("Speed", shooterEncoder.getVelocity());
           SmartDashboard.putBoolean("enable", m_enable);
+          SmartDashboard.putNumber("encoder value turrett", turretEncoder.getPosition());
 
      }
      
