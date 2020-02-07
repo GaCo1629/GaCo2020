@@ -199,6 +199,12 @@ public class ColorWheel {
         colorMotor.set(0);
         colorArm.set(DoubleSolenoid.Value.kReverse);
     }
+    public void motorTestOn(){
+
+    }
+    public void motorTestOff(){
+
+    }
 
 
     public void teleopPeriodic() {
@@ -208,5 +214,7 @@ public class ColorWheel {
         //Driver 2 - (Button) Spin wheel to blue
         //Driver 2 - (Button) Spin wheel to green
         //Driver 2 - (Button) Spin wheel to yellow
+        driverStation.y()
+        
     }
 }
