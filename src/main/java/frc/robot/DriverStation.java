@@ -16,6 +16,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // Public class to contain all the hardware elements (BotBits)
 public class DriverStation {
 
+    //CONTROLLERS ARE PROGRAMMED IN XBOX MODE
+    //set the switch on the back of the logitech 310 controller to X
     
     public Joystick stick;
     
@@ -26,27 +28,17 @@ public class DriverStation {
 
     final int R_BUMPER = 6;
     final int L_BUMPER = 5;
-    final int R_TRIGGER = 8;
-    final int L_TRIGGER = 7;
 
-    final int R_STICK =12;
-    final int R_STICK_V = 4 ;
-    final int R_STICK_H = 3 ;
+    final int R_TRIGGER = 3;
+    final int L_TRIGGER = 2;
 
+    final int R_STICK   = 12;
+    final int R_STICK_V = 5 ;
+    final int R_STICK_H = 4 ;
 
     final int L_STICK =11;
-    final int L_STICK_V = 2 ;
-    final int L_STICK_H = 1 ;
-
-    final int DPAD_UP= 13;
-    final int DPAD_DOWN= 15;
-    final int DPAD_LEFT= 14;
-    final int DPAD_RIGHT= 16;
-
-
-
-        
-
+    final int L_STICK_V = 1 ;
+    final int L_STICK_H = 0 ;
 
     //constructor
     public  DriverStation () {
@@ -55,9 +47,6 @@ public class DriverStation {
     //initialzie all controllers and buttons
     public void init() {
         stick = new Joystick(0);
-    
-   
-
     }
     
     public boolean y(){
@@ -85,27 +74,35 @@ public class DriverStation {
     }
 
     public boolean rightTrigger(){
-        return stick.getRawButton(R_TRIGGER);
+        return (stick.getRawAxis(R_TRIGGER) > .5);
     }
 
     public boolean leftTrigger(){
-        return stick.getRawButton(L_TRIGGER);
+        return (stick.getRawAxis(L_TRIGGER) > .5);
+    }
+
+    public double leftTriggerAnalog(){
+        return stick.getRawAxis(L_TRIGGER);
+    }
+
+    public double rightTriggerAnalog(){
+        return stick.getRawAxis(R_TRIGGER);
     }
 
     public boolean dpadUp(){
-        return stick.getRawButton(DPAD_UP);
+        return (stick.getPOV() == 0);
     }
 
     public boolean dpadDown(){
-        return stick.getRawButton(DPAD_DOWN);
+        return (stick.getPOV() == 180);
     }
 
     public boolean dpadLeft(){
-        return stick.getRawButton(DPAD_LEFT);
+        return (stick.getPOV() == 270);
     }
 
     public boolean dpadRight(){
-        return stick.getRawButton(DPAD_RIGHT);
+        return (stick.getPOV() == 90);
     }
 
     public double getleftStickX(){
@@ -113,7 +110,8 @@ public class DriverStation {
     }
     
     public double getLeftStickY(){
-        return stick.getRawAxis(L_STICK_V);
+        //flipped y so joystick gives positive when pushed forwards
+        return -stick.getRawAxis(L_STICK_V);
    }
 
     public double getRightStickX(){
@@ -121,7 +119,8 @@ public class DriverStation {
 }
 
     public double getRightStickY(){
-        return stick.getRawAxis(R_STICK_V);
+        //flipped y so joystick gives positive when pushed forwards
+        return -stick.getRawAxis(R_STICK_V);
 }
     public boolean leftStick(){
      return stick.getRawButton(L_STICK);

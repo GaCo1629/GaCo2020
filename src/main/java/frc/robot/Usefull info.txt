@@ -5,29 +5,42 @@ http://revrobotics.com/content/sw/color-sensor-v3/sdk/REVColorSensorV3.json
 
 
 CAN Bus Ids
-    leftDriveMasterCANid  = 1
-    leftDriveFrontCANid   = 2
-    leftDriveBackCANid    = 3
-    rightDriveMasterCANid = 4
-    rightDriveFrontCANid  = 5
-    rightDriveBackCANid   = 6
-    colorMotor            = 7
-    turret                = 8
-    leftShooter           = 9
-    rightShooter          = 10
+NEO Motors
+    leftDriveMasterCANid  = 13
+    leftDriveFrontCANid   = 12
+    leftDriveBackCANid    = 14
+    rightDriveMasterCANid = 16
+    rightDriveFrontCANid  = 17
+    rightDriveBackCANid   = 15
 
-Talon: 10-19 
-    lowerTransfer         = 1
-    upperTransfer         = 2
-    collecter             = 3
+    turret                = 10
+    leftShooter           = 21
+    rightShooter          = 20
 
+    leftLeft              = 11
+    rightLift             = 18
 
-neos: 20-29
+    rightSpare            = 19
+
+    colorMotor            = 22
+
+######################################################################################################
+
+PWM
+Talon Motors
+    colorMotor            = 0
+    lowerTransfer         = 2
+    upperTransfer         = 3
+    collecter             = 1
+
+######################################################################################################
 
 
 soliniods
     collecterState        = 0/1
     colorArm              = 2/3
+
+######################################################################################################
 
 lime light
 
