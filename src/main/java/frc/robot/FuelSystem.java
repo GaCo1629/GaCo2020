@@ -10,6 +10,8 @@ import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 
+import frc.robot.PIDController;
+
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -54,12 +56,13 @@ public class FuelSystem extends Subsystem {
     private static final int U_TRANSFER_ID=3;
     private static final int L_TRANSFER_ID= 2;
 
-
-
     public double m_setpoint = 0.1;  
     public double m_speed = 0.0;
     public boolean m_enable = false;
-  
+    private double targetSpeedRPM = 0;
+
+
+    PIDController shooterPID = new PIDController(.0005,.0000007,0,6000); 
 
     //constructor
     public  FuelSystem () {
@@ -254,22 +257,52 @@ public class FuelSystem extends Subsystem {
 
    
 
-    public void shooterOn(){
+    public void shooterOnPID(){
         if (driverStation.y()){
-
             m_enable = true;
           } else if (driverStation.a()){
             m_enable = false;
         }
       
-        if (m_enable) {
-            setShooterSpeed(m_setpoint);
-          
+        
+          if (driverStation.b()) {
+            targetSpeedRPM +=  50;
+          }
+          if (driverStation.x()) {
+            targetSpeedRPM -=  50;
+          }
+      
+          if (targetSpeedRPM > 6200 ){
+            targetSpeedRPM = 6200;
+          }
+          if (targetSpeedRPM < 0){
+            targetSpeedRPM = 0;
+          } 
+      
+          if (m_enable) {
+            setShooterSpeed(shooterPID.run(shooterEncoder.getVelocity(), targetSpeedRPM));
           } else {
             setShooterSpeed(0); 
           }
       
     }
+
+    public void shooterOn(){
+      if (driverStation.y()){
+
+          m_enable = true;
+        } else if (driverStation.a()){
+          m_enable = false;
+      }
+    
+      if (m_enable) {
+          setShooterSpeed(m_setpoint);
+        
+        } else {
+          setShooterSpeed(0); 
+        }
+    
+  }
 
     @Override
     public void teleopPeriodic(){
@@ -279,7 +312,7 @@ public class FuelSystem extends Subsystem {
         //Driver 2 - (button) put down/up collector
         //Driver 2 - (button) collector on/off
         //Driver 2 (button) run storage system
-        shooterOn();  
+        shooterOnPID();  
         changeShooterSetpoint();
         runTransfer(driverStation.rightTrigger());
         runCollector(driverStation.rightTrigger());
@@ -292,6 +325,8 @@ public class FuelSystem extends Subsystem {
     public void show() {
           // display PID coefficients on SmartDashboard
           SmartDashboard.putNumber("Setpoint", m_setpoint);
+          SmartDashboard.putNumber("Target RPM", targetSpeedRPM);
+
           SmartDashboard.putNumber("Speed", shooterEncoder.getVelocity());
           SmartDashboard.putBoolean("enable", m_enable);
           SmartDashboard.putNumber("encoder value turrett", turretEncoder.getPosition());

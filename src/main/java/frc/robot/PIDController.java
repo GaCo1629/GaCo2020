@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // Public class to contain all the hardware elements (BotBits)
 public class PIDController {
@@ -14,15 +15,19 @@ private double ki;
 private double kd;
 private double kf;
 
-private double proportional;
-private double integral;
-private double derivative;
+private double proportional    = 0;
+private double integral        = 0;
+private double derivative      = 0;
+private double feedForward     = 0;
+private double runningIntegral = 0;
 
 private double lastRPM           = 0;
 private double lastRPMCorrection = 0;
+private double returnVal         = 0;
 
-private Timer elaspedTime;
+
 private boolean firstTime = true;
+private Timer elaspedTime;
 
     /**for shooter
      *  proportional    = .3
@@ -38,12 +43,14 @@ private boolean firstTime = true;
         kd  = derivative;
         //kf is rpm at max power        
         kf  = forwardFeedInRPM;
+        
+        elaspedTime = new Timer();
         elaspedTime.start();
     }
 
     //inputs are in RPM
     //return is in power
-    public double runPID(double currentRPM, double targetRMP){
+    public double run(double currentRPM, double targetRMP){
 
         if(firstTime){
             elaspedTime.reset();
@@ -51,18 +58,23 @@ private boolean firstTime = true;
             return targetRMP/kf;
         }
 
-        double returnVal      = targetRMP/kf;
-        double RPMCorrection  = targetRMP - currentRPM;
+        double returnVal = 0;
+        double RPMError  = targetRMP - currentRPM;
 
-        proportional = RPMCorrection;
-        integral     += RPMCorrection;
-        derivative   = lastRPM - currentRPM;
+        proportional = RPMError               * kp;
+        integral     = RPMError               * ki;
+        derivative   = (lastRPM - currentRPM) * kd;
+        feedForward  = (targetRMP/kf);
 
-        returnVal += (proportional * kp + integral * ki + derivative * kd)/kf;
+        runningIntegral += integral;
+        runningIntegral = clip1(runningIntegral);
+
+        returnVal = proportional + derivative + feedForward + runningIntegral;
 
         lastRPM           = currentRPM;
-        lastRPMCorrection = RPMCorrection;
+        lastRPMCorrection = RPMError;
         elaspedTime.reset();
+        displayValues();
 
         return clip1(returnVal);
     }
@@ -76,4 +88,14 @@ private boolean firstTime = true;
             return input;
         }    
     }
+
+    private void displayValues(){
+        SmartDashboard.putNumber("Proportional", proportional);
+        SmartDashboard.putNumber("Integral", integral);
+        SmartDashboard.putNumber("Derivative", derivative);
+        SmartDashboard.putNumber("Feed Forward", feedForward);
+        SmartDashboard.putNumber("Running Integral", runningIntegral);
+        SmartDashboard.putNumber("return", returnVal);
+    }
+    
 }
