@@ -43,6 +43,7 @@ public class ColorWheel {
 
     private final double colorMotorDiameter = 4;
     private final double colorWheelDiameter = 32;
+    private final double fullRPM = 21020;
     private double colorMotorCircumference;
     private double colorWheelCircumference;
     private double maxRPM;
@@ -76,7 +77,7 @@ public class ColorWheel {
         colorMotorCircumference = colorMotorDiameter * Math.PI;
         colorWheelCircumference = colorWheelDiameter * Math.PI;
         maxRPM      = (60 * colorWheelCircumference)/colorMotorCircumference;
-        maxPower    = (maxRPM)/5676;
+        maxPower    = (maxRPM)/fullRPM;
 
         //Find the maximum speed at which the wheel is allowed to spin.
 
@@ -211,9 +212,9 @@ public class ColorWheel {
         //Driver 2 - (Button) Spin wheel to green
         //Driver 2 - (Button) Spin wheel to yellow
         if (driverStation.leftBumper()){
-
+            colorMotor.set(maxPower);
         } else {
-
+            colorMotor.set(0);
         }
     }
 }
