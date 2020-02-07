@@ -36,13 +36,15 @@ public class FuelSystem extends Subsystem {
     private CANSparkMax leftShooter; 
     private CANSparkMax rightShooter;
     private CANEncoder shooterEncoder;
+    private CANEncoder turretEncoder;
     private DoubleSolenoid collectorState;
 
   
 
     final double TRANSFER_SPEED = 1;
     final double COLLECTOR_SPEED = 0.2;
-    final double TURRETT_SPEED = 0.1;
+    final double TURRETT_SPEED = 0.4;
+    final double TURRETT_CLICKS = 20;
     
     private static final int L_SHOOTER_ID = 21;
     private static final int R_SHOOTER_ID = 20;
@@ -79,7 +81,9 @@ public class FuelSystem extends Subsystem {
       
       
         // Encoder object created to display position/velocity values
-        shooterEncoder = leftShooter.getEncoder();    
+        shooterEncoder = leftShooter.getEncoder(); 
+        
+        turretEncoder = turret.getEncoder();
 
         //Victor SP
         upperTransfer = new VictorSP(U_TRANSFER_ID);
@@ -93,6 +97,8 @@ public class FuelSystem extends Subsystem {
 
         SmartDashboard.putNumber("Setpoint", 0);
         SmartDashboard.putNumber("Speed", 0);
+        SmartDashboard.putNumber("ENCODER", 0);
+
 
         
     }
@@ -107,13 +113,38 @@ public class FuelSystem extends Subsystem {
     public void turnTurret (){
 
       if (driverStation.dpadLeft()) {
-        turret.set(-TURRETT_SPEED);
+        turret.set(TURRETT_SPEED);
     }else if (driverStation.dpadRight()){
-      turret.set(TURRETT_SPEED);
+      turret.set(-TURRETT_SPEED);
     }else{
       turret.set(0);
     }
     }
+    public void turnTurret (){
+
+      if (driverStation.dpadLeft()) {
+        turret.set(TURRETT_SPEED);
+    }else if (driverStation.dpadRight()){
+      turret.set(-TURRETT_SPEED);
+    }else{
+      turret.set(0);
+    }
+    }
+
+   // public void turnTurretTicks(){
+
+    /*  if (driverStation.dpadUp()) {
+        new int pos= turretEncoder.getPosition()
+        while(turretEncoder.getPosition() < )
+    
+        turret.set(TURRETT_SPEED);
+        turretEncoder.getPosition()
+    }else if (driverStation.dpadDown()){
+      turret.set(-TURRETT_SPEED);
+    }else{
+      turret.set(0);
+    }
+    } */
 
     public void runTransfer (boolean run){
         if (run) {
