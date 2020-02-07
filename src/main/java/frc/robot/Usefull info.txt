@@ -24,6 +24,7 @@ Talon: 10-19
 
 neos: 20-29
 
+
 soliniods
     collecterState        = 0/1
     colorArm              = 2/3
