@@ -110,7 +110,7 @@ public class FuelSystem extends Subsystem {
     }
 
     //turn turret
-    public void turnTurret (){
+    public void turnTurret(){
 
       if (driverStation.dpadLeft()) {
         turret.set(TURRETT_SPEED);
@@ -120,16 +120,7 @@ public class FuelSystem extends Subsystem {
       turret.set(0);
     }
     }
-    public void turnTurret (){
-
-      if (driverStation.dpadLeft()) {
-        turret.set(TURRETT_SPEED);
-    }else if (driverStation.dpadRight()){
-      turret.set(-TURRETT_SPEED);
-    }else{
-      turret.set(0);
-    }
-    }
+  
 
    // public void turnTurretTicks(){
 
