@@ -41,10 +41,11 @@ public class FuelSystem extends Subsystem {
 
   
 
-    final double TRANSFER_SPEED = 1;
-    final double COLLECTOR_SPEED = 0.2;
-    final double TURRETT_SPEED = 0.4;
-    final double TURRETT_CLICKS = 20;
+   private final double TRANSFER_SPEED = 1;
+  private final double COLLECTOR_SPEED = 0.2;
+   private final double TURRETT_SPEED = 0.4;
+  private final double TURRETT_CLICKS_PER_DEGREE = 1.27866;
+
     
     private static final int L_SHOOTER_ID = 21;
     private static final int R_SHOOTER_ID = 20;
@@ -122,9 +123,9 @@ public class FuelSystem extends Subsystem {
     }
   
 
-   // public void turnTurretTicks(){
+  /*  public void turnTurretTDegree(){
 
-    /*  if (driverStation.dpadUp()) {
+      if (driverStation.dpadUp()) {
         new int pos= turretEncoder.getPosition()
         while(turretEncoder.getPosition() < )
     
@@ -255,6 +256,7 @@ public class FuelSystem extends Subsystem {
 
     public void shooterOn(){
         if (driverStation.y()){
+
             m_enable = true;
           } else if (driverStation.a()){
             m_enable = false;
@@ -293,6 +295,7 @@ public class FuelSystem extends Subsystem {
           SmartDashboard.putNumber("Speed", shooterEncoder.getVelocity());
           SmartDashboard.putBoolean("enable", m_enable);
           SmartDashboard.putNumber("encoder value turrett", turretEncoder.getPosition());
+          SmartDashboard.putNumber("counts per rev turrett", turretEncoder.getCountsPerRevolution());
 
      }
      
