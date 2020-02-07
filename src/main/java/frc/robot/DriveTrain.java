@@ -7,13 +7,9 @@ package frc.robot;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
-
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Timer;
 
 public class DriveTrain extends Subsystem{
 
@@ -52,21 +48,27 @@ public class DriveTrain extends Subsystem{
     
     private final double AXIAL_SLOW_POWER_LEVEL    = .2;
     private final double AXIAL_REGULAR_POWER_LEVEL = .3;
-    private final double AXIAL_FAST_POWER_LEVEL    = .4;
+    private final double AXIAL_FAST_POWER_LEVEL    = .6;
 
     private final double YAW_SLOW_POWER_LEVEL    = .1;
     private final double YAW_REGULAR_POWER_LEVEL = .2;
-    private final double YAW_FAST_POWER_LEVEL    = .3;
+    private final double YAW_FAST_POWER_LEVEL    = .4;
 
-    private final double GYRO_SCALE           =  1.00;
-    private final double HEADING_GAIN         = .01; //tweak this value to increase or decreasu auto correct power
-    private final double MAX_AUTOCORRECT_YAW  = .5;
+    private final double GYRO_SCALE                     =  1.00;
+    private final double HEADING_GAIN                   = .01; //tweak this value to increase or decreasu auto correct power
+    private final double MAX_AUTOCORRECT_YAW            = .5;
+    private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = .5;
 
     private double axialPowerLevel = AXIAL_REGULAR_POWER_LEVEL;
     private double yawPowerLevel   = YAW_REGULAR_POWER_LEVEL;
 
     private double axial  = 0;
     private double yaw    = 0;
+
+    private double lastAxial = 0;
+
+    private double lastTime    = 0;
+    private double currentTime = 0;
 
     private double absoluteHeading           = 0;
     private double robotHeading              = 0;
@@ -75,6 +77,8 @@ public class DriveTrain extends Subsystem{
     private double requiredHeadingCorrection = 0;
     private double robotHeadingModifier      = 0;
     private boolean turning = false;              //this always needs to start as false
+
+    private Timer timer;
 
     //constructor
     public  DriveTrain () {
@@ -119,6 +123,9 @@ public class DriveTrain extends Subsystem{
           } catch (RuntimeException ex ) {
             //insert report on driver station saying an error has occured
         }
+
+        timer = new Timer();
+        timer.start();
     }
 
     //check to see if the robot is turning
@@ -140,10 +147,13 @@ public class DriveTrain extends Subsystem{
     }
 
     public void adjustPowerLevel(){
-        if (driverStation.leftBumper()){
+        //free up left bumper for jaylen
+        /*if (driverStation.leftBumper()){
             axialPowerLevel = AXIAL_SLOW_POWER_LEVEL;
             yawPowerLevel   = YAW_SLOW_POWER_LEVEL;
-        } else if (driverStation.rightBumper()){
+        }
+        */ 
+        if (driverStation.rightBumper()){
             axialPowerLevel = AXIAL_FAST_POWER_LEVEL;
             yawPowerLevel   = YAW_FAST_POWER_LEVEL;
         } else {
@@ -183,6 +193,21 @@ public class DriveTrain extends Subsystem{
         robotHeadingModifier = newHeading;
     }
 
+    public void adjustAxialPowerToAvoidTipping(){
+
+        double deltaTime  = timer.get() - lastTime;
+        double deltaPower = axial - lastAxial;
+
+        if(deltaTime != 0){
+            if(Math.abs(deltaPower/deltaTime) > MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE){
+                axial = lastAxial + Math.signum(deltaPower)*deltaTime*MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE;
+            }
+        }
+    
+        lastTime = timer.get();
+        lastAxial = axial;
+    }
+
     //use the target heading and robot heading to modify the yaw value to continue driving strait
     public void holdHeading(){
         if(autoHeading){
@@ -200,6 +225,8 @@ public class DriveTrain extends Subsystem{
 
         yaw   *= yawPowerLevel;
         axial *= axialPowerLevel;
+
+        adjustAxialPowerToAvoidTipping();
 
         double left  = axial + yaw;
         double right = axial - yaw;
@@ -225,12 +252,6 @@ public class DriveTrain extends Subsystem{
             return angle;
     }
 
-    public void adjustDrivePowerToAvoidTipping(double newAxial){
-
-        if(Math.abs(newAxial - axial) >= .05){
-            
-        }
-    }
 
     
     //use the curretn heading and target heading to turn the robot to the target heading
