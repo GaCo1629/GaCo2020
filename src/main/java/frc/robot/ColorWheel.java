@@ -31,7 +31,7 @@ public class ColorWheel {
     private VictorSP colorMotor;
     //private Solenoid colorArm;
     private DoubleSolenoid colorArm;
-    private final int COLOR_MOTOR_ID  = 22;
+    private final int COLOR_MOTOR_ID  = 0;
     
     /*private final I2C.Port i2cPort = I2C.Port.kOnboard;
     private final ColorSensorV3 m_colorSensor = new ColorSensorV3(i2cPort);
@@ -215,7 +215,7 @@ public class ColorWheel {
         //Driver 2 - (Button) Spin wheel to green
         //Driver 2 - (Button) Spin wheel to yellow
         if (driverStation.leftBumper()){
-            colorMotor.set(maxPower);
+            colorMotor.set(0.5);
         } else {
             colorMotor.set(0);
         }
