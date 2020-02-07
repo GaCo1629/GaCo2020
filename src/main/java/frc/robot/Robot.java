@@ -13,7 +13,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends TimedRobot {
 
-  private DriverStation  driverStation  = new DriverStation();
+  private DriverStation  pilot          = new DriverStation();
+  private DriverStation  copilot        = new DriverStation();
   private DriveTrain     driveTrain     = new DriveTrain();
   private FuelSystem     fuelSystem     = new FuelSystem();
   private ColorWheel     colorWheel     = new ColorWheel();
@@ -24,10 +25,11 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     //initalize all classes
-    driverStation.init();
-    driveTrain.init(driverStation);
-    fuelSystem.init(driverStation);
-    //colorWheel.init(driverStation);
+    pilot.init(0);
+    copilot.init(1);
+    driveTrain.init(pilot);
+    fuelSystem.init(pilot);
+    colorWheel.init(copilot);
     //climber.init(driverStation);
     
   }

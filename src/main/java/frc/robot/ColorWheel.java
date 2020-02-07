@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.VictorSP;
 import com.revrobotics.ColorSensorV3;
 import com.revrobotics.ColorMatchResult;
 import com.revrobotics.ColorMatch;
@@ -27,11 +28,10 @@ public class ColorWheel {
 
     DriverStation driverStation;
 
-    private CANSparkMax colorMotor;
-    private CANEncoder colorMotorEncoder;
+    private VictorSP colorMotor;
     //private Solenoid colorArm;
     private DoubleSolenoid colorArm;
-    private final int colorMotorCANid  = 22;
+    private final int COLOR_MOTOR_ID  = 22;
     
     private final I2C.Port i2cPort = I2C.Port.kOnboard;
     private final ColorSensorV3 m_colorSensor = new ColorSensorV3(i2cPort);
@@ -43,6 +43,7 @@ public class ColorWheel {
 
     private final double colorMotorDiameter = 4;
     private final double colorWheelDiameter = 32;
+    private final double fullRPM = 21020;
     private double colorMotorCircumference;
     private double colorWheelCircumference;
     private double maxRPM;
@@ -66,13 +67,9 @@ public class ColorWheel {
     public void init(DriverStation driverStation) {
         this.driverStation = driverStation;
 
-        colorMotor  = new CANSparkMax(colorMotorCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-        colorMotor.restoreFactoryDefaults();
+        colorMotor  = new VictorSP(COLOR_MOTOR_ID);
 
-        colorMotorEncoder = colorMotor.getEncoder();
-        /*colorArm = new Solenoid();
-        *This line depends on which line the piston is plugged into ^
-        */
+
         colorArm = new DoubleSolenoid(1,2,3);
         colorArm.set(DoubleSolenoid.Value.kReverse);
         //This line has placeholder values ^
@@ -80,7 +77,7 @@ public class ColorWheel {
         colorMotorCircumference = colorMotorDiameter * Math.PI;
         colorWheelCircumference = colorWheelDiameter * Math.PI;
         maxRPM      = (60 * colorWheelCircumference)/colorMotorCircumference;
-        maxPower    = (maxRPM)/5676;
+        maxPower    = (maxRPM)/fullRPM;
 
         //Find the maximum speed at which the wheel is allowed to spin.
 
@@ -199,6 +196,12 @@ public class ColorWheel {
         colorMotor.set(0);
         colorArm.set(DoubleSolenoid.Value.kReverse);
     }
+    public void motorTestOn(){
+
+    }
+    public void motorTestOff(){
+
+    }
 
 
     public void teleopPeriodic() {
@@ -208,5 +211,10 @@ public class ColorWheel {
         //Driver 2 - (Button) Spin wheel to blue
         //Driver 2 - (Button) Spin wheel to green
         //Driver 2 - (Button) Spin wheel to yellow
+        if (driverStation.leftBumper()){
+            colorMotor.set(maxPower);
+        } else {
+            colorMotor.set(0);
+        }
     }
 }

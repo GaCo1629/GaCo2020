@@ -3,6 +3,31 @@ http://devsite.ctr-electronics.com/maven/release/com/ctre/phoenix/Phoenix-latest
 https://www.kauailabs.com/dist/frc/2020/navx_frc.json
 http://revrobotics.com/content/sw/color-sensor-v3/sdk/REVColorSensorV3.json
 
+CONTROLS
+FuelSystem :
+    left D-pad
+    right D-pad
+    right trigger
+    A
+    B
+    X
+    Y
+
+DriveTrain
+    left joysick
+    right joystick
+    right bumper
+
+ColorWheel
+    
+
+
+
+
+
+
+
+
 
 CAN Bus Ids
 NEO Motors
@@ -22,9 +47,6 @@ NEO Motors
     rightLift             = 18
 
     rightSpare            = 19
-
-    colorMotor            = 22
-
 ######################################################################################################
 
 PWM

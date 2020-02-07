@@ -19,7 +19,7 @@ public class DriverStation {
     //CONTROLLERS ARE PROGRAMMED IN XBOX MODE
     //set the switch on the back of the logitech 310 controller to X
     
-    public Joystick stick;
+    private Joystick stick;
     
     final int PAD_Y = 4 ;
     final int PAD_X = 3 ;
@@ -45,8 +45,8 @@ public class DriverStation {
     }
 
     //initialzie all controllers and buttons
-    public void init() {
-        stick = new Joystick(0);
+    public void init(int portNum) {
+        stick = new Joystick(portNum);
     }
     
     public boolean y(){
