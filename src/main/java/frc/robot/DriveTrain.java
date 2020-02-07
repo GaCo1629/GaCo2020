@@ -6,10 +6,12 @@ package frc.robot;
 
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
+
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class DriveTrain extends Subsystem{
 
@@ -38,6 +40,8 @@ public class DriveTrain extends Subsystem{
 
     //gyro
     private AHRS gyro; 
+
+
 
     private final int leftDriveMasterCANid  = 13;
     private final int leftDriveFrontCANid   = 12;
@@ -120,16 +124,41 @@ public class DriveTrain extends Subsystem{
 
         try {
             gyro = new AHRS(SPI.Port.kMXP);
-          } catch (RuntimeException ex ) {
-            //insert report on driver station saying an error has occured
+            SmartDashboard.putString("Gyro Calibration", "Sucessful");
+        } catch (RuntimeException ex ) {
+            SmartDashboard.putString("Gyro Calibration", "Failed");
         }
 
+        //start timer thats used to adjust axial inputs
         timer = new Timer();
         timer.start();
     }
 
-    //check to see if the robot is turning
-    public void isTurning(){
+    public double getRobotHeading(){
+        return robotHeading;
+    }
+
+    //sets heading to input value
+    public void setHeading(double newHeading){
+        gyro.zeroYaw();
+        robotHeading         = newHeading;
+        targetHeading        = newHeading;
+        robotHeadingModifier = newHeading;
+    }    
+
+    //called every cycle in robot periodic
+    public double updateRobotHeading(){
+        robotHeading = angleWrap180((gyro.getAngle() * GYRO_SCALE) + robotHeadingModifier);
+        return robotHeading;
+    }
+
+    //called every cycle in robot periodic
+    public void displayRobotHeading(){
+        SmartDashboard.putNumber("Heading", robotHeading);
+    }    
+
+    //use the target heading and robot heading to modify the yaw value to continue driving strait
+    public void runHoldHeading(){
         if (Math.abs(axial) > 0.05) {
             turning = true;
             targetHeading = robotHeading;
@@ -144,8 +173,20 @@ public class DriveTrain extends Subsystem{
                 }
             }
         }
+
+        if(autoHeading){
+            requiredHeadingCorrection = angleWrap180(robotHeading - targetHeading);
+            yaw = requiredHeadingCorrection * HEADING_GAIN;
+        }
     }
 
+    
+    //use the controller values to set axial and yaw values
+    public void setVectorsToController(){
+        axial = driverStation.getLeftStickY();
+        yaw   = driverStation.getRightStickX();
+    }
+        
     public void adjustPowerLevel(){
         //free up left bumper for jaylen
         /*if (driverStation.leftBumper()){
@@ -162,39 +203,12 @@ public class DriveTrain extends Subsystem{
         }
     }
 
-    //use the controller values to set axial and yaw values
-    public void setVectorsToController(){
-        axial = driverStation.getLeftStickY();
-        yaw   = driverStation.getRightStickX();
-    }
+    public void calculateAndSetMotorPowers(){
+        //reduce axial and yaw according to power level
+        yaw   *= yawPowerLevel;
+        axial *= axialPowerLevel;
 
-    //return the currnet heading of the robot
-    public void getAbsoluteHeading(){
-        absoluteHeading = gyro.getAngle() * GYRO_SCALE;
-    }
-
-    //update robot heading
-    public void getRobotHeading(){
-        getAbsoluteHeading();
-        robotHeading = angleWrap180(absoluteHeading + robotHeadingModifier);
-    }
-
-    //resets gyro and sets headings to zero
-    public void resetHeading() {
-        gyro.zeroYaw();
-        robotHeading         = 0;
-        targetHeading        = 0;
-        robotHeadingModifier = 0;
-    }
-
-    //sets heading to input value
-    public void setHeading(double newHeading){
-        resetHeading();
-        robotHeadingModifier = newHeading;
-    }
-
-    public void adjustAxialPowerToAvoidTipping(){
-
+        //adjust axial to avoid tipping
         double deltaTime  = timer.get() - lastTime;
         double deltaPower = axial - lastAxial;
 
@@ -206,31 +220,12 @@ public class DriveTrain extends Subsystem{
     
         lastTime = timer.get();
         lastAxial = axial;
-    }
 
-    //use the target heading and robot heading to modify the yaw value to continue driving strait
-    public void holdHeading(){
-        if(autoHeading){
-            requiredHeadingCorrection = angleWrap180(robotHeading - targetHeading);
-            yaw = requiredHeadingCorrection * HEADING_GAIN;
-        }
-    }
-
-    public void moveRobot(){
-        adjustPowerLevel();
-        setVectorsToController();
-        //getRobotHeading();
-        //isTurning();
-        //holdHeading();
-
-        yaw   *= yawPowerLevel;
-        axial *= axialPowerLevel;
-
-        adjustAxialPowerToAvoidTipping();
-
+        //calculate left and right motor powers
         double left  = axial + yaw;
         double right = axial - yaw;
 
+        //scale them down so that the maxium of left/right is equal to one
         double max = Math.max(Math.abs(left), Math.abs(right));
 
         if(max > 1){
@@ -238,31 +233,46 @@ public class DriveTrain extends Subsystem{
             right /= max;
         }
 
+        //set motors to calculated values
         leftDriveMaster.set(left);
         rightDriveMaster.set(right);
     }
 
-    public double angleWrap180(double angle){
-            while(angle <= -180){
-                angle += 360;
-            }
-            while(angle >= 180){
-                angle -=360;
-            }
-            return angle;
-    }
-
-
-    
-    //use the curretn heading and target heading to turn the robot to the target heading
-    public void turnToHeading(double tragetHeading){
-
+    public void moveRobot(){
+        adjustPowerLevel();
+        setVectorsToController();
+        //runHoldHeading();
+        calculateAndSetMotorPowers();
     }
 
     //move the left and right motor position to target positions
     public void moveToPosition(double leftTarget, double rightTarget){
 
     }
+
+    @Override
+    public void teleopPeriodic(){
+
+        moveRobot();
+        displayRobotHeading();
+
+    //Driver 1 - left stick y drive forward/backward
+    //Driver 1 - right stick x turn left/right
+    //Driver 1 - (Button) Power mode
+    //Driver 1 - (Button) Slow mode
+    }
+
+
+
+    public double angleWrap180(double angle){
+        while(angle <= -180){
+            angle += 360;
+        }
+        while(angle >= 180){
+            angle -=360;
+        }
+        return angle;
+}
 
     /**
      * left master  - dpad up
@@ -274,66 +284,51 @@ public class DriveTrain extends Subsystem{
      * right back   - x
      */
     public void driveMotorTest(){
-
-    /*
-        if(driverStation.dpadUp()){
-            leftDriveMaster.set(.1);
-        }else{
-            leftDriveMaster.set(0);
+        /*
+            if(driverStation.dpadUp()){
+                leftDriveMaster.set(.1);
+            }else{
+                leftDriveMaster.set(0);
+            }
+    
+            if(driverStation.dpadLeft()){
+                leftDriveBack.set(.1);
+            }else{
+                leftDriveBack.set(0);
+            }
+    
+            if(driverStation.dpadRight()){
+                leftDriveFront.set(.1);
+            }else{
+                leftDriveFront.set(0);
+            }
+    
+            if(driverStation.x()){
+                rightDriveBack.set(.1);
+            }else{
+                rightDriveBack.set(0);
+            }
+    
+            if(driverStation.a()){
+                rightDriveFront.set(.1);
+            }else{
+                rightDriveFront.set(0);
+            }
+    
+            if(driverStation.y()){
+                rightDriveMaster.set(.1);
+            }else{
+                rightDriveMaster.set(0);
+            }
+        */
+    
+        /*
+            double left    = driverStation.getLeftStickY();
+            double right   = driverStation.getRightStickY();
+    
+            rightDriveMaster.set(right);
+    
+            leftDriveMaster.set(left);
+        */
         }
-
-        if(driverStation.dpadLeft()){
-            leftDriveBack.set(.1);
-        }else{
-            leftDriveBack.set(0);
-        }
-
-        if(driverStation.dpadRight()){
-            leftDriveFront.set(.1);
-        }else{
-            leftDriveFront.set(0);
-        }
-
-        if(driverStation.x()){
-            rightDriveBack.set(.1);
-        }else{
-            rightDriveBack.set(0);
-        }
-
-        if(driverStation.a()){
-            rightDriveFront.set(.1);
-        }else{
-            rightDriveFront.set(0);
-        }
-
-        if(driverStation.y()){
-            rightDriveMaster.set(.1);
-        }else{
-            rightDriveMaster.set(0);
-        }
-    */
-
-    /*
-        double left    = driverStation.getLeftStickY();
-        double right   = driverStation.getRightStickY();
-
-        rightDriveMaster.set(right);
-
-        leftDriveMaster.set(left);
-    */
-
-    }
-
-    @Override
-    public void teleopPeriodic(){
-
-        moveRobot();
-
-    //Driver 1 - left stick y drive forward/backward
-    //Driver 1 - right stick x turn left/right
-    //Driver 1 - (Button) Power mode
-    //Driver 1 - (Button) Slow mode
-    }
-
-
 }

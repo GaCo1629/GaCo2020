@@ -4,49 +4,76 @@
 
 package frc.robot;
 
-import com.revrobotics.CANEncoder;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Timer;
 
 // Public class to contain all the hardware elements (BotBits)
-public class Climber {
+public class PIDController {
 
-    DriverStation driverStation;
+private double kp;
+private double ki;
+private double kd;
+private double kf;
+
+private double proportional;
+private double integral;
+private double derivative;
+
+private double lastRPM           = 0;
+private double lastRPMCorrection = 0;
+
+private Timer elaspedTime;
+private boolean firstTime = true;
+
+    /**for shooter
+     *  proportional    = .3
+     *  integral        = .01
+     *  derivative      = 0
+     * forwardFeedInRPM = 6000
+     **/
 
     // constructor
-    public Climber(){
+    public PIDController(double proportional, double integral, double derivative, double forwardFeedInRPM){
+        kp  = proportional;
+        ki  = integral;
+        kd  = derivative;
+        //kf is rpm at max power        
+        kf  = forwardFeedInRPM;
+        elaspedTime.start();
     }
 
+    //inputs are in RPM
+    //return is in power
+    public double runPID(double currentRPM, double targetRMP){
 
-    public void init(DriverStation driverStation) {
-        this.driverStation = driverStation;
-        //initialize both climbing motors
-        //initalize center of gravity adjustor motor
+        if(firstTime){
+            elaspedTime.reset();
+            firstTime = false;
+            return targetRMP/kf;
+        }
+
+        double returnVal      = targetRMP/kf;
+        double RPMCorrection  = targetRMP - currentRPM;
+
+        proportional = RPMCorrection;
+        integral     += RPMCorrection;
+        derivative   = lastRPM - currentRPM;
+
+        returnVal += (proportional * kp + integral * ki + derivative * kd)/kf;
+
+        lastRPM           = currentRPM;
+        lastRPMCorrection = RPMCorrection;
+        elaspedTime.reset();
+
+        return clip1(returnVal);
     }
 
-    //extnnd up to get ready to climb
-    public void extendUp(){
-
-    }
-
-    //reset the climber to its origional position
-    public void reset(){
-
-    }
-
-    //pull down on climber with full power
-    public void climb(){
-
-    }
-
-    public void teleopPeriodic() {
-        //Driver 2 - (Button) Extend Up Climber
-        //Driver 2 - (Button) Climb up
-        //Driver 2 (Stick/buttons) reposition robot position
+    private double clip1(double input){
+        if(input > 1){
+            return 1;
+        }else if(input < -1){
+            return -1;
+        }else{
+            return input;
+        }    
     }
 }

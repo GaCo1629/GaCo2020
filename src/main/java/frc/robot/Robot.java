@@ -41,6 +41,11 @@ public class Robot extends TimedRobot {
     fuelSystem.teleopPeriodic();
     colorWheel.teleopPeriodic();
     //climber.teleopPeriodic();
-    
-  }      
+  }  
+  
+  @Override
+  public void robotPeriodic(){
+    driveTrain.updateRobotHeading();
+    driveTrain.displayRobotHeading();
+  }
 }
