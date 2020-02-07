@@ -33,14 +33,14 @@ public class ColorWheel {
     private DoubleSolenoid colorArm;
     private final int COLOR_MOTOR_ID  = 22;
     
-    private final I2C.Port i2cPort = I2C.Port.kOnboard;
+    /*private final I2C.Port i2cPort = I2C.Port.kOnboard;
     private final ColorSensorV3 m_colorSensor = new ColorSensorV3(i2cPort);
     private final ColorMatch m_colorMatcher = new ColorMatch();
     private final Color kBlueTarget = ColorMatch.makeColor(0.143, 0.427, 0.429);
     private final Color kGreenTarget = ColorMatch.makeColor(0.197, 0.561, 0.240);
     private final Color kRedTarget = ColorMatch.makeColor(0.561, 0.232, 0.114);
     private final Color kYellowTarget = ColorMatch.makeColor(0.361, 0.524, 0.113);
-
+*/
     private final double colorMotorDiameter = 4;
     private final double colorWheelDiameter = 32;
     private final double fullRPM = 21020;
@@ -48,11 +48,13 @@ public class ColorWheel {
     private double colorWheelCircumference;
     private double maxRPM;
     private double maxPower;
+/*
     private Color detectedColor;
     private Color color;
     private ColorMatchResult match;
     private ColorMatchResult firstMatch;
     private ColorMatchResult prevMatch;
+*/
     public String origColor;
     public String curColor;
     public int wheelCount;
@@ -80,7 +82,7 @@ public class ColorWheel {
         maxPower    = (maxRPM)/fullRPM;
 
         //Find the maximum speed at which the wheel is allowed to spin.
-
+/*
         m_colorMatcher.addColorMatch(kBlueTarget);
         m_colorMatcher.addColorMatch(kGreenTarget);
         m_colorMatcher.addColorMatch(kRedTarget);
@@ -88,8 +90,9 @@ public class ColorWheel {
         //initialize motor to spin wheel
         //initialize psunamatics to push out wheel spinner
         //initialize camera/color sensor
+*/
     }
-
+/*
     //run the motor and use the sensor/camera so that the table turns 3.5 rotations
     public void turnRotations(){
         wheelCount = 0;
@@ -203,7 +206,7 @@ public class ColorWheel {
 
     }
 
-
+*/
     public void teleopPeriodic() {
         //Driver 2 - (Button) extend out mechanism
         //Driver 2 - (Button) Spin wheel 3.5 rotations
