@@ -45,7 +45,7 @@ public class FuelSystem extends Subsystem {
 
    private final double TRANSFER_SPEED = 1;
   private final double COLLECTOR_SPEED = 0.2;
-   private final double TURRETT_SPEED = 0.4;
+   private final double TURRETT_SPEED = 0.1;
   private final double TURRETT_CLICKS_PER_DEGREE = 1.27866;
 
     
@@ -62,7 +62,7 @@ public class FuelSystem extends Subsystem {
     private double targetSpeedRPM = 0;
 
 
-    PIDController shooterPID = new PIDController(.0005,.0000007,0,6000); 
+    PIDController shooterPID = new PIDController(.0005,.000010,0,6000); 
 
     //constructor
     public  FuelSystem () {
@@ -266,10 +266,10 @@ public class FuelSystem extends Subsystem {
       
         
           if (driverStation.b()) {
-            targetSpeedRPM +=  50;
+            targetSpeedRPM +=  10;
           }
           if (driverStation.x()) {
-            targetSpeedRPM -=  50;
+            targetSpeedRPM -=  10;
           }
       
           if (targetSpeedRPM > 6200 ){
