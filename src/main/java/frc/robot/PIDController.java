@@ -14,6 +14,7 @@ private double kp;
 private double ki;
 private double kd;
 private double kf;
+private double integralActiveZone;
 
 private double proportional    = 0;
 private double integral        = 0;
@@ -30,19 +31,21 @@ private boolean firstTime = true;
 private Timer elaspedTime;
 
     /**for shooter
-     *  proportional    = .3
-     *  integral        = .01
-     *  derivative      = 0
-     * forwardFeedInRPM = 6000
+     * (.0005,.000001,.00005,5700,500)
+     **/
+
+    /**for turret
+     * (180 degrees off then full power,?,0,0,5 degrees)
      **/
 
     // constructor
-    public PIDController(double proportional, double integral, double derivative, double forwardFeedInRPM){
+    public PIDController(double proportional, double integral, double derivative, double forwardFeedInRPM, double integralActiveZone){
         kp  = proportional;
         ki  = integral;
         kd  = derivative;
         //kf is rpm at max power        
         kf  = forwardFeedInRPM;
+        this.integralActiveZone = integralActiveZone;
         
         elaspedTime = new Timer();
         elaspedTime.start();
@@ -66,8 +69,17 @@ private Timer elaspedTime;
         derivative   = (lastRPM - currentRPM) * kd;
         feedForward  = (targetRMP/kf);
 
+        //if it is moving twords the target rpm set derviative to 0
+        if(Math.abs(lastRPMCorrection) > Math.abs(RPMError)){
+            derivative = 0;
+        }
+
+        if(Math.abs(RPMError) < integralActiveZone){
         runningIntegral += integral;
         runningIntegral = clip1(runningIntegral);
+        } else {
+            runningIntegral = 0;
+        }
 
         returnVal = proportional + derivative + feedForward + runningIntegral;
 

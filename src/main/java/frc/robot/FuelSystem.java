@@ -62,7 +62,8 @@ public class FuelSystem extends Subsystem {
     private double targetSpeedRPM = 0;
 
 
-    PIDController shooterPID = new PIDController(.0005,.000010,0,6000); 
+    PIDController shooterPID = new PIDController(.0005,.000001,.00005,5700,500);
+    //PIDController turretPID = new PIDController(proportional, integral, derivative, forwardFeedInRPM, integralActiveZone) 
 
     //constructor
     public  FuelSystem () {
@@ -118,11 +119,11 @@ public class FuelSystem extends Subsystem {
 
       if (driverStation.dpadLeft()) {
         turret.set(TURRETT_SPEED);
-    }else if (driverStation.dpadRight()){
-      turret.set(-TURRETT_SPEED);
-    }else{
-      turret.set(0);
-    }
+      }else if (driverStation.dpadRight()){
+        turret.set(-TURRETT_SPEED);
+      }else{
+        turret.set(0);
+      }
     }
   
 
@@ -178,11 +179,6 @@ public class FuelSystem extends Subsystem {
             m_setpoint = 1.0;
           if (m_setpoint < 0) m_setpoint = 0;
       
-    }
-
-    //use a pid loop to tune the target speed
-    public void tuneShooterSpeedPID(){
-
     }
 
     //use the limelight to find the reflective tape
@@ -313,7 +309,7 @@ public class FuelSystem extends Subsystem {
         //Driver 2 - (button) collector on/off
         //Driver 2 (button) run storage system
         shooterOnPID();  
-        changeShooterSetpoint();
+        //changeShooterSetpoint();
         runTransfer(driverStation.rightTrigger());
         runCollector(driverStation.rightTrigger());
         turnTurret();

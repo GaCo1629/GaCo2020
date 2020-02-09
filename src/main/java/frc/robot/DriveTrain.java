@@ -41,8 +41,6 @@ public class DriveTrain extends Subsystem{
     //gyro
     private AHRS gyro; 
 
-
-
     private final int leftDriveMasterCANid  = 13;
     private final int leftDriveFrontCANid   = 12;
     private final int leftDriveBackCANid    = 14;
@@ -58,10 +56,11 @@ public class DriveTrain extends Subsystem{
     private final double YAW_REGULAR_POWER_LEVEL = .2;
     private final double YAW_FAST_POWER_LEVEL    = .4;
 
-    private final double GYRO_SCALE                     =  1.00;
-    private final double HEADING_GAIN                   = .01; //tweak this value to increase or decreasu auto correct power
-    private final double MAX_AUTOCORRECT_YAW            = .5;
+    private final double GYRO_SCALE                           =  1.00;
+    private final double HEADING_GAIN                         = .05; //tweak this value to increase or decreasu auto correct power
+    private final double MAX_AUTOCORRECT_YAW                  = .5;
     private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = .75;
+    private final double DEGREES_TOLERANCE                    = 1.5;
 
     private double axialPowerLevel = AXIAL_REGULAR_POWER_LEVEL;
     private double yawPowerLevel   = YAW_REGULAR_POWER_LEVEL;
@@ -124,10 +123,20 @@ public class DriveTrain extends Subsystem{
 
         try {
             gyro = new AHRS(SPI.Port.kMXP);
+            gyro.zeroYaw();
             SmartDashboard.putString("Gyro Calibration", "Sucessful");
         } catch (RuntimeException ex ) {
             SmartDashboard.putString("Gyro Calibration", "Failed");
         }
+
+        turning                   = false;
+        absoluteHeading           = 0;
+        robotHeading              = 0;
+        targetHeading             = 0;
+        autoHeading               = false;
+        requiredHeadingCorrection = 0;
+        robotHeadingModifier      = 0;
+        
 
         //start timer thats used to adjust axial inputs
         timer = new Timer();
@@ -152,14 +161,9 @@ public class DriveTrain extends Subsystem{
         return robotHeading;
     }
 
-    //called every cycle in robot periodic
-    public void displayRobotHeading(){
-        SmartDashboard.putNumber("Heading", robotHeading);
-    }    
-
     //use the target heading and robot heading to modify the yaw value to continue driving strait
     public void runHoldHeading(){
-        if (Math.abs(axial) > 0.05) {
+        if (Math.abs(yaw) > 0.05) {
             turning = true;
             targetHeading = robotHeading;
             autoHeading = false;
@@ -175,8 +179,12 @@ public class DriveTrain extends Subsystem{
         }
 
         if(autoHeading){
-            requiredHeadingCorrection = angleWrap180(robotHeading - targetHeading);
-            yaw = requiredHeadingCorrection * HEADING_GAIN;
+            requiredHeadingCorrection = angleWrap180(targetHeading - robotHeading);
+            if(Math.abs(requiredHeadingCorrection) > DEGREES_TOLERANCE){
+                yaw = requiredHeadingCorrection * HEADING_GAIN;
+            }else {
+                yaw = 0;
+            }
         }
     }
 
@@ -241,7 +249,7 @@ public class DriveTrain extends Subsystem{
     public void moveRobot(){
         adjustPowerLevel();
         setVectorsToController();
-        //runHoldHeading();
+        runHoldHeading();
         calculateAndSetMotorPowers();
     }
 
@@ -254,7 +262,7 @@ public class DriveTrain extends Subsystem{
     public void teleopPeriodic(){
 
         moveRobot();
-        displayRobotHeading();
+        show();
 
     //Driver 1 - left stick y drive forward/backward
     //Driver 1 - right stick x turn left/right
@@ -262,7 +270,15 @@ public class DriveTrain extends Subsystem{
     //Driver 1 - (Button) Slow mode
     }
 
+    public void show() {
+        SmartDashboard.putNumber("Axial", axial);
+        SmartDashboard.putNumber("Yaw", yaw);
+        SmartDashboard.putNumber("Heading", robotHeading);
+        SmartDashboard.putBoolean("Truning", turning);
+        SmartDashboard.putBoolean("Auto Heading", autoHeading);
+        SmartDashboard.putNumber("Target Heading", targetHeading);
 
+   }
 
     public double angleWrap180(double angle){
         while(angle <= -180){
