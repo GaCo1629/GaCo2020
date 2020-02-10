@@ -22,9 +22,11 @@ private double derivative      = 0;
 private double feedForward     = 0;
 private double runningIntegral = 0;
 
-private double lastRPM           = 0;
-private double lastRPMCorrection = 0;
-private double returnVal         = 0;
+private double lastVal         = 0;
+private double lastError       = 0;
+private double returnVal       = 0;
+
+private String name = "";
 
 
 private boolean firstTime = true;
@@ -39,42 +41,41 @@ private Timer elaspedTime;
      **/
 
     // constructor
-    public PIDController(double proportional, double integral, double derivative, double forwardFeedInRPM, double integralActiveZone){
+    public PIDController(double proportional, double integral, double derivative, double forwardFeedInRPM, double integralActiveZone, String name){
         kp  = proportional;
         ki  = integral;
         kd  = derivative;
-        //kf is rpm at max power        
+        //kf for shooter is rpm at max power        
         kf  = forwardFeedInRPM;
         this.integralActiveZone = integralActiveZone;
-        
-        elaspedTime = new Timer();
-        elaspedTime.start();
+        this.name = name;
+    
     }
 
     //inputs are in RPM
     //return is in power
-    public double run(double currentRPM, double targetRMP){
+    public double run(double current, double target){
 
         if(firstTime){
             elaspedTime.reset();
             firstTime = false;
-            return targetRMP/kf;
+            return target/kf;
         }
 
         double returnVal = 0;
-        double RPMError  = targetRMP - currentRPM;
+        double error     = target - current;
 
-        proportional = RPMError               * kp;
-        integral     = RPMError               * ki;
-        derivative   = (lastRPM - currentRPM) * kd;
-        feedForward  = (targetRMP/kf);
+        proportional = error               * kp;
+        integral     = error               * ki;
+        derivative   = (lastVal - current) * kd;
+        feedForward  = (target/kf);
 
         //if it is moving twords the target rpm set derviative to 0
-        if(Math.abs(lastRPMCorrection) > Math.abs(RPMError)){
+        if(Math.abs(lastError) > Math.abs(error)){
             derivative = 0;
         }
 
-        if(Math.abs(RPMError) < integralActiveZone){
+        if(Math.abs(error) < integralActiveZone){
         runningIntegral += integral;
         runningIntegral = clip1(runningIntegral);
         } else {
@@ -83,11 +84,10 @@ private Timer elaspedTime;
 
         returnVal = proportional + derivative + feedForward + runningIntegral;
 
-        lastRPM           = currentRPM;
-        lastRPMCorrection = RPMError;
-        elaspedTime.reset();
-        displayValues();
+        lastVal      = current;
+        lastError    = error;
 
+        displayValues();
         return clip1(returnVal);
     }
 
@@ -102,12 +102,12 @@ private Timer elaspedTime;
     }
 
     private void displayValues(){
-        SmartDashboard.putNumber("Proportional", proportional);
-        SmartDashboard.putNumber("Integral", integral);
-        SmartDashboard.putNumber("Derivative", derivative);
-        SmartDashboard.putNumber("Feed Forward", feedForward);
-        SmartDashboard.putNumber("Running Integral", runningIntegral);
-        SmartDashboard.putNumber("return", returnVal);
+        SmartDashboard.putNumber(name + " Proportional", proportional);
+        SmartDashboard.putNumber(name + " Integral", integral);
+        SmartDashboard.putNumber(name + " Derivative", derivative);
+        SmartDashboard.putNumber(name + " Feed Forward", feedForward);
+        SmartDashboard.putNumber(name + " Running Integral", runningIntegral);
+        SmartDashboard.putNumber(name + " return", returnVal);
     }
     
 }

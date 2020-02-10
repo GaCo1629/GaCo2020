@@ -8,6 +8,7 @@ import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 
 import com.revrobotics.CANSparkMaxLowLevel;
+
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
@@ -35,12 +36,17 @@ public class DriveTrain extends Subsystem{
     private CANSparkMax rightDriveFront;
     private CANSparkMax rightDriveBack;
 
+    //declare encoders for drive train
     private CANEncoder leftDriveEncoder;
     private CANEncoder rightDriveEncoder;
+
+    private double leftEncoder;
+    private double rightEncoder;
 
     //gyro
     private AHRS gyro; 
 
+    //declare motor can IDs
     private final int leftDriveMasterCANid  = 13;
     private final int leftDriveFrontCANid   = 12;
     private final int leftDriveBackCANid    = 14;
@@ -48,40 +54,40 @@ public class DriveTrain extends Subsystem{
     private final int rightDriveFrontCANid  = 17; 
     private final int rightDriveBackCANid   = 15;
     
-    private final double AXIAL_SLOW_POWER_LEVEL    = .2;
-    private final double AXIAL_REGULAR_POWER_LEVEL = .2;
+    //set final power levels for modifing power levels  
+    private final double AXIAL_SLOW_POWER_LEVEL    = 0.2;
+    private final double AXIAL_REGULAR_POWER_LEVEL = 0.2;
     private final double AXIAL_FAST_POWER_LEVEL    = 1.0;
 
-    private final double YAW_SLOW_POWER_LEVEL    = .1;
-    private final double YAW_REGULAR_POWER_LEVEL = .2;
-    private final double YAW_FAST_POWER_LEVEL    = .4;
+    private final double YAW_SLOW_POWER_LEVEL    = 0.1;
+    private final double YAW_REGULAR_POWER_LEVEL = 0.2;
+    private final double YAW_FAST_POWER_LEVEL    = 0.4;
 
-    private final double GYRO_SCALE                           =  1.00;
-    private final double HEADING_GAIN                         = .05; //tweak this value to increase or decreasu auto correct power
-    private final double MAX_AUTOCORRECT_YAW                  = .5;
-    private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = .75;
+    //set gyro final variables
+    private final double GYRO_SCALE                           = 1.00;
+    private final double HEADING_GAIN                         = 0.05; //tweak this value to increase or decreasu auto correct power
+    private final double MAX_AUTOCORRECT_YAW                  = 0.5;
+    private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.75;
     private final double DEGREES_TOLERANCE                    = 1.5;
 
+    //set default axial and yaw power level to the regular power level
     private double axialPowerLevel = AXIAL_REGULAR_POWER_LEVEL;
     private double yawPowerLevel   = YAW_REGULAR_POWER_LEVEL;
 
-    private double axial  = 0;
-    private double yaw    = 0;
-
+    //declare drive power variables
+    private double axial     = 0;
+    private double yaw       = 0;
     private double lastAxial = 0;
 
-    private double lastTime    = 0;
-    private double currentTime = 0;
-
-    private double absoluteHeading           = 0;
+    //declare variables for gyro and heading correction
+    private Timer timer;
+    private double lastTime                  = 0;
     private double robotHeading              = 0;
     private double targetHeading             = 0;
     private boolean autoHeading              = false;
     private double requiredHeadingCorrection = 0;
     private double robotHeadingModifier      = 0;
-    private boolean turning = false;              //this always needs to start as false
-
-    private Timer timer;
+    private boolean turning                  = false; 
 
     //constructor
     public  DriveTrain () {
@@ -110,6 +116,7 @@ public class DriveTrain extends Subsystem{
         rightDriveFront.setInverted(true);
         rightDriveBack.setInverted(true);
 
+        //set front and back motors on each side to follow the center master motor
         leftDriveFront.follow(leftDriveMaster);
         leftDriveBack.follow(leftDriveMaster);
 
@@ -121,6 +128,7 @@ public class DriveTrain extends Subsystem{
         leftDriveEncoder  = leftDriveMaster.getEncoder();
         rightDriveEncoder = rightDriveMaster.getEncoder();
 
+        //try to initalize the gyro 
         try {
             gyro = new AHRS(SPI.Port.kMXP);
             gyro.zeroYaw();
@@ -129,22 +137,17 @@ public class DriveTrain extends Subsystem{
             SmartDashboard.putString("Gyro Calibration", "Failed");
         }
 
+        //reset all gyro and auto heading variables
         turning                   = false;
-        absoluteHeading           = 0;
         robotHeading              = 0;
         targetHeading             = 0;
         autoHeading               = false;
         requiredHeadingCorrection = 0;
         robotHeadingModifier      = 0;
         
-
         //start timer thats used to adjust axial inputs
         timer = new Timer();
         timer.start();
-    }
-
-    public double getRobotHeading(){
-        return robotHeading;
     }
 
     //sets heading to input value
@@ -188,6 +191,11 @@ public class DriveTrain extends Subsystem{
         }
     }
 
+    public double getShooterPower(double distanceFromTargetFT){
+        return (85776 + -21115 * distanceFromTargetFT + 2199 * Math.pow(distanceFromTargetFT, 2)
+         + -119.00 * Math.pow(distanceFromTargetFT, 3) + 3.580000 * Math.pow(distanceFromTargetFT, 4)
+         + -0.0563 * Math.pow(distanceFromTargetFT, 5) + 0.000363 * Math.pow(distanceFromTargetFT, 6));
+    }
     
     //use the controller values to set axial and yaw values
     public void setVectorsToController(){
@@ -209,6 +217,11 @@ public class DriveTrain extends Subsystem{
             axialPowerLevel = AXIAL_REGULAR_POWER_LEVEL;
             yawPowerLevel   = YAW_REGULAR_POWER_LEVEL;
         }
+    }
+
+    public void updateDriveEncoders(){
+        leftEncoder  = leftDriveEncoder.getPosition();
+        rightEncoder = rightDriveEncoder.getPosition();
     }
 
     public void calculateAndSetMotorPowers(){
@@ -270,14 +283,16 @@ public class DriveTrain extends Subsystem{
     //Driver 1 - (Button) Slow mode
     }
 
+    @Override
     public void show() {
         SmartDashboard.putNumber("Axial", axial);
         SmartDashboard.putNumber("Yaw", yaw);
         SmartDashboard.putNumber("Heading", robotHeading);
         SmartDashboard.putBoolean("Truning", turning);
-        SmartDashboard.putBoolean("Auto Heading", autoHeading);
+        SmartDashboard.putBoolean("Auto Heading On?", autoHeading);
         SmartDashboard.putNumber("Target Heading", targetHeading);
-
+        SmartDashboard.putNumber("Left Encoder Position", leftEncoder);
+        SmartDashboard.putNumber("Right Encoder Position", rightEncoder);
    }
 
     public double angleWrap180(double angle){
@@ -288,7 +303,7 @@ public class DriveTrain extends Subsystem{
             angle -=360;
         }
         return angle;
-}
+    }
 
     /**
      * left master  - dpad up

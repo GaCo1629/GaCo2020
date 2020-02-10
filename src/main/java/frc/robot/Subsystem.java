@@ -34,5 +34,8 @@ public class Subsystem {
         
     }
 
+    public void show(){
+        
+    }
 
 }

@@ -45,6 +45,11 @@ public class Robot extends TimedRobot {
   
   @Override
   public void robotPeriodic(){
+    fuelSystem.updateTurretHeading();
     driveTrain.updateRobotHeading();
+    driveTrain.updateDriveEncoders();
+
+    driveTrain.show();
+    fuelSystem.show();
   }
 }

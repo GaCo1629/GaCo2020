@@ -4,14 +4,7 @@
 
 package frc.robot;
 
-import com.revrobotics.CANEncoder;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // Public class to contain all the hardware elements (BotBits)
 public class DriverStation {
@@ -36,7 +29,7 @@ public class DriverStation {
     final int R_STICK_V = 5 ;
     final int R_STICK_H = 4 ;
 
-    final int L_STICK =11;
+    final int L_STICK   = 11;
     final int L_STICK_V = 1 ;
     final int L_STICK_H = 0 ;
 
