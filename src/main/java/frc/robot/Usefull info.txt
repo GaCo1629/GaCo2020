@@ -12,6 +12,7 @@ FuelSystem :
     B
     X
     Y
+    3rd controller
 
 DriveTrain
     left joysick
@@ -19,7 +20,7 @@ DriveTrain
     right bumper
 
 ColorWheel
-    
+    2nd controller  
 
 
 
