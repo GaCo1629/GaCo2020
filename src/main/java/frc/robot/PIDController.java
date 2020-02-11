@@ -14,12 +14,14 @@ private double ki;
 private double kd;
 private double kf;
 private double integralActiveZone;
+private boolean angleWrapOn = false;
 
 private double proportional    = 0;
 private double integral        = 0;
 private double derivative      = 0;
 private double feedForward     = 0;
 private double runningIntegral = 0;
+private double tolerance       = 0;
 
 private double lastVal         = 0;
 private double lastError       = 0;
@@ -39,7 +41,7 @@ private boolean firstTime = true;
      **/
 
     // constructor
-    public PIDController(double proportional, double integral, double derivative, double forwardFeedInRPM, double integralActiveZone, String name){
+    public PIDController(double proportional, double integral, double derivative, double forwardFeedInRPM, double integralActiveZone, double tolerance, boolean angleWrapOn, String name){
         kp  = proportional;
         ki  = integral;
         kd  = derivative;
@@ -47,6 +49,8 @@ private boolean firstTime = true;
         kf  = forwardFeedInRPM;
         this.integralActiveZone = integralActiveZone;
         this.name = name;
+        this.tolerance = tolerance;
+        this.angleWrapOn = angleWrapOn;
     
     }
 
@@ -61,6 +65,10 @@ private boolean firstTime = true;
 
         double returnVal = 0;
         double error     = target - current;
+
+        if(angleWrapOn){
+            error = angleWrap180(error);
+        }
 
         proportional = error               * kp;
         integral     = error               * ki;
@@ -84,6 +92,10 @@ private boolean firstTime = true;
         lastVal      = current;
         lastError    = error;
 
+        if(Math.abs(error) < tolerance){
+            returnVal = 0;
+        }
+
         displayValues();
         return clip1(returnVal);
     }
@@ -105,6 +117,16 @@ private boolean firstTime = true;
         SmartDashboard.putNumber(name + " Feed Forward", feedForward);
         SmartDashboard.putNumber(name + " Running Integral", runningIntegral);
         SmartDashboard.putNumber(name + " return", returnVal);
+    }
+
+    private double angleWrap180(double angle){
+        while(angle <= -180){
+            angle += 360;
+        }
+        while(angle >= 180){
+            angle -=360;
+        }
+        return angle;
     }
     
 }

@@ -89,6 +89,11 @@ public class DriveTrain extends Subsystem{
     private double robotHeadingModifier      = 0;
     private boolean turning                  = false; 
 
+    //declare variables for tracting robot location
+    private double x;
+    private double y;
+    private double turretHeadingFieldCentric;
+
     //constructor
     public  DriveTrain () {
     }
@@ -144,6 +149,8 @@ public class DriveTrain extends Subsystem{
         autoHeading               = false;
         requiredHeadingCorrection = 0;
         robotHeadingModifier      = 0;
+
+        PIDController headingPID = new PIDController(.05, 0, 0, 0, 5, 1, true, "Gyro");
         
         //start timer thats used to adjust axial inputs
         timer = new Timer();
@@ -220,18 +227,19 @@ public class DriveTrain extends Subsystem{
 
     //use the reflective tape location and the heading of the shooter to find the robots location on the field
     /**Uses
-     * distance to target
-     * heading of robot
-     * heading of turret
+     * distance to target (in feet)
+     * heading of robot   (in degrees)
+     * heading of turret  (in degrees)
      */
-    public void getRobotLocation(){
-        double distanceToTarget = 12;
-        double robotHeading1    = 0;
-        double turretHeading    = 0;
+    public void getRobotLocation(double distanceToTarget, double rHeading, double tHeading){
+        distanceToTarget = 12;
+        rHeading         = 0;
+        tHeading         = 0;
 
-        double turretHeadingFieldCentric = robotHeading1 + turretHeading;
+        turretHeadingFieldCentric = angleWrap180(rHeading + tHeading);
 
-
+        x = distanceToTarget * Math.cos(turretHeadingFieldCentric);
+        y = distanceToTarget * Math.sin(turretHeadingFieldCentric);
 
     }
 
