@@ -2,8 +2,6 @@
 /* Copyright (c) 2020 GaCo. All Rights Reserved.                              */
 /*----------------------------------------------------------------------------*/
 
-
-
 package frc.robot;
 
 import com.revrobotics.CANEncoder;
@@ -30,6 +28,8 @@ collector right 0,1
 public class FuelSystem extends Subsystem {
 
   DriverStation driverStation;
+  DriverStation driverStation2;
+
   private VictorSP lowerTransfer;
   private VictorSP upperTransfer;
   private VictorSP collector;
@@ -65,8 +65,9 @@ public class FuelSystem extends Subsystem {
   private double targetTurretHeading = 0;
   private boolean turretPIDEnabled   = false;
 
+
   PIDController shooterPID = new PIDController(.0005,.000001,.00005,5700,500, "Shooter");
-  PIDController turretPID  = new PIDController(.005, 0, 0, 0, 5, "Turret");
+  PIDController turretPID  = new PIDController(.01, 0, 0, 0, 5, "Turret");
 
   //constructor
   public FuelSystem () {
@@ -74,9 +75,9 @@ public class FuelSystem extends Subsystem {
   }
 
   //initalize fuel system 
-  public void init(DriverStation driverStation){
-    this.driverStation = driverStation;
-
+  public void init(DriverStation driverStation, DriverStation driverStation2){
+    this.driverStation  = driverStation;
+    this.driverStation2 = driverStation2;
     //initialize motors
     leftShooter  = new CANSparkMax(L_SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
     rightShooter = new CANSparkMax(R_SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -106,7 +107,11 @@ public class FuelSystem extends Subsystem {
     turretHeading       = 0;
     targetTurretHeading = 0;
   }
-    
+  
+  @Override
+  public void teleopInit() {
+
+  }
 
   //turn the turret to a given angle
   public void turnTurretTo(double angle){
@@ -121,29 +126,34 @@ public class FuelSystem extends Subsystem {
     turretHeading = turretEncoder.getPosition()/TURRET_ENCODER_COUNTS_PER_DEGREE;
   }
 
+  public void resetTurretHeading(){
+    turretEncoder.setPosition(0);
+  }
+
   //turn turret
   public void turnTurret(){
-    
+  
     //enable turret PID if left stick button is pressed and disable it if right stick is pressed
-    if(driverStation.leftStick()){
+    if(driverStation2.a()){
       turretPIDEnabled = true;
-    } else if (driverStation.rightStick()){
+    } else if (driverStation2.b()){
       turretPIDEnabled = false;
     }
     
     //move the target angle right if right d pad is pressed and left if left d pad is pressed
-    if (driverStation.dpadLeft()) {
+    if (driverStation2.dpadUp()) {
       if(targetTurretHeading > -100){
-        targetTurretHeading -= .5;
+        targetTurretHeading -= .1;
       }
     }
-    if (driverStation.dpadRight()){
+
+    if (driverStation2.dpadDown()){
       if(targetTurretHeading < 100){
-        targetTurretHeading += .5;
-        }
+        targetTurretHeading += .1;
       }
+    }
       
-    //run the PID loop if it has been enabled
+      //run the PID loop if it has been enabled
     if(turretPIDEnabled){
       turnTurretTo(targetTurretHeading);
     }
@@ -163,7 +173,7 @@ public class FuelSystem extends Subsystem {
     if (run) {
       collector.set(COLLECTOR_SPEED);
     }else{
-      collector.set(0);
+     collector.set(0);
     }
   }
 
@@ -294,6 +304,6 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putNumber("encoder value turret", turretEncoder.getPosition());
     SmartDashboard.putNumber("counts per rev turret", turretEncoder.getCountsPerRevolution());
     SmartDashboard.putNumber("turret heading", turretHeading);
-    SmartDashboard.putNumber("target turret heading", targetTurretHeading);
+    SmartDashboard.putNumber("turret target heading", targetTurretHeading);
   }
 }

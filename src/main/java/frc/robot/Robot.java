@@ -15,6 +15,7 @@ public class Robot extends TimedRobot {
 
   private DriverStation  pilot          = new DriverStation();
   private DriverStation  copilot        = new DriverStation();
+  private DriverStation  minion         = new DriverStation(); 
   private DriveTrain     driveTrain     = new DriveTrain();
   private FuelSystem     fuelSystem     = new FuelSystem();
   private ColorWheel     colorWheel     = new ColorWheel();
@@ -27,11 +28,17 @@ public class Robot extends TimedRobot {
     //initalize all classes
     pilot.init(0);
     copilot.init(1);
+    minion.init(2);
     driveTrain.init(pilot);
-    fuelSystem.init(pilot);
+    fuelSystem.init(pilot, minion);
     colorWheel.init(copilot);
     //climber.init(driverStation);
     
+  }
+
+  @Override
+  public void teleopInit() {
+    super.teleopInit();
   }
 
   @Override
