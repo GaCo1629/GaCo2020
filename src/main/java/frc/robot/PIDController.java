@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 // Public class to contain all the hardware elements (BotBits)
@@ -30,7 +29,6 @@ private String name = "";
 
 
 private boolean firstTime = true;
-private Timer elaspedTime;
 
     /**for shooter
      * (.0005,.000001,.00005,5700,500)
@@ -57,7 +55,6 @@ private Timer elaspedTime;
     public double run(double current, double target){
 
         if(firstTime){
-            elaspedTime.reset();
             firstTime = false;
             return target/kf;
         }

@@ -43,7 +43,7 @@ public class FuelSystem extends Subsystem {
   private DoubleSolenoid collectorState;
 
   private final double TRANSFER_SPEED  = 1;
-  private final double COLLECTOR_SPEED = 0.2;
+  private final double COLLECTOR_SPEED = 1;
 
   private final double TURRET_SPEED                     = 0.1;
   private final double TURRET_REVS_PER_DEGREE           = 1.27866;
@@ -106,6 +106,7 @@ public class FuelSystem extends Subsystem {
    //reset turret heading variables
     turretHeading       = 0;
     targetTurretHeading = 0;
+    turretPIDEnabled = false;
   }
   
   @Override
@@ -115,11 +116,14 @@ public class FuelSystem extends Subsystem {
 
   //turn the turret to a given angle
   public void turnTurretTo(double angle){
+    /*
     if(Math.abs(angle - turretHeading) > TURRET_DEGREES_TOLERANCE){
       turret.set(turretPID.run(turretHeading, targetTurretHeading));
     } else {
       turret.set(0);
     }
+    */
+
   }
 
   public void updateTurretHeading(){
