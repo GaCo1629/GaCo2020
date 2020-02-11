@@ -43,13 +43,12 @@ public class FuelSystem extends Subsystem {
   private DoubleSolenoid collectorState;
 
   private final double TRANSFER_SPEED  = 1;
-  private final double COLLECTOR_SPEED = 0.2;
+  private final double COLLECTOR_SPEED = 1;
 
-  private final double TURRET_SPEED                     = 0.1;
-  private final double TURRET_REVS_PER_DEGREE           = 1.27866;
-  private final double TURRET_ENCODER_COUNTS_PER_REV    = 4096;
-  private final double TURRET_ENCODER_COUNTS_PER_DEGREE = 3203.35351071;
-  private final double TURRET_DEGREES_TOLERANCE         = .2;
+  private final double TURRET_SPEED           = 0.1;
+  private final double TURRET_REVS_PER_DEGREE = 1.27866;
+  private final double MIN_DISTANCE_TO_TARGET = 10;
+  private final double MAX_DISTANCE_TO_TARGET = 40;
 
   private static final int L_SHOOTER_ID  = 21;
   private static final int R_SHOOTER_ID  = 20;
@@ -65,9 +64,8 @@ public class FuelSystem extends Subsystem {
   private double targetTurretHeading = 0;
   private boolean turretPIDEnabled   = false;
 
-
-  PIDController shooterPID = new PIDController(.0005,.000001,.00005,5700,500, "Shooter");
-  PIDController turretPID  = new PIDController(.01, 0, 0, 0, 5, "Turret");
+  PIDController shooterPID = new PIDController(.0005,.000001,.00005,5700,500, 0, false, "Shooter");
+  PIDController turretPID  = new PIDController(.01, 0, 0, 0, 5, .2, true, "Turret");
 
   //constructor
   public FuelSystem () {
@@ -78,6 +76,7 @@ public class FuelSystem extends Subsystem {
   public void init(DriverStation driverStation, DriverStation driverStation2){
     this.driverStation  = driverStation;
     this.driverStation2 = driverStation2;
+
     //initialize motors
     leftShooter  = new CANSparkMax(L_SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
     rightShooter = new CANSparkMax(R_SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -106,6 +105,7 @@ public class FuelSystem extends Subsystem {
    //reset turret heading variables
     turretHeading       = 0;
     targetTurretHeading = 0;
+    turretPIDEnabled    = false;
   }
   
   @Override
@@ -114,24 +114,25 @@ public class FuelSystem extends Subsystem {
   }
 
   //turn the turret to a given angle
-  public void turnTurretTo(double angle){
-    if(Math.abs(angle - turretHeading) > TURRET_DEGREES_TOLERANCE){
+  public void turnTurretTo(double targetAngle){
+    /*
       turret.set(turretPID.run(turretHeading, targetTurretHeading));
-    } else {
-      turret.set(0);
-    }
+    */
+
   }
 
   public void updateTurretHeading(){
-    turretHeading = turretEncoder.getPosition()/TURRET_ENCODER_COUNTS_PER_DEGREE;
+    turretHeading = turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE;
   }
 
   public void resetTurretHeading(){
     turretEncoder.setPosition(0);
+    turretHeading       = 0;
+    targetTurretHeading = 0;
   }
 
   //turn turret
-  public void turnTurret(){
+  public void turnTurretPID(){
   
     //enable turret PID if left stick button is pressed and disable it if right stick is pressed
     if(driverStation2.a()){
@@ -159,6 +160,16 @@ public class FuelSystem extends Subsystem {
     }
   }
 
+  public void turnTurret(){
+    if (driverStation.dpadLeft()) {
+      turret.set(TURRET_SPEED);
+    }else if (driverStation.dpadRight()){
+      turret.set(-TURRET_SPEED);
+    }else{
+      turret.set(0);
+    }
+  }
+
   public void runTransfer (boolean run){
     if (run) {
       upperTransfer.set(TRANSFER_SPEED);
@@ -173,7 +184,25 @@ public class FuelSystem extends Subsystem {
     if (run) {
       collector.set(COLLECTOR_SPEED);
     }else{
-     collector.set(0);
+      collector.set(0);
+    }
+  }
+
+  public void reverseTransfer (boolean run){
+    if (run) {
+      upperTransfer.set(-TRANSFER_SPEED);
+      lowerTransfer.set(-TRANSFER_SPEED);
+    }else{
+      upperTransfer.set(0);
+      lowerTransfer.set(0);
+    }
+  }
+
+  public void reverseCollector (boolean run){
+    if (run) {
+      collector.set(-COLLECTOR_SPEED);
+    }else{
+      collector.set(0);
     }
   }
 
@@ -182,6 +211,23 @@ public class FuelSystem extends Subsystem {
     leftShooter.set(speed);
     rightShooter.set(speed);
   }
+
+  //return a motor power for a give distance from the target, it is capped at 10 and 40 feet
+  public double getShooterPower(double distanceFromTargetFT){
+    if(distanceFromTargetFT <= MIN_DISTANCE_TO_TARGET){
+      distanceFromTargetFT = MIN_DISTANCE_TO_TARGET;
+    }
+
+    if(distanceFromTargetFT >= MAX_DISTANCE_TO_TARGET){
+      distanceFromTargetFT = MAX_DISTANCE_TO_TARGET;
+    }
+
+    return (85776 + -21115 * distanceFromTargetFT + 2199 * Math.pow(distanceFromTargetFT, 2)
+    + -119.00 * Math.pow(distanceFromTargetFT, 3) + 3.580000 * Math.pow(distanceFromTargetFT, 4)
+    + -0.0563 * Math.pow(distanceFromTargetFT, 5) + 0.000363 * Math.pow(distanceFromTargetFT, 6));
+
+
+}
 
   //use the limelight to find the reflective tape
   public void findTarget(){
@@ -193,23 +239,9 @@ public class FuelSystem extends Subsystem {
 
   }
 
-  //use the reflective tape location and the heading of the shooter to find the robots location on the field
-  public void getRobotLocation(){
-
-  }
 
   //tun on the collector motors to on so that balls are sucked into the robot
   public void collectorIntake(){
-
-  }
-
-  //turn off the collector motors
-  public void collectorOff(){
-
-  }
-
-  //tun on the collector motors to on so that balls are pushed out of the robot
-  public void collectorOuttake(){
 
   }
 
@@ -292,6 +324,8 @@ public class FuelSystem extends Subsystem {
     shooterOnRPM();  
     runTransfer(driverStation.rightTrigger());
     runCollector(driverStation.rightTrigger());
+    reverseTransfer(driverStation.leftTrigger());
+    reverseCollector(driverStation.leftTrigger());
     turnTurret();
   }
 
