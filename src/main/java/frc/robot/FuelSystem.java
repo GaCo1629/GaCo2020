@@ -47,8 +47,6 @@ public class FuelSystem extends Subsystem {
 
   private final double TURRET_SPEED                     = 0.1;
   private final double TURRET_REVS_PER_DEGREE           = 1.27866;
-  private final double TURRET_ENCODER_COUNTS_PER_REV    = 4096;
-  private final double TURRET_ENCODER_COUNTS_PER_DEGREE = 3203.35351071;
   private final double TURRET_DEGREES_TOLERANCE         = .2;
 
   private static final int L_SHOOTER_ID  = 21;
@@ -106,7 +104,7 @@ public class FuelSystem extends Subsystem {
    //reset turret heading variables
     turretHeading       = 0;
     targetTurretHeading = 0;
-    turretPIDEnabled = false;
+    turretPIDEnabled    = false;
   }
   
   @Override
@@ -127,15 +125,17 @@ public class FuelSystem extends Subsystem {
   }
 
   public void updateTurretHeading(){
-    turretHeading = turretEncoder.getPosition()/TURRET_ENCODER_COUNTS_PER_DEGREE;
+    turretHeading = turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE;
   }
 
   public void resetTurretHeading(){
     turretEncoder.setPosition(0);
+    turretHeading       = 0;
+    targetTurretHeading = 0;
   }
 
   //turn turret
-  public void turnTurret(){
+  public void turnTurretPID(){
   
     //enable turret PID if left stick button is pressed and disable it if right stick is pressed
     if(driverStation2.a()){
@@ -163,6 +163,16 @@ public class FuelSystem extends Subsystem {
     }
   }
 
+  public void turnTurret(){
+    if (driverStation.dpadLeft()) {
+      turret.set(TURRET_SPEED);
+    }else if (driverStation.dpadRight()){
+      turret.set(-TURRET_SPEED);
+    }else{
+      turret.set(0);
+    }
+  }
+
   public void runTransfer (boolean run){
     if (run) {
       upperTransfer.set(TRANSFER_SPEED);
@@ -187,6 +197,12 @@ public class FuelSystem extends Subsystem {
     rightShooter.set(speed);
   }
 
+  public double getShooterPower(double distanceFromTargetFT){
+    return (85776 + -21115 * distanceFromTargetFT + 2199 * Math.pow(distanceFromTargetFT, 2)
+     + -119.00 * Math.pow(distanceFromTargetFT, 3) + 3.580000 * Math.pow(distanceFromTargetFT, 4)
+     + -0.0563 * Math.pow(distanceFromTargetFT, 5) + 0.000363 * Math.pow(distanceFromTargetFT, 6));
+}
+
   //use the limelight to find the reflective tape
   public void findTarget(){
 
@@ -197,10 +213,6 @@ public class FuelSystem extends Subsystem {
 
   }
 
-  //use the reflective tape location and the heading of the shooter to find the robots location on the field
-  public void getRobotLocation(){
-
-  }
 
   //tun on the collector motors to on so that balls are sucked into the robot
   public void collectorIntake(){

@@ -190,12 +190,6 @@ public class DriveTrain extends Subsystem{
             }
         }
     }
-
-    public double getShooterPower(double distanceFromTargetFT){
-        return (85776 + -21115 * distanceFromTargetFT + 2199 * Math.pow(distanceFromTargetFT, 2)
-         + -119.00 * Math.pow(distanceFromTargetFT, 3) + 3.580000 * Math.pow(distanceFromTargetFT, 4)
-         + -0.0563 * Math.pow(distanceFromTargetFT, 5) + 0.000363 * Math.pow(distanceFromTargetFT, 6));
-    }
     
     //use the controller values to set axial and yaw values
     public void setVectorsToController(){
@@ -222,6 +216,23 @@ public class DriveTrain extends Subsystem{
     public void updateDriveEncoders(){
         leftEncoder  = leftDriveEncoder.getPosition();
         rightEncoder = rightDriveEncoder.getPosition();
+    }
+
+    //use the reflective tape location and the heading of the shooter to find the robots location on the field
+    /**Uses
+     * distance to target
+     * heading of robot
+     * heading of turret
+     */
+    public void getRobotLocation(){
+        double distanceToTarget = 12;
+        double robotHeading1    = 0;
+        double turretHeading    = 0;
+
+        double turretHeadingFieldCentric = robotHeading1 + turretHeading;
+
+
+
     }
 
     public void calculateAndSetMotorPowers(){
