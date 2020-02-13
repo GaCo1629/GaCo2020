@@ -115,9 +115,8 @@ public class FuelSystem extends Subsystem {
 
   //turn the turret to a given angle
   public void turnTurretTo(double targetAngle){
-    /*
-      turret.set(turretPID.run(turretHeading, targetTurretHeading));
-    */
+    
+    turret.set(turretPID.run(turretHeading, targetTurretHeading));
 
   }
 
@@ -156,7 +155,9 @@ public class FuelSystem extends Subsystem {
       
       //run the PID loop if it has been enabled
     if(turretPIDEnabled){
-      turnTurretTo(targetTurretHeading);
+      //turnTurretTo(targetTurretHeading);
+    } else {
+      //turret.set(0);
     }
   }
 
