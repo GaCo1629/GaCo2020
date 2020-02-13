@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -26,11 +25,9 @@ public class Vision {
 
     }
 
-
     public void init(String limelightName) {
 
     }
-
 
     public void updateVision(){
      //Set Up Tables
