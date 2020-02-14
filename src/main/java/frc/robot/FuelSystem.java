@@ -43,12 +43,13 @@ public class FuelSystem extends Subsystem {
   private DoubleSolenoid collectorState;
 
   private final double TRANSFER_SPEED  = 1;
-  private final double COLLECTOR_SPEED = 1;
+  private final double COLLECTOR_SPEED = .5;
 
   private final double TURRET_SPEED           = 0.1;
   private final double TURRET_REVS_PER_DEGREE = 1.27866;
   private final double MIN_DISTANCE_TO_TARGET = 10;
   private final double MAX_DISTANCE_TO_TARGET = 40;
+  private final double MAX_TURRET_ANGLE       = 100;
 
   private static final int L_SHOOTER_ID  = 21;
   private static final int R_SHOOTER_ID  = 20;
@@ -65,8 +66,10 @@ public class FuelSystem extends Subsystem {
   private boolean turretPIDEnabled   = false;
   double turretHeadingModifier       = 0;
 
-  PIDController shooterPID = new PIDController(.0005,.000001,.00005,5700,500, 0, false, "Shooter");
-  PIDController turretPID  = new PIDController(.01, 0, 0, 0, 5, .2, true, "Turret");
+  PIDController shooterPID = new PIDController(.0004,.000001,.00005,5700,500, 0, false, "Shooter");
+  PIDController turretPID  = new PIDController(.05, 0, 0, 0, 2, .01, false, "Turret");
+
+  Vision turretLimelght;
 
   //constructor
   public FuelSystem () {
@@ -74,9 +77,10 @@ public class FuelSystem extends Subsystem {
   }
 
   //initalize fuel system 
-  public void init(DriverStation driverStation, DriverStation driverStation2){
+  public void init(DriverStation driverStation, DriverStation driverStation2, Vision frontLimelight){
     this.driverStation  = driverStation;
     this.driverStation2 = driverStation2;
+    this.turretLimelght = frontLimelight;
 
     //initialize motors
     leftShooter  = new CANSparkMax(L_SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -117,8 +121,31 @@ public class FuelSystem extends Subsystem {
 
   //turn the turret to a given angle
   public void turnTurretTo(double targetAngle){
+
+    if(targetAngle > MAX_TURRET_ANGLE){
+      targetAngle = MAX_TURRET_ANGLE;
+    }
+
+    if(targetAngle < -MAX_TURRET_ANGLE){
+      targetAngle = -MAX_TURRET_ANGLE;
+    }
+
+    targetTurretHeading = targetAngle;
     
     turret.set(turretPID.run(turretHeading, targetTurretHeading));
+
+  }
+
+  public double clip(double val, double range){
+    if(val > range){
+      val = range;
+    } 
+
+    if(val < -range){
+      val = -range;
+    }
+
+    return val;
 
   }
 
@@ -145,15 +172,11 @@ public class FuelSystem extends Subsystem {
     
     //move the target angle right if right d pad is pressed and left if left d pad is pressed
     if (driverStation2.x()) {
-      if(targetTurretHeading > -100){
-        targetTurretHeading -= .1;
-      }
+      targetTurretHeading -= .5;
     }
 
     if (driverStation2.y()){
-      if(targetTurretHeading < 100){
-        targetTurretHeading += .1;
-      }
+      targetTurretHeading += .5;
     }
       
       //run the PID loop if it has been enabled
@@ -330,7 +353,11 @@ public class FuelSystem extends Subsystem {
       stopCollector();
     }
 
-    turnTurretPID();
+    if(driverStation2.leftBumper()){
+      turnTurretTo(turretHeading + turretLimelght.x);
+    } else {
+      turnTurretPID();
+    }
   }
 
   @Override
@@ -340,7 +367,6 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putNumber("Shooter RPM", shooterEncoder.getVelocity());
     SmartDashboard.putBoolean("enable", shooterPIDEnabled);
     SmartDashboard.putNumber("encoder value turret", turretEncoder.getPosition());
-    SmartDashboard.putNumber("counts per rev turret", turretEncoder.getCountsPerRevolution());
     SmartDashboard.putNumber("turret heading", turretHeading);
     SmartDashboard.putNumber("turret target heading", targetTurretHeading);
   }

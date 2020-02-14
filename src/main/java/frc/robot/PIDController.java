@@ -60,10 +60,12 @@ private boolean firstTime = true;
 
         if(firstTime){
             firstTime = false;
-            return target/kf;
+            if(kf != 0){
+                return target/kf;
+            }
         }
 
-        double returnVal = 0;
+        returnVal = 0;
         double error     = target - current;
 
         if(angleWrapOn){
@@ -73,7 +75,9 @@ private boolean firstTime = true;
         proportional = error               * kp;
         integral     = error               * ki;
         derivative   = (lastVal - current) * kd;
-        feedForward  = (target/kf);
+        if(kf != 0){
+            feedForward  = (target/kf);
+        }
 
         //if it is moving twords the target rpm set derviative to 0
         if(Math.abs(lastError) > Math.abs(error)){
@@ -96,8 +100,10 @@ private boolean firstTime = true;
             returnVal = 0;
         }
 
+        returnVal = clip1(returnVal);
         displayValues();
-        return clip1(returnVal);
+        
+        return returnVal;
     }
 
     private double clip1(double input){
