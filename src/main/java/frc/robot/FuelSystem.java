@@ -49,7 +49,9 @@ public class FuelSystem extends Subsystem {
   private final double TURRET_REVS_PER_DEGREE = 1.27866;
   private final double MIN_DISTANCE_TO_TARGET = 10;
   private final double MAX_DISTANCE_TO_TARGET = 40;
+
   private final double MAX_TURRET_ANGLE       = 100;
+
 
   private static final int L_SHOOTER_ID  = 21;
   private static final int R_SHOOTER_ID  = 20;
@@ -70,6 +72,7 @@ public class FuelSystem extends Subsystem {
   PIDController turretPID  = new PIDController(.05, 0, 0, 0, 2, .01, false, "Turret");
 
   Vision turretLimelght;
+  
 
   //constructor
   public FuelSystem () {
@@ -276,6 +279,9 @@ public class FuelSystem extends Subsystem {
       setShooterSpeed(0); 
     }
   }
+ 
+
+
 
   @Override
   public void teleopPeriodic(){
@@ -313,5 +319,7 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putNumber("encoder value turret", turretEncoder.getPosition());
     SmartDashboard.putNumber("turret heading", turretHeading);
     SmartDashboard.putNumber("turret target heading", targetTurretHeading);
+    SmartDashboard.putNumber("distance to target", turretLimelght.getDistanceFromTarget());
+    SmartDashboard.putNumber("shooter power", getShooterPower(turretLimelght.getDistanceFromTarget()));
   }
 }

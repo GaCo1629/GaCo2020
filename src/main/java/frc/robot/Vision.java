@@ -19,7 +19,8 @@ public class Vision {
     public double height;
     public double pipeline;
     public double dimensional;
-
+    private final double MIN_WIDTH = 50;
+    private final double MAX_WIDTH = 370;
 
     private String limelightName;
 
@@ -27,7 +28,20 @@ public class Vision {
     public  Vision (String name) {
         limelightName = name;
     }
-
+    public double getDistanceFromTarget() {
+        double distanceToTarget;
+        if(width >= MIN_WIDTH){
+          distanceToTarget=30;
+    
+        } else if (width <= MAX_WIDTH){
+          distanceToTarget = 300;
+        }
+        else  {
+        distanceToTarget =116+ (-1.87*width) +( 0.0139*Math.pow(width, 2)) +-0.000048*Math.pow(width, 3) + 0.0000000626*Math.pow(width, 4);
+        }
+       return distanceToTarget;
+    
+      }
 
     public void updateTarget(){
         //Set Up Tables
