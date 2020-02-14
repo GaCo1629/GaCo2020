@@ -47,6 +47,7 @@ public class FuelSystem extends Subsystem {
 
   private final double TURRET_SPEED           = 0.1;
   private final double TURRET_REVS_PER_DEGREE = 1.27866;
+  private final double TURRET_DEGREES_TOLERANCE = .1;
   private final double MIN_DISTANCE_TO_TARGET = 10;
   private final double MAX_DISTANCE_TO_TARGET = 40;
 
@@ -63,6 +64,7 @@ public class FuelSystem extends Subsystem {
   private double turretHeading       = 0;
   private double targetTurretHeading = 0;
   private boolean turretPIDEnabled   = false;
+  double turretHeadingModifier       = 0;
 
   PIDController shooterPID = new PIDController(.0005,.000001,.00005,5700,500, 0, false, "Shooter");
   PIDController turretPID  = new PIDController(.01, 0, 0, 0, 5, .2, true, "Turret");
@@ -99,6 +101,7 @@ public class FuelSystem extends Subsystem {
 
     //invert collector so that positive values move balls up twords the shooter
     lowerTransfer.setInverted(true);
+    turret.setInverted(true);
 
    //collectorState = new DoubleSolenoid(1,0,1);
 
@@ -121,13 +124,14 @@ public class FuelSystem extends Subsystem {
   }
 
   public void updateTurretHeading(){
-    turretHeading = turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE;
+    turretHeading = turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE + turretHeadingModifier;
   }
 
-  public void resetTurretHeading(){
+  public void setTurretHeading(double newHeading){
     turretEncoder.setPosition(0);
-    turretHeading       = 0;
-    targetTurretHeading = 0;
+    turretHeading         = newHeading;
+    targetTurretHeading   = newHeading;
+    turretHeadingModifier = newHeading;
   }
 
   //turn turret
@@ -141,31 +145,31 @@ public class FuelSystem extends Subsystem {
     }
     
     //move the target angle right if right d pad is pressed and left if left d pad is pressed
-    if (driverStation2.dpadUp()) {
+    if (driverStation2.x()) {
       if(targetTurretHeading > -100){
         targetTurretHeading -= .1;
       }
     }
 
-    if (driverStation2.dpadDown()){
+    if (driverStation2.y()){
       if(targetTurretHeading < 100){
         targetTurretHeading += .1;
       }
     }
       
       //run the PID loop if it has been enabled
-    if(turretPIDEnabled){
-      //turnTurretTo(targetTurretHeading);
+    if(turretPIDEnabled && Math.abs(targetTurretHeading - turretHeading) > TURRET_DEGREES_TOLERANCE){
+      turnTurretTo(targetTurretHeading);
     } else {
-      //turret.set(0);
+      turret.set(0);
     }
   }
 
   public void turnTurret(){
     if (driverStation.dpadLeft()) {
-      turret.set(TURRET_SPEED);
-    }else if (driverStation.dpadRight()){
       turret.set(-TURRET_SPEED);
+    }else if (driverStation.dpadRight()){
+      turret.set(TURRET_SPEED);
     }else{
       turret.set(0);
     }
@@ -327,7 +331,7 @@ public class FuelSystem extends Subsystem {
     runCollector(driverStation.rightTrigger());
     reverseTransfer(driverStation.leftTrigger());
     reverseCollector(driverStation.leftTrigger());
-    turnTurret();
+    turnTurretPID();
   }
 
   @Override
