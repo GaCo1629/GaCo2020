@@ -26,6 +26,8 @@ public class DriveTrain extends Subsystem{
     */
 
     private DriverStation driverStation;
+    private Vision        frontLimelight;
+    private FuelSystem    fuelSystem;
 
     //declaring motors
     //one master and two slaves per side
@@ -98,8 +100,10 @@ public class DriveTrain extends Subsystem{
     }
 
     //initalize hardware for the drive train
-    public void init(DriverStation driverStation){
-        this.driverStation = driverStation;
+    public void init(DriverStation driverStation, Vision frontLimelight, FuelSystem fuelSystem){
+        this.driverStation  = driverStation;
+        this.frontLimelight = frontLimelight;
+        this.fuelSystem     = fuelSystem;
 
         leftDriveMaster  = new CANSparkMax(leftDriveMasterCANid,  CANSparkMaxLowLevel.MotorType.kBrushless);
         leftDriveFront   = new CANSparkMax(leftDriveFrontCANid,   CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -230,15 +234,13 @@ public class DriveTrain extends Subsystem{
      * heading of robot   (in degrees)
      * heading of turret  (in degrees)
      */
-    public void getRobotLocation(double distanceToTarget, double rHeading, double tHeading){
-        distanceToTarget = 12;
-        rHeading         = 0;
-        tHeading         = 0;
+    public void getRobotLocation(){
 
-        turretHeadingFieldCentric = angleWrap180(rHeading + tHeading);
 
-        x = distanceToTarget * Math.cos(turretHeadingFieldCentric);
-        y = distanceToTarget * Math.sin(turretHeadingFieldCentric);
+        turretHeadingFieldCentric = angleWrap180(robotHeading + fuelSystem.getTurretHeading());
+
+        //x = distanceToTarget * Math.cos(turretHeadingFieldCentric);
+        //y = distanceToTarget * Math.sin(turretHeadingFieldCentric);
 
     }
 

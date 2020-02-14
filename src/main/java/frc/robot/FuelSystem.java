@@ -109,9 +109,9 @@ public class FuelSystem extends Subsystem {
     lowerTransfer.setInverted(true);
     turret.setInverted(true);
 
-   //collectorState = new DoubleSolenoid(1,0,1);
+    //collectorState = new DoubleSolenoid(1,0,1);
 
-   //reset turret heading variables
+    //reset turret heading variables
     turretHeading       = 0;
     targetTurretHeading = 0;
     turretPIDEnabled    = false;
@@ -134,9 +134,7 @@ public class FuelSystem extends Subsystem {
     }
 
     targetTurretHeading = targetAngle;
-    
     turret.set(turretPID.run(turretHeading, targetTurretHeading));
-
   }
 
   public double clip(double val, double range){
@@ -247,10 +245,8 @@ public class FuelSystem extends Subsystem {
 
     return (85776 + -21115 * distanceFromTargetFT + 2199 * Math.pow(distanceFromTargetFT, 2)
     + -119.00 * Math.pow(distanceFromTargetFT, 3) + 3.580000 * Math.pow(distanceFromTargetFT, 4)
-    + -0.0563 * Math.pow(distanceFromTargetFT, 5) + 0.000363 * Math.pow(distanceFromTargetFT, 6));
-
-
-}
+    + -0.0563 * Math.pow(distanceFromTargetFT, 5) + 0.000363 * Math.pow(distanceFromTargetFT, 6));  
+  }
 
   public void shooterOnRPM(){
     if (driverStation.y()){
@@ -262,6 +258,7 @@ public class FuelSystem extends Subsystem {
     if (driverStation.b()) {
       targetSpeedRPM +=  10;
     }
+    
     if (driverStation.x()) {
       targetSpeedRPM -=  10;
     }
@@ -269,6 +266,7 @@ public class FuelSystem extends Subsystem {
     if (targetSpeedRPM > 6200 ){
       targetSpeedRPM = 6200;
     }
+
     if (targetSpeedRPM < 0){
       targetSpeedRPM = 0;
     } 
@@ -279,9 +277,10 @@ public class FuelSystem extends Subsystem {
       setShooterSpeed(0); 
     }
   }
- 
 
-
+  public double getTurretHeading(){
+    return turretHeading;
+  }
 
   @Override
   public void teleopPeriodic(){
