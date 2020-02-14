@@ -11,28 +11,25 @@ import edu.wpi.first.wpilibj.TimedRobot;
  */
 
 public class Robot extends TimedRobot {
-
-  private DriverStation  pilot          = new DriverStation();
-  private DriverStation  copilot        = new DriverStation();
-  private DriverStation  minion         = new DriverStation(); 
-  private DriveTrain     driveTrain     = new DriveTrain();
-  private FuelSystem     fuelSystem     = new FuelSystem();
-  private ColorWheel     colorWheel     = new ColorWheel();
-  private Climber        climber        = new Climber();
-  private Vision         turretVision   = new Vision("limelight");
+  private DriverStation pilot        = new DriverStation();
+  private DriverStation copilot      = new DriverStation();
+  private DriverStation minion       = new DriverStation(); 
+  private DriveTrain    driveTrain   = new DriveTrain();
+  private FuelSystem    fuelSystem   = new FuelSystem();
+  private ColorWheel    colorWheel   = new ColorWheel();
+  private Climber       climber      = new Climber();
+  private Vision        turretVision = new Vision("limelight");
 
   @Override
   public void robotInit() {
-
     //initalize all classes
     pilot.init(0);
     copilot.init(1);
     minion.init(2);
-    driveTrain.init(pilot);
+    driveTrain.init(pilot, turretVision, fuelSystem);
     fuelSystem.init(pilot, minion, turretVision);
     colorWheel.init(copilot);
-    //climber.init(driverStation);
-    
+    //climber.init(driverStation);  
   }
 
   @Override
@@ -44,7 +41,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-
     driveTrain.teleopPeriodic();
     fuelSystem.teleopPeriodic();
     colorWheel.teleopPeriodic();
