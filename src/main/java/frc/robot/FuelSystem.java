@@ -249,62 +249,6 @@ public class FuelSystem extends Subsystem {
 
 }
 
-  //use the limelight to find the reflective tape
-  public void findTarget(){
-
-  }
-
-  //use the target location to aim the turret twords the target and set the shooter to the correct speed
-  public void aimAtTarget(){
-
-  }
-
-
-  //tun on the collector motors to on so that balls are sucked into the robot
-  public void collectorIntake(){
-
-  }
-
-  //use the psunamatics to put the collector down into the intaking position
-  public void collectorDown(){
-
-  }
-
-  //use the psunamatics to put the collector up so it is inside the robot frame
-  public void collectorUp(){
-
-  }
-
-  //use the back limelight to track balls outside the robot
-  public void trackBalls(){
-
-  }
-
-  //run the transfer motors so that one ball is taken up into the transfer system
-  public void indexFuel(){
-
-  }
-
-  //check to see if a ball is ready to be taken into the transfer system
-  public void readyToIndex(){
-
-  }
-
-  //run inxed system in reverse until the last ball in the system is at the very bottom of the transfer mechanism
-  public void resetIndexSystem(){
-
-  }
-
-  //run the transfer mechanism so that one ball is fired
-  public void fireOne(){
-
-  }
-
-  //constatny run the transfer mechanism so that all balls are fired
-  public void rapidFire(){
-
-  }
-
   public void shooterOnRPM(){
     if (driverStation.y()){
       shooterPIDEnabled = true;
