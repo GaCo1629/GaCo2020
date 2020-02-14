@@ -30,11 +30,11 @@ public class Vision {
     }
     public double getDistanceFromTarget() {
         double distanceToTarget;
-        if(width >= MIN_WIDTH){
-          distanceToTarget=30;
+        if(width <= MIN_WIDTH){
+          distanceToTarget= 9;
     
-        } else if (width <= MAX_WIDTH){
-          distanceToTarget = 300;
+        } else if (width >= MAX_WIDTH){
+          distanceToTarget = 41;
         }
         else  {
         distanceToTarget =116+ (-1.87*width) +( 0.0139*Math.pow(width, 2)) +-0.000048*Math.pow(width, 3) + 0.0000000626*Math.pow(width, 4);

@@ -308,6 +308,8 @@ public class FuelSystem extends Subsystem {
     } else {
       turnTurretPID();
     }
+    
+    setShooterSpeed(getShooterPower(turretLimelght.getDistanceFromTarget()));
   }
 
   @Override
