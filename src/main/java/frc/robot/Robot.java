@@ -38,6 +38,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     super.teleopInit();
+    driveTrain.setHeading(0);
+    fuelSystem.setTurretHeading(0);
   }
 
   @Override
