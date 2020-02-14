@@ -15,6 +15,7 @@ import java.lang.Math;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.VictorSP;
@@ -48,6 +49,7 @@ public class ColorWheel {
     private double colorWheelCircumference;
     private double maxRPM;
     private double maxPower;
+    private double pastTime = 0;
 
     private Color detectedColor;
     private Color color;
@@ -60,7 +62,10 @@ public class ColorWheel {
     public String colorString;
     public int wheelCount;
     
+    Timer time = new Timer();
 
+    private boolean firstTime = false;
+    private double startTime = 0;
 
 
     // constructor
@@ -80,7 +85,7 @@ public class ColorWheel {
         colorMotorCircumference = colorMotorDiameter * Math.PI;
         colorWheelCircumference = colorWheelDiameter * Math.PI;
         maxRPM      = (60 * colorWheelCircumference)/colorMotorCircumference;
-        maxPower    = (maxRPM)/fullRPM;
+        maxPower    = /*(maxRPM)/fullRPM;*/ 0.5;
 
         //Find the maximum speed at which the wheel is allowed to spin.
 
@@ -91,6 +96,9 @@ public class ColorWheel {
         //initialize motor to spin wheel
         //initialize psunamatics to push out wheel spinner
         //initialize camera/color sensor
+
+        time.reset();
+        firstTime = false;
 
     }
 /*
@@ -216,7 +224,46 @@ public class ColorWheel {
         //Driver 2 - (Button) Spin wheel to green
         //Driver 2 - (Button) Spin wheel to yellow
 
+        
+
+
+        if (driverStation.a()){
+            colorArm.set(DoubleSolenoid.Value.kForward);
+        } else if (driverStation.b()){
+            colorArm.set(DoubleSolenoid.Value.kReverse);
+        }
+
         if (driverStation.leftBumper()){
+
+            SmartDashboard.putString("Turn to:", "Test");
+
+            if(firstTime == false){
+                firstTime = true;
+                startTime = time.get();
+                colorMotor.set(.5);
+                colorArm.set(DoubleSolenoid.Value.kForward);
+            }
+
+
+            if(time.get() - startTime > 5) {
+                colorMotor.set(0);
+                colorArm.set(DoubleSolenoid.Value.kReverse);
+                SmartDashboard.putString("Turn to:", "");
+            }
+
+            
+            
+            
+        } /* else if (driverStation.x()){
+            SmartDashboard.putString("Turn to:", "");
+
+        } else if (driverStation.y()){
+            SmartDashboard.putString("Turn to:", "");
+
+        } else if (driverStation.rightBumper()){
+            SmartDashboard.putString("Turn to:", "");
+
+        } */else if (driverStation.leftBumper()){
             colorMotor.set(0.5);
             SmartDashboard.putString("colorMotorOn", "Foward");
         } else if (driverStation.rightBumper()){
@@ -226,14 +273,6 @@ public class ColorWheel {
             colorMotor.set(0);
             SmartDashboard.putString("colorMotorOn", "Off");
         }
-
-
-        if (driverStation.x()){
-            colorArm.set(DoubleSolenoid.Value.kForward);
-        } else if (driverStation.y()){
-            colorArm.set(DoubleSolenoid.Value.kReverse);
-        }
-
         
         {
             detectedColor = m_colorSensor.getColor();
