@@ -19,7 +19,7 @@ public class Robot extends TimedRobot {
   private FuelSystem     fuelSystem     = new FuelSystem();
   private ColorWheel     colorWheel     = new ColorWheel();
   private Climber        climber        = new Climber();
-
+  private Vision         turretVision   = new Vision("limelight");
 
   @Override
   public void robotInit() {
@@ -51,6 +51,7 @@ public class Robot extends TimedRobot {
   
   @Override
   public void robotPeriodic(){
+    turretVision.updateTarget();
     fuelSystem.updateTurretHeading();
     driveTrain.updateRobotHeading();
     driveTrain.updateDriveEncoders();
