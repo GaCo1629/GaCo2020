@@ -47,7 +47,6 @@ public class FuelSystem extends Subsystem {
 
   private final double TURRET_SPEED           = 0.1;
   private final double TURRET_REVS_PER_DEGREE = 1.27866;
-  private final double TURRET_DEGREES_TOLERANCE = .1;
   private final double MIN_DISTANCE_TO_TARGET = 10;
   private final double MAX_DISTANCE_TO_TARGET = 40;
 
@@ -158,7 +157,7 @@ public class FuelSystem extends Subsystem {
     }
       
       //run the PID loop if it has been enabled
-    if(turretPIDEnabled && Math.abs(targetTurretHeading - turretHeading) > TURRET_DEGREES_TOLERANCE){
+    if(turretPIDEnabled) {
       turnTurretTo(targetTurretHeading);
     } else {
       turret.set(0);
@@ -175,40 +174,33 @@ public class FuelSystem extends Subsystem {
     }
   }
 
-  public void runTransfer (boolean run){
-    if (run) {
+  public void runTransfer (){
       upperTransfer.set(TRANSFER_SPEED);
       lowerTransfer.set(TRANSFER_SPEED);
-    }else{
-      upperTransfer.set(0);
-      lowerTransfer.set(0);
-    }
+
   }
 
-  public void runCollector (boolean run){
-    if (run) {
-      collector.set(COLLECTOR_SPEED);
-    }else{
-      collector.set(0);
-    }
+  public void runCollector (){
+    collector.set(COLLECTOR_SPEED);
   }
 
-  public void reverseTransfer (boolean run){
-    if (run) {
-      upperTransfer.set(-TRANSFER_SPEED);
-      lowerTransfer.set(-TRANSFER_SPEED);
-    }else{
-      upperTransfer.set(0);
-      lowerTransfer.set(0);
-    }
+  public void reverseTransfer (){
+    upperTransfer.set(-TRANSFER_SPEED);
+    lowerTransfer.set(-TRANSFER_SPEED);
+ 
   }
 
-  public void reverseCollector (boolean run){
-    if (run) {
-      collector.set(-COLLECTOR_SPEED);
-    }else{
-      collector.set(0);
-    }
+  public void stopTransfer(){
+    upperTransfer.set(0);
+    lowerTransfer.set(0);
+  }
+
+  public void reverseCollector (){
+    collector.set(-COLLECTOR_SPEED);
+  }
+
+  public void stopCollector(){
+    collector.set(0);
   }
 
   //set the shooter to a given speed in RPM
@@ -326,11 +318,18 @@ public class FuelSystem extends Subsystem {
     //Driver 2 - (button) put down/up collector
     //Driver 2 - (button) collector on/off
     //Driver 2 (button) run storage system
-    shooterOnRPM();  
-    runTransfer(driverStation.rightTrigger());
-    runCollector(driverStation.rightTrigger());
-    reverseTransfer(driverStation.leftTrigger());
-    reverseCollector(driverStation.leftTrigger());
+    shooterOnRPM();
+    if(driverStation.rightTrigger()){
+      runTransfer();
+      runCollector();
+    } else if (driverStation.leftTrigger()){
+      reverseTransfer();
+      reverseCollector();
+    } else {
+      stopTransfer();
+      stopCollector();
+    }
+
     turnTurretPID();
   }
 
