@@ -28,7 +28,15 @@ DriveTrain
         right bumper   - activate power mode
 
 ColorWheel
-    Copiolot
+    Copilot
+        A              - Color arm Extends
+        B              - Color arm Retracts
+        Left Trigger   - Wheel and movement (Will be changed)
+
+
+
+        Left bumper    - Color Wheel turns on at 0.5 power
+        Right Bumper   - Color Wheel turns on at -0.5 power
         
 CAN Bus Ids
 NEO Motors

@@ -233,7 +233,7 @@ public class ColorWheel {
             colorArm.set(DoubleSolenoid.Value.kReverse);
         }
 
-        if (driverStation.leftBumper()){
+        if (driverStation.leftTrigger()){
 
             SmartDashboard.putString("Turn to:", "Test");
 
@@ -260,7 +260,7 @@ public class ColorWheel {
         } else if (driverStation.y()){
             SmartDashboard.putString("Turn to:", "");
 
-        } else if (driverStation.rightBumper()){
+        } else if (driverStation.rightTrigger()){
             SmartDashboard.putString("Turn to:", "");
 
         } */else if (driverStation.leftBumper()){
