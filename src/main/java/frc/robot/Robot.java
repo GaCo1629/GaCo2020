@@ -19,6 +19,7 @@ public class Robot extends TimedRobot {
   private ColorWheel    colorWheel   = new ColorWheel();
   private Climber       climber      = new Climber();
   private Vision        turretVision = new Vision("limelight");
+  private PurePursuit   purePursuit  = new PurePursuit();
 
   @Override
   public void robotInit() {
@@ -29,6 +30,7 @@ public class Robot extends TimedRobot {
     driveTrain.init(pilot, turretVision, fuelSystem);
     fuelSystem.init(pilot, minion, turretVision);
     colorWheel.init(copilot);
+    purePursuit.init(driveTrain);
     //climber.init(driverStation);  
   }
 

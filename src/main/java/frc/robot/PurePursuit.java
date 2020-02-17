@@ -3,57 +3,64 @@
 /*----------------------------------------------------------------------------*/
 package frc.robot;
 
-public class PurePursuit {
+public class PurePursuit{
 
-    final double DISTANCE_TO_TRAVEL         = 30;
-    final double MINIMUM_DISTANCE_TO_TARGET = .5; //minimum distance to target in feet
-    final double TRANSLATION_MODIFIER       = 1;
-    final double TURNING_MODIFIER           = 1;
+    private DriveTrain driveTrain;
 
-    double remainingDistanceToTravel;
+    private final double DISTANCE_TO_TRAVEL         = 30;
+    private final double MINIMUM_DISTANCE_TO_TARGET = .5; //minimum distance to target in feet
+    private final double AXIAL_MODIFIER       = 1;
+    private final double YAW_MODIFIER         = 1;
+    private final double MAX_MOTOR_POWER      = 0.2;
 
-    int counter;
-    Line currentLine;
+    private double remainingDistanceToTravel;
 
-    double axialPower;
-    double yawPower;
+    private Line currentLine;
+
+    private double axialPower;
+    private double yawPower;
     
-    double robotXPosition;
-    double robotYPosition;
-    double robotHeading;
+    private double robotXPosition;
+    private double robotYPosition;
+    private double robotHeading;
 
-    double distanceToXTarget;
-    double distanceToYTarget;
-    double distanceToTarget;
-    double angleChangeRequired;
+    private double distanceToXTarget;
+    private double distanceToYTarget;
+    private double distanceToTarget;
+    private double angleChangeRequired;
 
-    double angleToTarget;
+    private double angleToTarget;
 
-    Point robotLocation;
+    private double shortestDistance = 0;
+    private int closestLine;
 
-    double shortestDistance = 0;
-    int closestLine;
-
-    Point perpendicularIntercept;
-    Point targetPoint;
+    private Point perpendicularIntercept;
+    private Point targetPoint;
 
     public PurePursuit(){
-        
 
+    }
+
+    public void init(DriveTrain driveTrain){
+        this.driveTrain = driveTrain;
     }
 
     public void followPath(Path pathToFollow){
 
-        currentLine = pathToFollow.getLine(pathToFollow.getMarker());
+        if(pathToFollow.getPathLineLength() > 0){
+
+            currentLine = pathToFollow.getLine(pathToFollow.getMarker());
         
-        Point target = getTargetLocation(currentLine);
+            Point target = getTargetLocation(currentLine);
 
-        setVectors(target);
+            setVectors(target);
 
-        if(robotAt(target)){
-            pathToFollow.add1Marker();
+            if(robotAt(target)){
+                if(pathToFollow.getMarker() < pathToFollow.getPathLineLength() - 1){
+                    pathToFollow.add1Marker();
+                }
+            }
         }
-
     }
 
     //takes the robots location and uses it and the line it is on to find the point for the robot to move twords
@@ -62,15 +69,15 @@ public class PurePursuit {
         //robotLocation = robot.getRobotLocation();
 
         //find slope perpendicular to the line to follow that passes through the robots location to find the robots distance from the path to follow line
-        perpendicularIntercept = followingLine.getPerpendicularIntercept(robotLocation);
+        perpendicularIntercept = followingLine.getPerpendicularIntercept(driveTrain.robotLocation);
 
         //subtract the distance to the line to follow from the total distance to find what remaining and use it to set target location
-        remainingDistanceToTravel = DISTANCE_TO_TRAVEL - robotLocation.getDistanceBetween(perpendicularIntercept);
+        remainingDistanceToTravel = DISTANCE_TO_TRAVEL - driveTrain.robotLocation.getDistanceBetween(perpendicularIntercept);
 
         //check to see if final point is close enough to get the next point and get the next line to follow
         if ((followingLine.getEnd()).getDistanceBetween(perpendicularIntercept) < remainingDistanceToTravel){
             targetPoint = followingLine.getEnd();
-        }else {
+        } else {
             //if its not then check to see if the x values are increasing or decreasing from start to end of the line
             if (followingLine.lineMovingRight()) {
                 //if they are increasing then move right on the line to the right the remaining distance and set that as the target point
@@ -86,28 +93,50 @@ public class PurePursuit {
     //uses a robot location and a target point to get axial lateral and yaw values
     public void setVectors(Point targetP){
 
-        //robotLocation = robot.getRobotLocation();
-
-        robotXPosition = robotLocation.getX();
-        robotYPosition = robotLocation.getY();
-        robotHeading   = robotLocation.getHeading();
+        //get need robot location variables
+        robotXPosition = driveTrain.x;
+        robotYPosition = driveTrain.y;
+        robotHeading   = driveTrain.robotHeading;
 
         //get distances to target
         distanceToXTarget = targetP.getX() - robotXPosition;
         distanceToYTarget = targetP.getY() - robotYPosition;
 
+        //get distance to target and absolute angle to target
         distanceToTarget = Math.hypot(distanceToXTarget,distanceToYTarget);
+        angleToTarget    = angleWrap180(Math.toDegrees(Math.atan2(distanceToYTarget,distanceToXTarget)));
+        
+        //get the required angle change and wrap it at 90 so it will move backwards if it is closer that way 
+        angleChangeRequired = angleWrap90(angleToTarget - robotHeading);
 
-        angleToTarget       = angleWrap180(Math.toDegrees(Math.atan2(distanceToYTarget,distanceToXTarget)));
-        angleChangeRequired = angleWrap180(angleToTarget - robotHeading);
-
+        //make sure it is outside the distance tolerance
         if(Math.abs(distanceToTarget) > MINIMUM_DISTANCE_TO_TARGET) {
-            axialPower    =  (distanceToYTarget / distanceToTarget) * TRANSLATION_MODIFIER;
-            yawPower      =  (angleChangeRequired)                  * TURNING_MODIFIER;
+
+            //check to see if it should move forwards or backwards
+            if(angleWrap90(angleToTarget - robotHeading) == angleWrap180(angleToTarget - robotHeading)){
+                axialPower =  (distanceToYTarget / distanceToTarget) * AXIAL_MODIFIER;
+            } else {
+                axialPower = -(distanceToYTarget / distanceToTarget) * AXIAL_MODIFIER;
+            }
+
+            yawPower =  (angleChangeRequired) * YAW_MODIFIER;
+
         }else{
             axialPower   = 0;
             yawPower     = 0;
         }
+
+        //calculate left and right motor powers
+        double left  = axialPower + yawPower;
+        double right = axialPower - yawPower;
+
+        //scale them down so that the maxium of left/right is equal to a max motor power val
+        double max = Math.max(Math.abs(left), Math.abs(right));
+
+        if(max > MAX_MOTOR_POWER){
+            left  = (left * MAX_MOTOR_POWER) / max;
+            right = (left * MAX_MOTOR_POWER) / max;
+        }        
 
         //robot.setDriveVectors(axialPower,lateralPower,yawPower);
     }
@@ -116,12 +145,10 @@ public class PurePursuit {
         shortestDistance = 0;
         closestLine      = 0;
 
-        //robotLocation = robot.getRobotLocation();
-
-        //create each line on the path and check how far the robot is from each one
+        //check each line on the path and check how far the robot is from each one
         for(int i = 0; i < pathToFollow.getPathLineLength() - 1; i++){
-            if(shortestDistance > pathToFollow.getLine(i).getDistanceFrom(robotLocation)){
-                shortestDistance = pathToFollow.getLine(i).getDistanceFrom(robotLocation);
+            if(shortestDistance > pathToFollow.getLine(i).getDistanceFrom(driveTrain.robotLocation)){
+                shortestDistance = pathToFollow.getLine(i).getDistanceFrom(driveTrain.robotLocation);
                 closestLine = i;
             }
         }
@@ -132,14 +159,25 @@ public class PurePursuit {
         while(angle <= -180){
             angle += 360;
         }
-        while(angle >= 180){
+        while(angle > 180){
             angle -=360;
         }
         return angle;
     }
 
+    private double angleWrap90(double angle){
+        while(angle <= -90){
+            angle += 180;
+        }
+        while(angle > 90){
+            angle -=180;
+        }
+        return angle;
+    }
+
     public boolean robotAt(Point location){
-        if(robotLocation.getDistanceBetween(location) < MINIMUM_DISTANCE_TO_TARGET){
+
+        if(driveTrain.robotLocation.getDistanceBetween(location) < MINIMUM_DISTANCE_TO_TARGET){
             return true;
         } else {
             return false;

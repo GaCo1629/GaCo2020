@@ -6,8 +6,6 @@ http://revrobotics.com/content/sw/color-sensor-v3/sdk/REVColorSensorV3.json
 CONTROLS
 FuelSystem :
     Pilot
-        left D-pad    - turn turret left
-        right D-pad   - turn turret right
         right trigger - run intake and transfer up
         left trigger  - run intake and transfer down
         A             - turn off shooter pid 
@@ -22,7 +20,6 @@ FuelSystem :
         Y             - decrease target turret heading by .5 degrees
         left bumper   - activate automated turret heading and shooter rpm using limelight data
 
-
 DriveTrain
     Pilot
         left joysick   - drive train axial power
@@ -33,8 +30,6 @@ DriveTrain
 ColorWheel
     Copiolot
         
-
-
 CAN Bus Ids
 NEO Motors
     leftDriveMasterCANid  = 13

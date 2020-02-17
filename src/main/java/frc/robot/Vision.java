@@ -23,7 +23,6 @@ public class Vision {
     private final double MIN_WIDTH = 50;
     private final double MAX_WIDTH = 370;
     
-
     private String limelightName;
 
     public  Vision (String name) {
@@ -44,12 +43,12 @@ public class Vision {
 
     public void updateTarget(){
         //Set Up Tables
-     NetworkTable table = NetworkTableInstance.getDefault().getTable(limelightName);
-     NetworkTableEntry tv = table.getEntry("tv");
-     NetworkTableEntry tx = table.getEntry("tx");
-     NetworkTableEntry ty = table.getEntry("ty");
-     NetworkTableEntry thor = table.getEntry("thor");
-     NetworkTableEntry ts = table.getEntry("ts");
+     NetworkTable      table = NetworkTableInstance.getDefault().getTable(limelightName);
+     NetworkTableEntry tv    = table.getEntry("tv");
+     NetworkTableEntry tx    = table.getEntry("tx");
+     NetworkTableEntry ty    = table.getEntry("ty");
+     NetworkTableEntry thor  = table.getEntry("thor");
+     NetworkTableEntry ts    = table.getEntry("ts");
      
         //Set Variable to Current Values
      valid = tv.getDouble(0.0);

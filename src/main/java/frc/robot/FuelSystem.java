@@ -31,7 +31,6 @@ public class FuelSystem extends Subsystem {
   private DriverStation driverStation2;
   private Vision        turretVision;
 
-
   private VictorSP lowerTransfer;
   private VictorSP upperTransfer;
   private VictorSP collector;
@@ -53,9 +52,10 @@ public class FuelSystem extends Subsystem {
   private final double MAX_DISTANCE_TO_TARGET = 40;
   private final double MAX_SHOOTER_RPM        = 5700;
   private final double MIN_SHOOTER_RPM        = 3000;
-
   private final double MAX_TURRET_ANGLE       = 100;
 
+  private final double SHOOTER_RPM_TOLERANCE   = 50;
+  private final double TURRET_DEGREE_TOLERANCE = .3;
 
   private static final int L_SHOOTER_ID  = 21;
   private static final int R_SHOOTER_ID  = 20;
@@ -68,13 +68,15 @@ public class FuelSystem extends Subsystem {
   private double targetSpeedRPM     = 0;
   private double shooterRPM         = 0;
 
-  private double turretHeading       = 0;
-  private double targetTurretHeading = 0;
-  private boolean turretPIDEnabled   = false;
+  private double turretHeading         = 0;
+  private double targetTurretHeading   = 0;
+  private boolean turretPIDEnabled     = false;
   private double turretHeadingModifier = 0;
 
+  public boolean readyToShoot = false;
+
   PIDController shooterPID = new PIDController(.0004,.000001,.00005,5700,500, 0, false, "Shooter");
-  PIDController turretPID  = new PIDController(.05, 0, 0, 0, 2, .01, false, "Turret");
+  PIDController turretPID  = new PIDController(.05, 0, 0, 0, 2, .05, false, "Turret");
 
   
   //constructor
@@ -123,6 +125,8 @@ public class FuelSystem extends Subsystem {
     shooterRPM          = 0;
     targetSpeedRPM      = 0;
     shooterPIDEnabled   = false;
+
+    readyToShoot = false;
   }
   
   @Override
@@ -173,9 +177,22 @@ public class FuelSystem extends Subsystem {
 
   public void updateVariables(){
     shooterRPM = shooterEncoder.getVelocity();
-
     turretHeading = turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE + turretHeadingModifier;
 
+    /** say its ready to fire if
+     * target is visible
+     * shooter RPM is within tolerance
+     * the distance to the target is within tolerance
+     * the angle to the target is within tolerance
+     *  */
+    if(turretVision.targetVisible && Math.abs(shooterRPM - targetSpeedRPM) < SHOOTER_RPM_TOLERANCE &&
+     turretVision.getDistanceFromTarget() > MIN_DISTANCE_TO_TARGET &&
+     turretVision.getDistanceFromTarget() < MAX_DISTANCE_TO_TARGET &&
+     Math.abs(turretVision.x) < TURRET_DEGREE_TOLERANCE){
+      readyToShoot = true;
+    } else {
+      readyToShoot = false;
+    }
   }
 
   public void setTurretHeading(double newHeading){
@@ -212,20 +229,9 @@ public class FuelSystem extends Subsystem {
     }
   }
 
-  public void turnTurret(){
-    if (driverStation.dpadLeft()) {
-      turret.set(-TURRET_SPEED);
-    }else if (driverStation.dpadRight()){
-      turret.set(TURRET_SPEED);
-    }else{
-      turret.set(0);
-    }
-  }
-
   public void runTransfer (){
-      upperTransfer.set(TRANSFER_SPEED);
-      lowerTransfer.set(TRANSFER_SPEED);
-
+    upperTransfer.set(TRANSFER_SPEED);
+    lowerTransfer.set(TRANSFER_SPEED);
   }
 
   public void runCollector (){
@@ -345,5 +351,7 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putNumber("turret target heading", targetTurretHeading);
     SmartDashboard.putNumber("distance to target", turretVision.getDistanceFromTarget());
     SmartDashboard.putNumber("shooter power", 0);
+    SmartDashboard.putBoolean("Ready to Fire", readyToShoot);
+
   }
 }

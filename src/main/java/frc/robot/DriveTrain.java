@@ -58,12 +58,13 @@ public class DriveTrain extends Subsystem{
     
     //set final power levels for modifing power levels  
     private final double AXIAL_SLOW_POWER_LEVEL    = 0.2;
-    private final double AXIAL_REGULAR_POWER_LEVEL = 0.2;
-    private final double AXIAL_FAST_POWER_LEVEL    = 1.0;
+    private final double YAW_SLOW_POWER_LEVEL      = 0.1;
 
-    private final double YAW_SLOW_POWER_LEVEL    = 0.1;
-    private final double YAW_REGULAR_POWER_LEVEL = 0.2;
-    private final double YAW_FAST_POWER_LEVEL    = 0.4;
+    private final double AXIAL_REGULAR_POWER_LEVEL = 0.3;
+    private final double YAW_REGULAR_POWER_LEVEL   = 0.2;
+
+    private final double AXIAL_FAST_POWER_LEVEL    = 1.0;
+    private final double YAW_FAST_POWER_LEVEL      = 0.4;
 
     //set gyro final variables
     private final double GYRO_SCALE                           = 1.00;
@@ -83,7 +84,6 @@ public class DriveTrain extends Subsystem{
     //declare variables for gyro and heading correction
     private Timer timer;
     private double lastTime                  = 0;
-    private double robotHeading              = 0;
     private double targetHeading             = 0;
     private boolean autoHeading              = false;
     private double requiredHeadingCorrection = 0;
@@ -91,9 +91,15 @@ public class DriveTrain extends Subsystem{
     private boolean turning                  = false; 
 
     //declare variables for tracting robot location
-    private double x;
-    private double y;
+    public double x             = 0;
+    public double y             = 0;
+    public double robotHeading  = 0;
+
+    public Point robotLocation = new Point(0,0,0);
+
     private double turretHeadingFieldCentric;
+
+    PIDController headingPID = new PIDController(.05, 0, 0, 0, 5, 1, true, "Gyro");
 
     //constructor
     public  DriveTrain () {
@@ -152,8 +158,6 @@ public class DriveTrain extends Subsystem{
         autoHeading               = false;
         requiredHeadingCorrection = 0;
         robotHeadingModifier      = 0;
-
-        PIDController headingPID = new PIDController(.05, 0, 0, 0, 5, 1, true, "Gyro");
         
         //start timer thats used to adjust axial inputs
         timer = new Timer();
@@ -167,9 +171,6 @@ public class DriveTrain extends Subsystem{
         targetHeading        = newHeading;
         robotHeadingModifier = newHeading;
     }    
-
-    //called every cycle in robot periodic
-
 
     //use the target heading and robot heading to modify the yaw value to continue driving strait
     public void runHoldHeading(){
@@ -189,12 +190,7 @@ public class DriveTrain extends Subsystem{
         }
 
         if(autoHeading){
-            requiredHeadingCorrection = angleWrap180(targetHeading - robotHeading);
-            if(Math.abs(requiredHeadingCorrection) > DEGREES_TOLERANCE){
-                yaw = requiredHeadingCorrection * HEADING_GAIN;
-            }else {
-                yaw = 0;
-            }
+            yaw = headingPID.run(robotHeading, targetHeading);
         }
     }
     
@@ -208,9 +204,7 @@ public class DriveTrain extends Subsystem{
         if (driverStation.leftBumper()){
             axialPowerLevel = AXIAL_SLOW_POWER_LEVEL;
             yawPowerLevel   = YAW_SLOW_POWER_LEVEL;
-        }
-         
-        if (driverStation.rightBumper()){
+        } else if (driverStation.rightBumper()){
             axialPowerLevel = AXIAL_FAST_POWER_LEVEL;
             yawPowerLevel   = YAW_FAST_POWER_LEVEL;
         } else {
@@ -232,15 +226,9 @@ public class DriveTrain extends Subsystem{
             turretHeadingFieldCentric = angleWrap180(robotHeading + fuelSystem.getTurretHeading());
             x = turretVision.getDistanceFromTarget() * Math.cos(turretHeadingFieldCentric);
             y = turretVision.getDistanceFromTarget() * Math.sin(turretHeadingFieldCentric);
+            robotLocation.set(x, y, robotHeading);
         }
     }
-
-    //use the reflective tape location and the heading of the shooter to find the robots location on the field
-    /**Uses
-     * distance to target (in feet)
-     * heading of robot   (in degrees)
-     * heading of turret  (in degrees)
-     */
 
     public void calculateAndSetMotorPowers(){
         //reduce axial and yaw according to power level
@@ -253,7 +241,7 @@ public class DriveTrain extends Subsystem{
 
         if(deltaTime != 0){
             if(Math.abs(deltaPower/deltaTime) > MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE){
-                axial = lastAxial + Math.signum(deltaPower)*deltaTime*MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE;
+                axial = lastAxial + Math.signum(deltaPower) * deltaTime * MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE;
             }
         }
     
@@ -282,11 +270,6 @@ public class DriveTrain extends Subsystem{
         setVectorsToController();
         runHoldHeading();
         calculateAndSetMotorPowers();
-    }
-
-    //move the left and right motor position to target positions
-    public void moveToPosition(double leftTarget, double rightTarget, double headingTarget){
-
     }
 
     @Override

@@ -40,4 +40,15 @@ public class Point {
     public double getDistanceBetween(Point p1){
         return Math.sqrt(Math.pow((this.getX() - p1.getX()),2) + Math.pow((this.getY() - p1.getY()),2));
     }
+
+    public void set(double x, double y, double heading){
+        this.x = x;
+        this.y = y;
+        this.heading = heading;
+    }
+
+    public void set(double x, double y){
+        this.x = x;
+        this.y = y;
+    }
 }
