@@ -66,6 +66,11 @@ public class ColorWheel {
 
     private boolean firstTime = false;
     private double startTime = 0;
+    private int flagTurn = 0;
+    private int yellow = 0;
+    private int green = 0;
+    private int blue = 0;
+    private int red = 0;
 
 
     // constructor
@@ -101,7 +106,7 @@ public class ColorWheel {
         firstTime = false;
 
     }
-/*
+
     //run the motor and use the sensor/camera so that the table turns 3.5 rotations
     public void turnRotations(){
         wheelCount = 0;
@@ -131,7 +136,7 @@ public class ColorWheel {
         colorArm.set(DoubleSolenoid.Value.kReverse);
         //turn the motor off and retract 
     }
-
+/*
     //run the motor and use the sensor/camera so that the table turns to red
     public void turnToRed(){
         wheelCount = 0;
@@ -189,7 +194,7 @@ public class ColorWheel {
         colorMotor.set(0);
         colorArm.set(DoubleSolenoid.Value.kReverse);
     }
-
+*/
     //run the motor and use the sensor/camera so that the table turns to yellow
     public void turnToYellow(){
         wheelCount = 0;
@@ -197,16 +202,19 @@ public class ColorWheel {
         colorArm.set(DoubleSolenoid.Value.kForward);
         colorMotor.set(maxPower * 0.5);
         //extends the color arm and sets the power to half the max RPM
-        while (wheelCount < 1){
+        if (wheelCount < 1){
             detectedColor = m_colorSensor.getColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
             if (match.color == kGreenTarget){
                 wheelCount++;
-                //if the color is equal to the necessary ofset, exit the loop
+                //if the color is equal to the necessary ofset, exit the flag loop
+                yellow = 0;
             }
         }
-        colorMotor.set(0);
-        colorArm.set(DoubleSolenoid.Value.kReverse);
+        if (yellow == 0){
+            colorMotor.set(0);
+            colorArm.set(DoubleSolenoid.Value.kReverse);
+        }
     }
     public void motorTestOn(){
 
@@ -215,7 +223,7 @@ public class ColorWheel {
 
     }
 
-*/
+
     public void teleopPeriodic() {
         //Driver 2 - (Button) extend out mechanism
         //Driver 2 - (Button) Spin wheel 3.5 rotations
@@ -260,10 +268,10 @@ public class ColorWheel {
         } else if (driverStation.y()){
             SmartDashboard.putString("Turn to:", "");
 
-        } else if (driverStation.rightTrigger()){
-            SmartDashboard.putString("Turn to:", "");
-
-        } */else if (driverStation.leftBumper()){
+        } */else if (driverStation.rightTrigger()){
+            SmartDashboard.putString("Turn to:", "Yellow");
+            yellow = 1;
+        } else if (driverStation.leftBumper()){
             colorMotor.set(0.5);
             SmartDashboard.putString("colorMotorOn", "Foward");
         } else if (driverStation.rightBumper()){
@@ -274,6 +282,10 @@ public class ColorWheel {
             SmartDashboard.putString("colorMotorOn", "Off");
         }
         
+        if (yellow == 1){
+            turnToYellow();
+        }
+
         {
             detectedColor = m_colorSensor.getColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
