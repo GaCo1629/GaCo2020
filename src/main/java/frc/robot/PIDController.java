@@ -66,7 +66,7 @@ private boolean firstTime = true;
         }
 
         returnVal = 0;
-        double error     = target - current;
+        double error = target - current;
 
         if(angleWrapOn){
             error = angleWrap180(error);

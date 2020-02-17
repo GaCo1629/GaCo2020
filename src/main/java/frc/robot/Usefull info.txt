@@ -5,29 +5,34 @@ http://revrobotics.com/content/sw/color-sensor-v3/sdk/REVColorSensorV3.json
 
 CONTROLS
 FuelSystem :
-    left D-pad
-    right D-pad
-    right trigger
-    A
-    B
-    X
-    Y
-    3rd controller
+    Pilot
+        left D-pad    - turn turret left
+        right D-pad   - turn turret right
+        right trigger - run intake and transfer up
+        left trigger  - run intake and transfer down
+        A             - turn off shooter pid 
+        B             - increase the target rpm by 50
+        X             - decrease the target rpm by 50
+        Y             - turn on shooter pid
+
+    minion
+        A             - enable turret pid
+        B             - disable turret pid 
+        X             - increase target turret heading by .5 degrees
+        Y             - decrease target turret heading by .5 degrees
+        left bumper   - activate automated turret heading and shooter rpm using limelight data
+
 
 DriveTrain
-    left joysick
-    right joystick
-    right bumper
+    Pilot
+        left joysick   - drive train axial power
+        right joystick - drive train yaw power
+        left bumper    - activate slow mode
+        right bumper   - activate power mode
 
 ColorWheel
-    2nd controller  
-
-
-
-
-
-
-
+    Copiolot
+        
 
 
 CAN Bus Ids
@@ -48,7 +53,6 @@ NEO Motors
     rightLift             = 18
 
     rightSpare            = 19
-######################################################################################################
 
 PWM
 Talon Motors
@@ -57,16 +61,11 @@ Talon Motors
     upperTransfer         = 3
     collecter             = 1
 
-######################################################################################################
-
-
 soliniods
     collecterState        = 0/1
     colorArm              = 2/3
 
-######################################################################################################
-
 lime light
-
+    turretVision          = limelight on turret
 
 color sensors

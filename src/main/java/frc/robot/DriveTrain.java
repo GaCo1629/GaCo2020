@@ -26,7 +26,7 @@ public class DriveTrain extends Subsystem{
     */
 
     private DriverStation driverStation;
-    private Vision        frontLimelight;
+    private Vision        turretVision;
     private FuelSystem    fuelSystem;
 
     //declaring motors
@@ -100,9 +100,9 @@ public class DriveTrain extends Subsystem{
     }
 
     //initalize hardware for the drive train
-    public void init(DriverStation driverStation, Vision frontLimelight, FuelSystem fuelSystem){
+    public void init(DriverStation driverStation, Vision turretVision, FuelSystem fuelSystem){
         this.driverStation  = driverStation;
-        this.frontLimelight = frontLimelight;
+        this.turretVision   = turretVision;
         this.fuelSystem     = fuelSystem;
 
         leftDriveMaster  = new CANSparkMax(leftDriveMasterCANid,  CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -169,10 +169,7 @@ public class DriveTrain extends Subsystem{
     }    
 
     //called every cycle in robot periodic
-    public double updateRobotHeading(){
-        robotHeading = angleWrap180((gyro.getAngle() * GYRO_SCALE) + robotHeadingModifier);
-        return robotHeading;
-    }
+
 
     //use the target heading and robot heading to modify the yaw value to continue driving strait
     public void runHoldHeading(){
@@ -208,12 +205,11 @@ public class DriveTrain extends Subsystem{
     }
         
     public void adjustPowerLevel(){
-        //free up left bumper for jaylen
-        /*if (driverStation.leftBumper()){
+        if (driverStation.leftBumper()){
             axialPowerLevel = AXIAL_SLOW_POWER_LEVEL;
             yawPowerLevel   = YAW_SLOW_POWER_LEVEL;
         }
-        */ 
+         
         if (driverStation.rightBumper()){
             axialPowerLevel = AXIAL_FAST_POWER_LEVEL;
             yawPowerLevel   = YAW_FAST_POWER_LEVEL;
@@ -223,9 +219,20 @@ public class DriveTrain extends Subsystem{
         }
     }
 
-    public void updateDriveEncoders(){
+    public void updateVariables(){
+        //update drive encoders
         leftEncoder  = leftDriveEncoder.getPosition();
         rightEncoder = rightDriveEncoder.getPosition();
+
+        //update robot heading
+        robotHeading = angleWrap180((gyro.getAngle() * GYRO_SCALE) + robotHeadingModifier);
+
+        //update robot location if limelight is visible
+        if(turretVision.targetVisible){
+            turretHeadingFieldCentric = angleWrap180(robotHeading + fuelSystem.getTurretHeading());
+            x = turretVision.getDistanceFromTarget() * Math.cos(turretHeadingFieldCentric);
+            y = turretVision.getDistanceFromTarget() * Math.sin(turretHeadingFieldCentric);
+        }
     }
 
     //use the reflective tape location and the heading of the shooter to find the robots location on the field
@@ -234,15 +241,6 @@ public class DriveTrain extends Subsystem{
      * heading of robot   (in degrees)
      * heading of turret  (in degrees)
      */
-    public void getRobotLocation(){
-
-
-        turretHeadingFieldCentric = angleWrap180(robotHeading + fuelSystem.getTurretHeading());
-
-        //x = distanceToTarget * Math.cos(turretHeadingFieldCentric);
-        //y = distanceToTarget * Math.sin(turretHeadingFieldCentric);
-
-    }
 
     public void calculateAndSetMotorPowers(){
         //reduce axial and yaw according to power level
@@ -287,7 +285,7 @@ public class DriveTrain extends Subsystem{
     }
 
     //move the left and right motor position to target positions
-    public void moveToPosition(double leftTarget, double rightTarget){
+    public void moveToPosition(double leftTarget, double rightTarget, double headingTarget){
 
     }
 
@@ -299,20 +297,22 @@ public class DriveTrain extends Subsystem{
 
     //Driver 1 - left stick y drive forward/backward
     //Driver 1 - right stick x turn left/right
-    //Driver 1 - (Button) Power mode
-    //Driver 1 - (Button) Slow mode
+    //Driver 1 - right bumper Power mode
+    //Driver 1 - left bumper Slow mode
     }
 
     @Override
     public void show() {
-        SmartDashboard.putNumber("Axial", axial);
-        SmartDashboard.putNumber("Yaw", yaw);
-        SmartDashboard.putNumber("Heading", robotHeading);
+        SmartDashboard.putNumber ("Robot X", x);
+        SmartDashboard.putNumber ("Robot Y", y);
+        SmartDashboard.putNumber ("Heading", robotHeading);
+        SmartDashboard.putNumber ("Axial", axial);
+        SmartDashboard.putNumber ("Yaw", yaw);
         SmartDashboard.putBoolean("Truning", turning);
         SmartDashboard.putBoolean("Auto Heading On?", autoHeading);
-        SmartDashboard.putNumber("Target Heading", targetHeading);
-        SmartDashboard.putNumber("Left Encoder Position", leftEncoder);
-        SmartDashboard.putNumber("Right Encoder Position", rightEncoder);
+        SmartDashboard.putNumber ("Target Heading", targetHeading);
+        SmartDashboard.putNumber ("Left Encoder Position", leftEncoder);
+        SmartDashboard.putNumber ("Right Encoder Position", rightEncoder);
    }
 
     public double angleWrap180(double angle){
@@ -335,51 +335,50 @@ public class DriveTrain extends Subsystem{
      * right back   - x
      */
     public void driveMotorTest(){
-        /*
-            if(driverStation.dpadUp()){
-                leftDriveMaster.set(.1);
-            }else{
-                leftDriveMaster.set(0);
-            }
+    /*
+        if(driverStation.dpadUp()){
+            leftDriveMaster.set(.1);
+        }else{
+            leftDriveMaster.set(0);
+        }
+
+        if(driverStation.dpadLeft()){
+            leftDriveBack.set(.1);
+        }else{
+            leftDriveBack.set(0);
+        }
     
-            if(driverStation.dpadLeft()){
-                leftDriveBack.set(.1);
-            }else{
-                leftDriveBack.set(0);
-            }
+        if(driverStation.dpadRight()){
+            leftDriveFront.set(.1);
+        }else{
+            leftDriveFront.set(0);
+        }
+
+        if(driverStation.x()){
+            rightDriveBack.set(.1);
+        }else{
+            rightDriveBack.set(0);
+        }
+
+        if(driverStation.a()){
+            rightDriveFront.set(.1);
+        }else{
+            rightDriveFront.set(0);
+        }
+
+        if(driverStation.y()){
+            rightDriveMaster.set(.1);
+        }else{
+            rightDriveMaster.set(0);
+        }
+    */
     
-            if(driverStation.dpadRight()){
-                leftDriveFront.set(.1);
-            }else{
-                leftDriveFront.set(0);
-            }
+    /*
+        double left    = driverStation.getLeftStickY();
+        double right   = driverStation.getRightStickY();
     
-            if(driverStation.x()){
-                rightDriveBack.set(.1);
-            }else{
-                rightDriveBack.set(0);
-            }
-    
-            if(driverStation.a()){
-                rightDriveFront.set(.1);
-            }else{
-                rightDriveFront.set(0);
-            }
-    
-            if(driverStation.y()){
-                rightDriveMaster.set(.1);
-            }else{
-                rightDriveMaster.set(0);
-            }
-        */
-    
-        /*
-            double left    = driverStation.getLeftStickY();
-            double right   = driverStation.getRightStickY();
-    
-            rightDriveMaster.set(right);
-    
-            leftDriveMaster.set(left);
+        rightDriveMaster.set(right);
+        leftDriveMaster.set(left);
         */
         }
 }

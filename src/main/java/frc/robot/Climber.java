@@ -10,11 +10,8 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 // Public class to contain all the hardware elements (BotBits)
-public class Climber {
+public class Climber extends Subsystem{
 
     DriverStation driverStation;
 
@@ -44,6 +41,7 @@ public class Climber {
 
     }
 
+    @Override
     public void teleopPeriodic() {
         //Driver 2 - (Button) Extend Up Climber
         //Driver 2 - (Button) Climb up

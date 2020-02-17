@@ -19,29 +19,28 @@ public class Vision {
     public double height;
     public double pipeline;
     public double dimensional;
+    public boolean targetVisible = false;
     private final double MIN_WIDTH = 50;
     private final double MAX_WIDTH = 370;
+    
 
     private String limelightName;
-
 
     public  Vision (String name) {
         limelightName = name;
     }
     public double getDistanceFromTarget() {
-        double distanceToTarget;
-        if(width <= MIN_WIDTH){
-          distanceToTarget= 9;
-    
-        } else if (width >= MAX_WIDTH){
-          distanceToTarget = 41;
-        }
-        else  {
-        distanceToTarget =116+ (-1.87*width) +( 0.0139*Math.pow(width, 2)) +-0.000048*Math.pow(width, 3) + 0.0000000626*Math.pow(width, 4);
-        }
-       return distanceToTarget;
-    
+      double distanceToTarget;
+      if(width <= MIN_WIDTH){
+        distanceToTarget= 9;
+      } else if (width >= MAX_WIDTH){
+        distanceToTarget = 41;
       }
+      else  {
+        distanceToTarget = 106+ (-1.52*width) +( 0.0103*Math.pow(width, 2)) + -0.000033*Math.pow(width, 3) + 0.0000000406*Math.pow(width, 4);
+      }
+     return distanceToTarget;    
+    }
 
     public void updateTarget(){
         //Set Up Tables
@@ -60,6 +59,7 @@ public class Vision {
         y = ty.getDouble(0.0);
         width = thor.getDouble(0.0);
         skew = ts.getDouble(0.0);
+        targetVisible = true;
    
         //Smart Dashboard Display
         SmartDashboard.putNumber("ValidTarget?", valid);
@@ -68,6 +68,8 @@ public class Vision {
         SmartDashboard.putNumber("TargetWidth", width);
         SmartDashboard.putNumber("TargetSkew", skew);
 
+     } else {
+       targetVisible = false;
      }
     
      
