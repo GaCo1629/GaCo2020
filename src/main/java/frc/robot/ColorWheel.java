@@ -4,9 +4,9 @@
 
 package frc.robot;
 
-import com.revrobotics.CANEncoder;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
+//import com.revrobotics.CANEncoder;
+//import com.revrobotics.CANSparkMax;
+//import com.revrobotics.CANSparkMaxLowLevel;
 import edu.wpi.first.wpilibj.I2C;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -216,12 +216,7 @@ public class ColorWheel {
             colorArm.set(DoubleSolenoid.Value.kReverse);
         }
     }
-    public void motorTestOn(){
 
-    }
-    public void motorTestOff(){
-
-    }
 
 
     public void teleopPeriodic() {
@@ -235,9 +230,9 @@ public class ColorWheel {
         
 
 
-        if (driverStation.a()){
+        if (driverStation.x()){
             colorArm.set(DoubleSolenoid.Value.kForward);
-        } else if (driverStation.b()){
+        } else if (driverStation.y()){
             colorArm.set(DoubleSolenoid.Value.kReverse);
         }
 
@@ -262,10 +257,10 @@ public class ColorWheel {
             
             
             
-        } /* else if (driverStation.x()){
+        } /* else if (driverStation.a()){
             SmartDashboard.putString("Turn to:", "");
 
-        } else if (driverStation.y()){
+        } else if (driverStation.b()){
             SmartDashboard.putString("Turn to:", "");
 
         } */else if (driverStation.rightTrigger()){
@@ -284,6 +279,12 @@ public class ColorWheel {
         
         if (yellow == 1){
             turnToYellow();
+        }
+
+        if (driverStation.l3()){
+            SmartDashboard.putString("Turn to rotation", "On");
+        } else {
+            SmartDashboard.putString("Turn to rotation", "Off");
         }
 
         {

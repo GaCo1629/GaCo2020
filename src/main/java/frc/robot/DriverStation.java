@@ -33,6 +33,9 @@ public class DriverStation {
     final int L_STICK_V = 1 ;
     final int L_STICK_H = 0 ;
 
+    final int L3 = 9;
+    final int R3 = 10;
+
     //constructor
     public  DriverStation () {
     }
@@ -123,6 +126,13 @@ public class DriverStation {
         return stick.getRawButton(R_STICK);
        }
 
+    public boolean l3(){
+        return stick.getRawButton(L3);
+    }
+
+    public boolean r3(){
+        return stick.getRawButton(R3);
+    }
     
     
 }
