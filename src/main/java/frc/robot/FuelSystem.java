@@ -11,6 +11,7 @@ import com.revrobotics.CANSparkMaxLowLevel;
 import frc.robot.PIDController;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -30,6 +31,7 @@ public class FuelSystem extends Subsystem {
   private DriverStation driverStation;
   private DriverStation driverStation2;
   private Vision        turretVision;
+  private DriveTrain    driveTrain;
 
   private VictorSP lowerTransfer;
   private VictorSP upperTransfer;
@@ -73,9 +75,15 @@ public class FuelSystem extends Subsystem {
   private boolean turretPIDEnabled     = false;
   private double turretHeadingModifier = 0;
 
+  private double lastHeading = 0;
+  private double lastTime    = 0;
+  private boolean firstTime  = true;
+
   public boolean readyToShoot = false;
 
-  double tempRPM;
+  private double tempRPM;
+
+  private Timer timer;  
 
   PIDController shooterPID = new PIDController(.0004,.000001,.00005,5700,500, 0, false, "Shooter");
   PIDController turretPID  = new PIDController(.04, .001, 0, 0, 2, .05, false, "Turret");
@@ -87,10 +95,11 @@ public class FuelSystem extends Subsystem {
   }
 
   //initalize fuel system 
-  public void init(DriverStation driverStation, DriverStation driverStation2, Vision turretVision){
+  public void init(DriverStation driverStation, DriverStation driverStation2, Vision turretVision, DriveTrain driveTrain){
     this.driverStation  = driverStation;
     this.driverStation2 = driverStation2;
     this.turretVision   = turretVision;
+    this.driveTrain     = driveTrain;
 
     //initialize motors
     leftShooter  = new CANSparkMax(L_SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -129,6 +138,10 @@ public class FuelSystem extends Subsystem {
     shooterPIDEnabled   = false;
 
     readyToShoot = false;
+
+    firstTime = true;
+
+    timer.reset();
   }
   
   @Override
@@ -175,6 +188,22 @@ public class FuelSystem extends Subsystem {
     }
 
     return val;
+  }
+
+  public double getHeadingChange(){
+    double currentTime    = timer.get();
+    double currentHeading = driveTrain.robotHeading;
+    double returnVal      = 0;
+    if (currentTime - lastTime > .1) {
+      lastTime    = currentTime;
+      lastHeading = currentHeading;
+      return 0;
+    } else {
+      returnVal   = currentHeading - lastHeading;
+      lastHeading = currentHeading;
+      lastTime = currentTime;
+      return returnVal;
+    }
   }
 
   public void updateVariables(){
@@ -323,7 +352,7 @@ public class FuelSystem extends Subsystem {
     //Driver 2 - (button) collector on/off
     //Driver 2 (button) run storage system
 
-    if(driverStation.rightTrigger()){
+    if (driverStation.rightTrigger()){
       runTransfer();
       runCollector();
     } else if (driverStation.leftTrigger()){
@@ -335,13 +364,12 @@ public class FuelSystem extends Subsystem {
     }
 
     if(driverStation2.leftBumper() && turretVision.targetVisible){
-      turnTurretTo(turretHeading + turretVision.x);
+      turnTurretTo(turretHeading + turretVision.x - getHeadingChange());
       setShooterRPM(getShooterRPM(turretVision.getDistanceFromTarget()));
     } else {
       turnTurretPID();
       shooterOnRPM();
     }
-    
   }
 
   @Override

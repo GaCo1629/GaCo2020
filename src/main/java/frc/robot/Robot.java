@@ -28,7 +28,7 @@ public class Robot extends TimedRobot {
     copilot.init(1);
     minion.init(2);
     driveTrain.init(pilot, turretVision, fuelSystem);
-    fuelSystem.init(pilot, minion, turretVision);
+    fuelSystem.init(pilot, minion, turretVision, driveTrain);
     colorWheel.init(copilot);
     purePursuit.init(driveTrain);
     //climber.init(driverStation);  
