@@ -36,7 +36,7 @@ public class Vision {
         distanceToTarget = 41;
       }
       else  {
-        distanceToTarget = 106+ (-1.52*width) +( 0.0103*Math.pow(width, 2)) + -0.000033*Math.pow(width, 3) + 0.0000000406*Math.pow(width, 4);
+        distanceToTarget = 106+ (-1.52*width) +( 0.0103*Math.pow(width, 2)) + -0.000033*Math.pow(width, 3) + 0.0000000406*Math.pow(width, 4) - 2.4;
       }
      return distanceToTarget;    
     }
@@ -61,7 +61,7 @@ public class Vision {
         targetVisible = true;
    
         //Smart Dashboard Display
-        SmartDashboard.putNumber("ValidTarget?", valid);
+        SmartDashboard.putBoolean("ValidTarget?", targetVisible);
         SmartDashboard.putNumber("LimelightX", x);
         SmartDashboard.putNumber("LimelightY", y);
         SmartDashboard.putNumber("TargetWidth", width);

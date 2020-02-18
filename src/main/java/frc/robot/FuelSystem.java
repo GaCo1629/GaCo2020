@@ -44,7 +44,7 @@ public class FuelSystem extends Subsystem {
   private DoubleSolenoid collectorState;
 
   private final double TRANSFER_SPEED  = 1;
-  private final double COLLECTOR_SPEED = .5;
+  private final double COLLECTOR_SPEED = .8;
 
   private final double TURRET_SPEED           = 0.1;
   private final double TURRET_REVS_PER_DEGREE = 1.27866;
@@ -54,8 +54,8 @@ public class FuelSystem extends Subsystem {
   private final double MIN_SHOOTER_RPM        = 3000;
   private final double MAX_TURRET_ANGLE       = 100;
 
-  private final double SHOOTER_RPM_TOLERANCE   = 50;
-  private final double TURRET_DEGREE_TOLERANCE = .3;
+  private final double SHOOTER_RPM_TOLERANCE   = 75;
+  private final double TURRET_DEGREE_TOLERANCE = .2;
 
   private static final int L_SHOOTER_ID  = 21;
   private static final int R_SHOOTER_ID  = 20;
@@ -75,8 +75,10 @@ public class FuelSystem extends Subsystem {
 
   public boolean readyToShoot = false;
 
+  double tempRPM;
+
   PIDController shooterPID = new PIDController(.0004,.000001,.00005,5700,500, 0, false, "Shooter");
-  PIDController turretPID  = new PIDController(.05, 0, 0, 0, 2, .05, false, "Turret");
+  PIDController turretPID  = new PIDController(.04, .001, 0, 0, 2, .05, false, "Turret");
 
   
   //constructor
@@ -273,9 +275,9 @@ public class FuelSystem extends Subsystem {
       distanceFromTargetFT = MAX_DISTANCE_TO_TARGET;
     }
 
-    return (85776 + -21115 * distanceFromTargetFT + 2199 * Math.pow(distanceFromTargetFT, 2)
-    + -119.00 * Math.pow(distanceFromTargetFT, 3) + 3.580000 * Math.pow(distanceFromTargetFT, 4)
-    + -0.0563 * Math.pow(distanceFromTargetFT, 5) + 0.000363 * Math.pow(distanceFromTargetFT, 6));  
+    tempRPM = 24958.1 + -3699.15 * distanceFromTargetFT + (226.289 * Math.pow(distanceFromTargetFT, 2))
+    +(- 5.84237 * Math.pow(distanceFromTargetFT, 3)) + (0.054857 * Math.pow(distanceFromTargetFT, 4));
+  return tempRPM;
   }
 
   public void shooterOnRPM(){
@@ -350,7 +352,9 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putNumber("turret heading", turretHeading);
     SmartDashboard.putNumber("turret target heading", targetTurretHeading);
     SmartDashboard.putNumber("distance to target", turretVision.getDistanceFromTarget());
-    SmartDashboard.putNumber("shooter power", 0);
+    SmartDashboard.putNumber("Turret Required Correction", turretVision.x);
+    SmartDashboard.putNumber("Temp RPM", tempRPM);
+
     SmartDashboard.putBoolean("Ready to Fire", readyToShoot);
 
   }
