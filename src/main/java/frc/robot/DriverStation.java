@@ -36,13 +36,16 @@ public class DriverStation {
     final int L3 = 9;
     final int R3 = 10;
 
+    private boolean isLogitech;
+
     //constructor
     public  DriverStation () {
     }
 
     //initialzie all controllers and buttons
-    public void init(int portNum) {
+    public void init(int portNum, boolean isLogitech) {
         stick = new Joystick(portNum);
+        this.isLogitech = isLogitech;
     }
     
     public boolean y(){
@@ -86,20 +89,36 @@ public class DriverStation {
     }
 
     public boolean dpadUp(){
-        return (stick.getPOV() == 270);
+        if(isLogitech){
+            return (stick.getPOV() == 0);
+        } else {
+            return (stick.getPOV() == 270);
+        }
     }
 
     public boolean dpadDown(){
-        return (stick.getPOV() == 90);
+        if(isLogitech){
+            return (stick.getPOV() == 180);
+        } else {
+            return (stick.getPOV() == 90);
+        }  
     }
 
     public boolean dpadLeft(){
-        return (stick.getPOV() == 180);
-    }
+        if(isLogitech){
+            return (stick.getPOV() == 270);
+        } else {
+            return (stick.getPOV() == 180);
+        }  
+    }   
 
     public boolean dpadRight(){
-        return (stick.getPOV() == 0);
-    }
+        if(isLogitech){
+            return (stick.getPOV() == 90);
+        } else {
+            return (stick.getPOV() == 0);
+        }  
+    }    
 
     public double getleftStickX(){
         return stick.getRawAxis(L_STICK_H);

@@ -9,7 +9,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 
 import frc.robot.PIDController;
-
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.VictorSP;
@@ -43,10 +43,14 @@ public class FuelSystem extends Subsystem {
 
   private CANEncoder shooterEncoder;
   private CANEncoder turretEncoder;
+
   private DoubleSolenoid lowerCollector;
 
+  private DigitalInput lowerBallDetector;
+  private DigitalInput upperBallDetector;
+
   private final double TRANSFER_SPEED  = 1;
-  private final double COLLECTOR_SPEED = .8;
+  private final double COLLECTOR_SPEED = .4;
 
   private final double TURRET_SPEED           = 0.1;
   private final double TURRET_REVS_PER_DEGREE = 1.27866;
@@ -119,6 +123,9 @@ public class FuelSystem extends Subsystem {
     upperTransfer = new VictorSP(U_TRANSFER_ID);
     lowerTransfer = new VictorSP(L_TRANSFER_ID);
     collector     = new VictorSP(COLLECTOR_ID);
+
+    lowerBallDetector = new DigitalInput(0);
+    upperBallDetector = new DigitalInput(1);
 
     //invert collector so that positive values move balls up twords the shooter
     lowerTransfer.setInverted(true);
@@ -236,11 +243,11 @@ public class FuelSystem extends Subsystem {
     }
     
     //move the target angle right if right d pad is pressed and left if left d pad is pressed
-    if (driverStation.dpadRight()) {
+    if (driverStation.dpadLeft()) {
       targetTurretHeading -= .5;
     }
 
-    if (driverStation.dpadLeft()){
+    if (driverStation.dpadRight()){
       targetTurretHeading += .5;
     }
       
@@ -252,24 +259,15 @@ public class FuelSystem extends Subsystem {
     }
   }
 
-  public void runTransfer (){
-    upperTransfer.set(TRANSFER_SPEED);
-    lowerTransfer.set(TRANSFER_SPEED);
-  }
-
   public void runCollector (){
     collector.set(COLLECTOR_SPEED);
   }
 
-  public void reverseTransfer (){
-    upperTransfer.set(-TRANSFER_SPEED);
-    lowerTransfer.set(-TRANSFER_SPEED);
- 
-  }
 
-  public void stopTransfer(){
-    upperTransfer.set(0);
-    lowerTransfer.set(0);
+  public void runTransfer (double upper, double lower){
+    upperTransfer.set(upper);
+    lowerTransfer.set(lower);
+ 
   }
 
   public void reverseCollector (){
@@ -345,13 +343,13 @@ public class FuelSystem extends Subsystem {
     //Driver 2 (button) run storage system
 
     if (driverStation.rightTrigger()){
-      runTransfer();
       runCollector();
+      runTransfer(1,1);
     } else if (driverStation.leftTrigger()){
-      reverseTransfer();
+      runTransfer(1,0);
       reverseCollector();
     } else {
-      stopTransfer();
+      runTransfer(0,0);
       stopCollector();
     }
 
@@ -378,6 +376,11 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putNumber("Turret Required Correction", turretVision.x);
     SmartDashboard.putNumber("Temp RPM", tempRPM);
     SmartDashboard.putBoolean("Ready to Fire", readyToShoot);
+
+    SmartDashboard.putBoolean("Lower Ball Detector", lowerBallDetector.get());
+    SmartDashboard.putBoolean("Upper Ball Detector", upperBallDetector.get());
+
+
 
   }
 }

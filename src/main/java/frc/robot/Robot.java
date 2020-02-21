@@ -24,9 +24,9 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     //initalize all classes
-    pilot.init(0);
-    copilot.init(1);
-    minion.init(2);
+    pilot.init(0, true);
+    copilot.init(1, false);
+    minion.init(2, false);
     driveTrain.init(pilot, turretVision, fuelSystem);
     fuelSystem.init(pilot, minion, turretVision, driveTrain);
     colorWheel.init(copilot);
