@@ -12,13 +12,15 @@ FuelSystem :
         B             - increase the target rpm by 50
         X             - decrease the target rpm by 50
         Y             - turn on shooter pid
+        Up Dpad       - enable turret pid
+        Down Dpad     - disable turret pid 
+        Right Dpad    - increase target turret heading by .5 degrees
+        Left Dpad     - decrease target turret heading by .5 degrees
 
     minion
-        A             - enable turret pid
-        B             - disable turret pid 
-        X             - increase target turret heading by .5 degrees
-        Y             - decrease target turret heading by .5 degrees
         left bumper   - activate automated turret heading and shooter rpm using limelight data
+        dpad up       - bring up collecter
+        dpad down     - drop collecter
 
 DriveTrain
     Pilot

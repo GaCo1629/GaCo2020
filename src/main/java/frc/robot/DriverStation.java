@@ -86,19 +86,19 @@ public class DriverStation {
     }
 
     public boolean dpadUp(){
-        return (stick.getPOV() == 0);
-    }
-
-    public boolean dpadDown(){
-        return (stick.getPOV() == 180);
-    }
-
-    public boolean dpadLeft(){
         return (stick.getPOV() == 270);
     }
 
-    public boolean dpadRight(){
+    public boolean dpadDown(){
         return (stick.getPOV() == 90);
+    }
+
+    public boolean dpadLeft(){
+        return (stick.getPOV() == 180);
+    }
+
+    public boolean dpadRight(){
+        return (stick.getPOV() == 0);
     }
 
     public double getleftStickX(){

@@ -63,7 +63,7 @@ public class DriveTrain extends Subsystem{
     private final double AXIAL_REGULAR_POWER_LEVEL = 0.3;
     private final double YAW_REGULAR_POWER_LEVEL   = 0.2;
 
-    private final double AXIAL_FAST_POWER_LEVEL    = 1.0;
+    private final double AXIAL_FAST_POWER_LEVEL    = 0.6;
     private final double YAW_FAST_POWER_LEVEL      = 0.4;
 
     //set gyro final variables
@@ -90,10 +90,15 @@ public class DriveTrain extends Subsystem{
     private double robotHeadingModifier      = 0;
     private boolean turning                  = false; 
 
+    private double lastHeading = 0;
+
+
     //declare variables for tracting robot location
     public double x             = 0;
     public double y             = 0;
     public double robotHeading  = 0;
+
+    private double test1;
 
     public Point robotLocation = new Point(0,0,0);
 
@@ -194,6 +199,7 @@ public class DriveTrain extends Subsystem{
         }
     }
     
+
     //use the controller values to set axial and yaw values
     public void setVectorsToController(){
         axial = driverStation.getLeftStickY();
@@ -229,6 +235,23 @@ public class DriveTrain extends Subsystem{
             robotLocation.set(x, y, robotHeading);
         }
     }
+
+    public double getHeadingChange(){
+        double currentTime    = timer.get();
+        double currentHeading = robotHeading;
+        double returnVal      = 0;
+        if (currentTime - lastTime > .1 || currentTime - lastTime == 0) {
+          lastTime    = currentTime;
+          lastHeading = currentHeading;
+          return 0;
+        } else {
+          returnVal   = (currentHeading - lastHeading)/(currentTime - lastTime);
+          lastHeading = currentHeading;
+          lastTime = currentTime;
+          test1 = returnVal;
+          return returnVal;
+        }
+      }
 
     public void calculateAndSetMotorPowers(){
         //reduce axial and yaw according to power level
@@ -296,6 +319,8 @@ public class DriveTrain extends Subsystem{
         SmartDashboard.putNumber ("Target Heading", targetHeading);
         SmartDashboard.putNumber ("Left Encoder Position", leftEncoder);
         SmartDashboard.putNumber ("Right Encoder Position", rightEncoder);
+        SmartDashboard.putNumber ("Heading Change RPM", test1);
+
    }
 
     public double angleWrap180(double angle){

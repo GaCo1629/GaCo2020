@@ -43,7 +43,7 @@ public class FuelSystem extends Subsystem {
 
   private CANEncoder shooterEncoder;
   private CANEncoder turretEncoder;
-  private DoubleSolenoid collectorState;
+  private DoubleSolenoid lowerCollector;
 
   private final double TRANSFER_SPEED  = 1;
   private final double COLLECTOR_SPEED = .8;
@@ -75,7 +75,6 @@ public class FuelSystem extends Subsystem {
   private boolean turretPIDEnabled     = false;
   private double turretHeadingModifier = 0;
 
-  private double lastHeading = 0;
   private double lastTime    = 0;
   private boolean firstTime  = true;
 
@@ -83,9 +82,9 @@ public class FuelSystem extends Subsystem {
 
   private double tempRPM;
 
-  private Timer timer;  
+  private Timer timer = new Timer();  
 
-  PIDController shooterPID = new PIDController(.0004,.000001,.00005,5700,500, 0, false, "Shooter");
+  PIDController shooterPID = new PIDController(.0003,.000001,.0005,5700,500, 0, false, "Shooter");
   PIDController turretPID  = new PIDController(.04, .001, 0, 0, 2, .05, false, "Turret");
 
   
@@ -125,7 +124,7 @@ public class FuelSystem extends Subsystem {
     lowerTransfer.setInverted(true);
     turret.setInverted(true);
 
-    //collectorState = new DoubleSolenoid(1,0,1);
+    lowerCollector = new DoubleSolenoid(1,1,0);
 
     //reset turret heading variables
     turretHeading       = 0;
@@ -134,13 +133,14 @@ public class FuelSystem extends Subsystem {
 
     //reset shooter RPM variables
     shooterRPM          = 0;
-    targetSpeedRPM      = 0;
+    targetSpeedRPM      = 2300;
     shooterPIDEnabled   = false;
+
+    lowerCollector.set(DoubleSolenoid.Value.kReverse);
 
     readyToShoot = false;
 
     firstTime = true;
-
     timer.reset();
   }
   
@@ -190,20 +190,12 @@ public class FuelSystem extends Subsystem {
     return val;
   }
 
-  public double getHeadingChange(){
-    double currentTime    = timer.get();
-    double currentHeading = driveTrain.robotHeading;
-    double returnVal      = 0;
-    if (currentTime - lastTime > .1) {
-      lastTime    = currentTime;
-      lastHeading = currentHeading;
-      return 0;
-    } else {
-      returnVal   = currentHeading - lastHeading;
-      lastHeading = currentHeading;
-      lastTime = currentTime;
-      return returnVal;
-    }
+  public void toggleSolenoid(){
+    if (driverStation2.dpadUp()){
+      lowerCollector.set(DoubleSolenoid.Value.kForward);
+  } else if (driverStation2.dpadDown()){
+      lowerCollector.set(DoubleSolenoid.Value.kReverse);
+  }
   }
 
   public void updateVariables(){
@@ -237,18 +229,18 @@ public class FuelSystem extends Subsystem {
   public void turnTurretPID(){
   
     //enable turret PID if left stick button is pressed and disable it if right stick is pressed
-    if(driverStation2.a()){
+    if(driverStation.dpadUp()){
       turretPIDEnabled = true;
-    } else if (driverStation2.b()){
+    } else if (driverStation.dpadDown()){
       turretPIDEnabled = false;
     }
     
     //move the target angle right if right d pad is pressed and left if left d pad is pressed
-    if (driverStation2.x()) {
+    if (driverStation.dpadRight()) {
       targetTurretHeading -= .5;
     }
 
-    if (driverStation2.y()){
+    if (driverStation.dpadLeft()){
       targetTurretHeading += .5;
     }
       
@@ -363,8 +355,11 @@ public class FuelSystem extends Subsystem {
       stopCollector();
     }
 
+    toggleSolenoid();
+
+
     if(driverStation2.leftBumper() && turretVision.targetVisible){
-      turnTurretTo(turretHeading + turretVision.x - getHeadingChange());
+      turnTurretTo(turretHeading + turretVision.x);
       setShooterRPM(getShooterRPM(turretVision.getDistanceFromTarget()));
     } else {
       turnTurretPID();
@@ -382,7 +377,6 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putNumber("distance to target", turretVision.getDistanceFromTarget());
     SmartDashboard.putNumber("Turret Required Correction", turretVision.x);
     SmartDashboard.putNumber("Temp RPM", tempRPM);
-
     SmartDashboard.putBoolean("Ready to Fire", readyToShoot);
 
   }
