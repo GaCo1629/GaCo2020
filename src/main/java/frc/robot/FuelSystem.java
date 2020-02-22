@@ -49,19 +49,24 @@ public class FuelSystem extends Subsystem {
   private DigitalInput lowerBallDetector;
   private DigitalInput upperBallDetector;
 
-  private final double TRANSFER_SPEED  = 1;
+  private boolean lastUpperBallDetectorState = true;
+  private boolean lastLowerBallDetectorState = true;
+
+  private boolean upperBallDetectorState     = true;
+  private boolean lowerBallDetectorState     = true;
+
   private final double COLLECTOR_SPEED = .4;
 
-  private final double TURRET_SPEED           = 0.1;
-  private final double TURRET_REVS_PER_DEGREE = 1.27866;
-  private final double MIN_DISTANCE_TO_TARGET = 10;
-  private final double MAX_DISTANCE_TO_TARGET = 40;
-  private final double MAX_SHOOTER_RPM        = 5700;
-  private final double MIN_SHOOTER_RPM        = 3000;
-  private final double MAX_TURRET_ANGLE       = 100;
+  private final double TURRET_REVS_PER_DEGREE   = 1.27866;
+  private final double MIN_DISTANCE_TO_TARGET   = 10;
+  private final double MAX_DISTANCE_TO_TARGET   = 40;
+  private final double MAX_SHOOTER_RPM          = 5700;
+  private final double MIN_SHOOTER_RPM          = 3000;
+  private final double MAX_TURRET_ANGLE         = 100;
+  private final double TURRET_PROPORTIONAL_GAIN = 0.002;
 
-  private final double SHOOTER_RPM_TOLERANCE   = 75;
-  private final double TURRET_DEGREE_TOLERANCE = .2;
+  private final double SHOOTER_RPM_TOLERANCE    = 75;
+  private final double TURRET_DEGREE_TOLERANCE  = .4;
 
   private static final int L_SHOOTER_ID  = 21;
   private static final int R_SHOOTER_ID  = 20;
@@ -78,9 +83,11 @@ public class FuelSystem extends Subsystem {
   private double targetTurretHeading   = 0;
   private boolean turretPIDEnabled     = false;
   private double turretHeadingModifier = 0;
+  private double ballsInIndex          = 0;
 
-  private double lastTime    = 0;
-  private boolean firstTime  = true;
+  private int prepairToFireFlag = 0;
+  private int fireOneFlag      = 0;
+
 
   public boolean readyToShoot = false;
 
@@ -91,7 +98,6 @@ public class FuelSystem extends Subsystem {
   PIDController shooterPID = new PIDController(.0003,.000001,.0005,5700,500, 0, false, "Shooter");
   PIDController turretPID  = new PIDController(.04, .001, 0, 0, 2, .05, false, "Turret");
 
-  
   //constructor
   public FuelSystem () {
         
@@ -147,7 +153,6 @@ public class FuelSystem extends Subsystem {
 
     readyToShoot = false;
 
-    firstTime = true;
     timer.reset();
   }
   
@@ -208,6 +213,10 @@ public class FuelSystem extends Subsystem {
   public void updateVariables(){
     shooterRPM = shooterEncoder.getVelocity();
     turretHeading = turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE + turretHeadingModifier;
+    lastLowerBallDetectorState = lowerBallDetectorState;
+    lastUpperBallDetectorState = upperBallDetectorState;
+    lowerBallDetectorState = lowerBallDetector.get();
+    upperBallDetectorState = upperBallDetector.get();
 
     /** say its ready to fire if
      * target is visible
@@ -329,8 +338,37 @@ public class FuelSystem extends Subsystem {
     }
   }
 
+  public void modifyTurretPIDProportional(){
+    turretPID.modifyProportional(Math.abs(driveTrain.getHeadingChange()) * TURRET_PROPORTIONAL_GAIN);
+  }
+
   public double getTurretHeading(){
     return turretHeading;
+  }
+
+  public void indexBalls(){
+    if(fireOneFlag == 1 && !(upperBallDetectorState && !lastUpperBallDetectorState)){
+      runTransfer(1,1);
+    } else if(prepairToFireFlag == 1 && upperBallDetectorState){
+      runTransfer(1,1);
+      fireOneFlag = 0;
+    } else if(!lowerBallDetectorState && upperBallDetectorState){
+      runTransfer(1,0);
+      fireOneFlag       = 0;
+      prepairToFireFlag = 0;
+    } else {
+      runTransfer(0,0);
+      fireOneFlag       = 0;
+      prepairToFireFlag = 0;
+    }
+
+    if(lowerBallDetectorState && !lastLowerBallDetectorState){
+      ballsInIndex++;
+    }
+
+    if(upperBallDetectorState && !lastUpperBallDetectorState){
+      ballsInIndex--;
+    }
   }
 
   @Override
@@ -346,17 +384,27 @@ public class FuelSystem extends Subsystem {
       runCollector();
       runTransfer(1,1);
     } else if (driverStation.leftTrigger()){
-      runTransfer(1,0);
+      runTransfer(-1,-1);
       reverseCollector();
     } else {
-      runTransfer(0,0);
+      indexBalls();
       stopCollector();
+    }
+
+    if(driverStation2.leftTrigger()){
+      //setting prepairToFireFlag equal to 1 will prepair to fire and then be set back to 0 when it is done prepairing to fire
+      prepairToFireFlag = 1;
+    }
+
+    if(driverStation2.a()){
+      //setting fireOneFlag equal to 1 will prepair to fire and then be set back to 0 when it has fired one
+      fireOneFlag = 1;
     }
 
     toggleSolenoid();
 
-
     if(driverStation2.leftBumper() && turretVision.targetVisible){
+      //modifyTurretPIDProportional();
       turnTurretTo(turretHeading + turretVision.x);
       setShooterRPM(getShooterRPM(turretVision.getDistanceFromTarget()));
     } else {
@@ -376,11 +424,7 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putNumber("Turret Required Correction", turretVision.x);
     SmartDashboard.putNumber("Temp RPM", tempRPM);
     SmartDashboard.putBoolean("Ready to Fire", readyToShoot);
-
-    SmartDashboard.putBoolean("Lower Ball Detector", lowerBallDetector.get());
-    SmartDashboard.putBoolean("Upper Ball Detector", upperBallDetector.get());
-
-
-
+    SmartDashboard.putBoolean("Lower Ball Detector", lowerBallDetectorState);
+    SmartDashboard.putBoolean("Upper Ball Detector", upperBallDetectorState);
   }
 }
