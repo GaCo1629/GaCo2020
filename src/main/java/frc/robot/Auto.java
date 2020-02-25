@@ -3,10 +3,20 @@
 /*-----------------------------*/
 
 package frc.robot;
+import frc.robot.EndPosition;
+import frc.robot.StartPosition;
+import frc.robot.NumBalls;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 
 
 public class Auto extends Subsystem {
+    //selctable choosers to tell auto
+    private SendableChooser <StartPosition> startPosition = new SendableChooser<>();
+    private SendableChooser <NumBalls> numBalls = new SendableChooser<>();
+    private SendableChooser <EndPosition> endPosition = new SendableChooser<>();
 
     private DriveTrain    driveTrain   = new DriveTrain();
     private FuelSystem    fuelSystem   = new FuelSystem();
@@ -29,7 +39,8 @@ public class Auto extends Subsystem {
         
     }
 
-  
+
+    ///// AUTO FUNCTIONS\\\\\  
 
 
 }
