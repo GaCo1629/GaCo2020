@@ -1,8 +1,9 @@
 package frc.robot;
 
 enum EndPosition{
-OTHER_TRENCH,
-OUR_TRENCH,
+ClOSE_TRENCH,
+FAR_TRENCH,
 CENTER, 
 NONE
 }
+

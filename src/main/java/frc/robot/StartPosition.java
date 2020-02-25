@@ -1,8 +1,8 @@
 package frc.robot;
 
 enum StartPosition{
-OTHER_TRENCH,
-OUR_TRENCH,
+CLOSE_TRENCH,
+FAR_TRENCH,
 CENTER, 
 NONE
 }
