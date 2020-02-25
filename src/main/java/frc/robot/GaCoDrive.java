@@ -7,7 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Joystick;
 
 // Public class to contain all the hardware elements (BotBits)
-public class DriverStation {
+public class GaCoDrive{
 
     //CONTROLLERS ARE PROGRAMMED IN XBOX MODE
     //set the switch on the back of the logitech 310 controller to X
@@ -39,11 +39,11 @@ public class DriverStation {
     private boolean isLogitech;
 
     //constructor
-    public  DriverStation () {
+    public  GaCoDrive () {
     }
 
     //initialzie all controllers and buttons
-    public void init(int portNum, boolean isLogitech) {
+    public void init(final int portNum, final boolean isLogitech) {
         stick = new Joystick(portNum);
         this.isLogitech = isLogitech;
     }

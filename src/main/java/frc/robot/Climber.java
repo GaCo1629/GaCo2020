@@ -13,15 +13,15 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 // Public class to contain all the hardware elements (BotBits)
 public class Climber extends Subsystem{
 
-    DriverStation driverStation;
+    GaCoDrive gaCoDrive;
 
     // constructor
     public Climber(){
     }
 
 
-    public void init(DriverStation driverStation) {
-        this.driverStation = driverStation;
+    public void init(GaCoDrive gaCoDrive) {
+        this.gaCoDrive = gaCoDrive;
         //initialize both climbing motors
         //initalize center of gravity adjustor motor
     }

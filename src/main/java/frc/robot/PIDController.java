@@ -16,16 +16,17 @@ private double kf;
 private double integralActiveZone;
 private boolean angleWrapOn = false;
 
-private double proportional    = 0;
-private double integral        = 0;
-private double derivative      = 0;
-private double feedForward     = 0;
-private double runningIntegral = 0;
-private double tolerance       = 0;
+private double proportional         = 0;
+private double proportionalModifier = 0;
+private double integral             = 0;
+private double derivative           = 0;
+private double feedForward          = 0;
+private double runningIntegral      = 0;
+private double tolerance            = 0;
 
-private double lastVal         = 0;
-private double lastError       = 0;
-private double returnVal       = 0;
+private double lastVal              = 0;
+private double lastError            = 0;
+private double returnVal            = 0;
 
 private String name = "";
 
@@ -72,7 +73,7 @@ private boolean firstTime = true;
             error = angleWrap180(error);
         }
 
-        proportional = error               * kp;
+        proportional = error               * (kp + proportionalModifier);
         integral     = error               * ki;
         derivative   = (lastVal - current) * kd;
         if(kf != 0){
@@ -93,8 +94,9 @@ private boolean firstTime = true;
 
         returnVal = proportional + derivative + feedForward + runningIntegral;
 
-        lastVal      = current;
-        lastError    = error;
+        lastVal              = current;
+        lastError            = error;
+        proportionalModifier = 0;
 
         if(Math.abs(error) < tolerance){
             returnVal = 0;
@@ -114,6 +116,10 @@ private boolean firstTime = true;
         }else{
             return input;
         }    
+    }
+
+    public void modifyProportional(double modifier){
+        proportionalModifier = modifier;
     }
 
     private void displayValues(){
