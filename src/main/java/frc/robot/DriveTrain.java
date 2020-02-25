@@ -25,7 +25,7 @@ public class DriveTrain extends Subsystem{
     rightDriveBackCANid   = 15
     */
 
-    private DriverStation driverStation;
+    private GaCoDrive gaCoDrive;
     private Vision        turretVision;
     private FuelSystem    fuelSystem;
 
@@ -111,8 +111,8 @@ public class DriveTrain extends Subsystem{
     }
 
     //initalize hardware for the drive train
-    public void init(DriverStation driverStation, Vision turretVision, FuelSystem fuelSystem){
-        this.driverStation  = driverStation;
+    public void init(GaCoDrive gaCoDrive, Vision turretVision, FuelSystem fuelSystem){
+        this.gaCoDrive = gaCoDrive;
         this.turretVision   = turretVision;
         this.fuelSystem     = fuelSystem;
 
@@ -202,15 +202,15 @@ public class DriveTrain extends Subsystem{
 
     //use the controller values to set axial and yaw values
     public void setVectorsToController(){
-        axial = driverStation.getLeftStickY();
-        yaw   = driverStation.getRightStickX();
+        axial = gaCoDrive.getLeftStickY();
+        yaw   = gaCoDrive.getRightStickX();
     }
         
     public void adjustPowerLevel(){
-        if (driverStation.leftBumper()){
+        if (gaCoDrive.leftBumper()){
             axialPowerLevel = AXIAL_SLOW_POWER_LEVEL;
             yawPowerLevel   = YAW_SLOW_POWER_LEVEL;
-        } else if (driverStation.rightBumper()){
+        } else if (gaCoDrive.rightBumper()){
             axialPowerLevel = AXIAL_FAST_POWER_LEVEL;
             yawPowerLevel   = YAW_FAST_POWER_LEVEL;
         } else {

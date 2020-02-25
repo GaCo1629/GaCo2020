@@ -27,7 +27,7 @@ import com.revrobotics.ColorMatch;
 // Public class to contain all the hardware elements (BotBits)
 public class ColorWheel {
 
-    DriverStation driverStation;
+    GaCoDrive gaCoDrive;
 
     private VictorSP colorMotor;
     //private Solenoid colorArm;
@@ -77,8 +77,8 @@ public class ColorWheel {
     public ColorWheel() {
     }
 
-    public void init(DriverStation driverStation) {
-        this.driverStation = driverStation;
+    public void init(GaCoDrive gaCoDrive) {
+        this.gaCoDrive = gaCoDrive;
 
         colorMotor  = new VictorSP(COLOR_MOTOR_ID);
 
@@ -230,13 +230,13 @@ public class ColorWheel {
         
 
 
-        if (driverStation.x()){
+        if (gaCoDrive.x()){
             colorArm.set(DoubleSolenoid.Value.kForward);
-        } else if (driverStation.y()){
+        } else if (gaCoDrive.y()){
             colorArm.set(DoubleSolenoid.Value.kReverse);
         }
 
-        if (driverStation.leftTrigger()){
+        if (gaCoDrive.leftTrigger()){
 
             SmartDashboard.putString("Turn to:", "Test");
 
@@ -257,19 +257,19 @@ public class ColorWheel {
             
             
             
-        } /* else if (driverStation.a()){
+        } /* else if (gaCoDrive.a()){
             SmartDashboard.putString("Turn to:", "");
 
-        } else if (driverStation.b()){
+        } else if (gaCoDrive.b()){
             SmartDashboard.putString("Turn to:", "");
 
-        } */else if (driverStation.rightTrigger()){
+        } */else if (gaCoDrive.rightTrigger()){
             SmartDashboard.putString("Turn to:", "Yellow");
             yellow = 1;
-        } else if (driverStation.leftBumper()){
+        } else if (gaCoDrive.leftBumper()){
             colorMotor.set(0.5);
             SmartDashboard.putString("colorMotorOn", "Foward");
-        } else if (driverStation.rightBumper()){
+        } else if (gaCoDrive.rightBumper()){
             colorMotor.set(-0.5);
             SmartDashboard.putString("colorMotorOn", "Reverse");
         } else {
@@ -281,7 +281,7 @@ public class ColorWheel {
             turnToYellow();
         }
 
-        if (driverStation.l3()){
+        if (gaCoDrive.l3()){
             SmartDashboard.putString("Turn to rotation", "On");
         } else {
             SmartDashboard.putString("Turn to rotation", "Off");

@@ -28,8 +28,8 @@ collector right 0,1
 
 public class FuelSystem extends Subsystem {
 
-  private DriverStation driverStation;
-  private DriverStation driverStation2;
+  private GaCoDrive gaCoDrive;
+  private GaCoDrive gaCoDrive2;
   private Vision        turretVision;
   private DriveTrain    driveTrain;
 
@@ -104,9 +104,9 @@ public class FuelSystem extends Subsystem {
   }
 
   //initalize fuel system 
-  public void init(DriverStation driverStation, DriverStation driverStation2, Vision turretVision, DriveTrain driveTrain){
-    this.driverStation  = driverStation;
-    this.driverStation2 = driverStation2;
+  public void init(GaCoDrive gaCoDrive, GaCoDrive gaCoDrive2, Vision turretVision, DriveTrain driveTrain){
+    this.gaCoDrive  = gaCoDrive;
+    this.gaCoDrive2 = gaCoDrive2;
     this.turretVision   = turretVision;
     this.driveTrain     = driveTrain;
 
@@ -203,9 +203,9 @@ public class FuelSystem extends Subsystem {
   }
 
   public void toggleSolenoid(){
-    if (driverStation2.dpadUp()){
+    if (gaCoDrive2.dpadUp()){
       lowerCollector.set(DoubleSolenoid.Value.kForward);
-  } else if (driverStation2.dpadDown()){
+  } else if (gaCoDrive2.dpadDown()){
       lowerCollector.set(DoubleSolenoid.Value.kReverse);
   }
   }
@@ -245,18 +245,18 @@ public class FuelSystem extends Subsystem {
   public void turnTurretPID(){
   
     //enable turret PID if left stick button is pressed and disable it if right stick is pressed
-    if(driverStation.dpadUp()){
+    if(gaCoDrive.dpadUp()){
       turretPIDEnabled = true;
-    } else if (driverStation.dpadDown()){
+    } else if (gaCoDrive.dpadDown()){
       turretPIDEnabled = false;
     }
     
     //move the target angle right if right d pad is pressed and left if left d pad is pressed
-    if (driverStation.dpadLeft()) {
+    if (gaCoDrive.dpadLeft()) {
       targetTurretHeading -= .5;
     }
 
-    if (driverStation.dpadRight()){
+    if (gaCoDrive.dpadRight()){
       targetTurretHeading += .5;
     }
       
@@ -309,17 +309,17 @@ public class FuelSystem extends Subsystem {
   }
 
   public void shooterOnRPM(){
-    if (driverStation.y()){
+    if (gaCoDrive.y()){
       shooterPIDEnabled = true;
-    } else if (driverStation.a()){
+    } else if (gaCoDrive.a()){
       shooterPIDEnabled = false;
     }
       
-    if (driverStation.b()) {
+    if (gaCoDrive.b()) {
       targetSpeedRPM +=  10;
     }
     
-    if (driverStation.x()) {
+    if (gaCoDrive.x()) {
       targetSpeedRPM -=  10;
     }
       
@@ -380,10 +380,10 @@ public class FuelSystem extends Subsystem {
     //Driver 2 - (button) collector on/off
     //Driver 2 (button) run storage system
 
-    if (driverStation.rightTrigger()){
+    if (gaCoDrive.rightTrigger()){
       runCollector();
       runTransfer(1,1);
-    } else if (driverStation.leftTrigger()){
+    } else if (gaCoDrive.leftTrigger()){
       runTransfer(-1,-1);
       reverseCollector();
     } else {
@@ -391,19 +391,19 @@ public class FuelSystem extends Subsystem {
       stopCollector();
     }
 
-    if(driverStation2.leftTrigger()){
+    if(gaCoDrive2.leftTrigger()){
       //setting prepairToFireFlag equal to 1 will prepair to fire and then be set back to 0 when it is done prepairing to fire
       prepairToFireFlag = 1;
     }
 
-    if(driverStation2.a()){
+    if(gaCoDrive2.a()){
       //setting fireOneFlag equal to 1 will prepair to fire and then be set back to 0 when it has fired one
       fireOneFlag = 1;
     }
 
     toggleSolenoid();
 
-    if(driverStation2.leftBumper() && turretVision.targetVisible){
+    if(gaCoDrive2.leftBumper() && turretVision.targetVisible){
       //modifyTurretPIDProportional();
       turnTurretTo(turretHeading + turretVision.x);
       setShooterRPM(getShooterRPM(turretVision.getDistanceFromTarget()));
