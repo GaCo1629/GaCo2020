@@ -20,6 +20,7 @@ public class Robot extends TimedRobot {
   private Climber       climber      = new Climber();
   private Vision        turretVision = new Vision("limelight");
   private PurePursuit   purePursuit  = new PurePursuit();
+  private Auto          auto         = new Auto();
 
   @Override
   public void robotInit() {
