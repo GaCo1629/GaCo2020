@@ -97,10 +97,13 @@ public class Auto extends Subsystem {
     }
 
 
-    ///// AUTO FUNCTIONS\\\\\  
+    ///// AUTO FUNCTIONS \\\\\  
+    ///auto logic
     private void centerLogic(){
     switch (selNumBalls){
+        
         case NONE:
+        
         
 
     }
@@ -120,6 +123,9 @@ public class Auto extends Subsystem {
     
 
     }
+// AUTO MOVE
+public void driveToTime(double axis, double lat, double t){
 
+}
 
 }
