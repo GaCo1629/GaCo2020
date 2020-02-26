@@ -34,6 +34,19 @@ public class Robot extends TimedRobot {
     purePursuit.init(driveTrain);
     //climber.init(gaCoDrive);  
   }
+  @Override
+  public void autonomousInit() {
+    // TODO Auto-generated method stub
+    super.autonomousInit();
+    auto.autonomousInit();
+  }
+
+ @Override
+  public void autonomousPeriodic() {
+    // TODO Auto-generated method stub
+    super.autonomousPeriodic();
+    auto.autonomousPeriodic();
+  }
 
   @Override
   public void teleopInit() {

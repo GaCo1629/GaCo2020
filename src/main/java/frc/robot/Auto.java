@@ -18,10 +18,10 @@ public class Auto extends Subsystem {
     //selctable choosers to tell auto
     private SendableChooser <StartPosition> startPosition = new SendableChooser<>();
     private SendableChooser <NumBalls> numBalls = new SendableChooser<>();
-    private SendableChooser <EndPosition> endPosition = new SendableChooser<>();
+  //  private SendableChooser <EndPosition> endPosition = new SendableChooser<>();
 
     private StartPosition selStartPosition;
-    private EndPosition selEndPosition;
+    // private EndPosition selEndPosition;
     private NumBalls selNumBalls;
    
     private Timer timeout; // timer
@@ -38,35 +38,58 @@ public class Auto extends Subsystem {
         startPosition.addOption("Far Trench", StartPosition.FAR_TRENCH);
         startPosition.addOption("Close Trench", StartPosition.CLOSE_TRENCH);
          SmartDashboard.putData("Start Position", startPosition);
+         
+           //numBalls choser
+           numBalls.setDefaultOption("None", NumBalls.NONE);
+           numBalls.addOption("Center", NumBalls.THREE);
+           numBalls.addOption("Far Trench", NumBalls.SIX);
+           numBalls.addOption("Close Trench", NumBalls.TEN);
+           SmartDashboard.putData("number of balls", numBalls);
 
          //end  postion choser
-        endPosition.setDefaultOption("None", EndPosition.NONE);
+   /*     endPosition.setDefaultOption("None", EndPosition.NONE);
         endPosition.addOption("Center", EndPosition.CENTER);
         endPosition.addOption("Far Trench", EndPosition.FAR_TRENCH);
         endPosition.addOption("Close Trench", EndPosition.ClOSE_TRENCH);
-        SmartDashboard.putData("End Position", endPosition);
-
-          //numBalls choser
-          numBalls.setDefaultOption("None", NumBalls.NONE);
-          numBalls.addOption("Center", NumBalls.THREE);
-          numBalls.addOption("Far Trench", NumBalls.SIX);
-          numBalls.addOption("Close Trench", NumBalls.TEN);
-          SmartDashboard.putData("number of balls", numBalls);
-  
-
+        SmartDashboard.putData("End Position", endPosition); */
     }
-    
 
     @Override
-    public void autonomousInit() {
-     
-       
+    public void autonomousInit(){
+        selStartPosition = startPosition.getSelected();
+        selNumBalls = numBalls.getSelected();
+       // selEndPosition = endPosition.getSelected();
+
     }
 
     @Override
     public void autonomousPeriodic(){
+        switch (selStartPosition){
+            //run code for figuring out where to go based on having center postion
+            case CENTER: 
+            centerLogic();
+            break;
 
-    }
+            //runs logic for if we start infront of our color trence
+            case CLOSE_TRENCH:
+            closeLogic();
+            break;
+
+            // run logic for if we start in other teams trench
+            case FAR_TRENCH:
+            farLogic();
+            break;
+
+            // do nothing if no balls
+            case NONE:
+            //do nothing
+            break;
+            }
+
+        }
+       
+
+
 
     @Override
     public void show(){
@@ -75,8 +98,26 @@ public class Auto extends Subsystem {
 
 
     ///// AUTO FUNCTIONS\\\\\  
+    private void centerLogic(){
+    switch (selNumBalls){
+        case NONE:
+        
 
-    private void driveForward(double distance, double timeOut){
+    }
+
+    }
+    private void closeLogic(){
+        switch (selNumBalls){
+
+        }
+    
+
+    }
+    private void farLogic(){
+        switch (selNumBalls){
+
+        }
+    
 
     }
 
