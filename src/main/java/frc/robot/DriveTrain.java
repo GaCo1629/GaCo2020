@@ -25,7 +25,7 @@ public class DriveTrain extends Subsystem{
     rightDriveBackCANid   = 15
     */
 
-    private GaCoDrive gaCoDrive;
+    private GaCoDrive     gaCoDrive;
     private Vision        turretVision;
     private FuelSystem    fuelSystem;
 
@@ -49,12 +49,12 @@ public class DriveTrain extends Subsystem{
     private AHRS gyro; 
 
     //declare motor can IDs
-    private final int leftDriveMasterCANid  = 13;
-    private final int leftDriveFrontCANid   = 12;
-    private final int leftDriveBackCANid    = 14;
-    private final int rightDriveMasterCANid = 16;
-    private final int rightDriveFrontCANid  = 17; 
-    private final int rightDriveBackCANid   = 15;
+    private final int LEFT_DRIVE_MASTER_CAN_ID  = 13;
+    private final int LEFT_DRIVE_FRONT_CAN_ID   = 12;
+    private final int LEFT_DRIVE_BACK_CAN_ID    = 14;
+    private final int RIGHT_DRIVE_MASTER_CAN_ID = 16;
+    private final int RIGHT_DRIVE_FRONT_CAN_ID  = 17; 
+    private final int RIGHT_DRIVE_BACK_CAN_ID   = 15;
     
     //set final power levels for modifing power levels  
     private final double AXIAL_SLOW_POWER_LEVEL    = 0.2;
@@ -104,6 +104,7 @@ public class DriveTrain extends Subsystem{
 
     private double turretHeadingFieldCentric;
 
+    //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
     PIDController headingPID = new PIDController(.05, 0, 0, 0, 5, 1, true, "Gyro");
 
     //constructor
@@ -112,16 +113,16 @@ public class DriveTrain extends Subsystem{
 
     //initalize hardware for the drive train
     public void init(GaCoDrive gaCoDrive, Vision turretVision, FuelSystem fuelSystem){
-        this.gaCoDrive = gaCoDrive;
+        this.gaCoDrive      = gaCoDrive;
         this.turretVision   = turretVision;
         this.fuelSystem     = fuelSystem;
 
-        leftDriveMaster  = new CANSparkMax(leftDriveMasterCANid,  CANSparkMaxLowLevel.MotorType.kBrushless);
-        leftDriveFront   = new CANSparkMax(leftDriveFrontCANid,   CANSparkMaxLowLevel.MotorType.kBrushless);
-        leftDriveBack    = new CANSparkMax(leftDriveBackCANid,    CANSparkMaxLowLevel.MotorType.kBrushless);
-        rightDriveMaster = new CANSparkMax(rightDriveMasterCANid, CANSparkMaxLowLevel.MotorType.kBrushless);
-        rightDriveFront  = new CANSparkMax(rightDriveFrontCANid,  CANSparkMaxLowLevel.MotorType.kBrushless);
-        rightDriveBack   = new CANSparkMax(rightDriveBackCANid,   CANSparkMaxLowLevel.MotorType.kBrushless);
+        leftDriveMaster  = new CANSparkMax(LEFT_DRIVE_MASTER_CAN_ID,  CANSparkMaxLowLevel.MotorType.kBrushless);
+        leftDriveFront   = new CANSparkMax(LEFT_DRIVE_FRONT_CAN_ID,   CANSparkMaxLowLevel.MotorType.kBrushless);
+        leftDriveBack    = new CANSparkMax(LEFT_DRIVE_BACK_CAN_ID,    CANSparkMaxLowLevel.MotorType.kBrushless);
+        rightDriveMaster = new CANSparkMax(RIGHT_DRIVE_MASTER_CAN_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
+        rightDriveFront  = new CANSparkMax(RIGHT_DRIVE_FRONT_CAN_ID,  CANSparkMaxLowLevel.MotorType.kBrushless);
+        rightDriveBack   = new CANSparkMax(RIGHT_DRIVE_BACK_CAN_ID,   CANSparkMaxLowLevel.MotorType.kBrushless);
 
         leftDriveMaster.restoreFactoryDefaults();
         leftDriveFront.restoreFactoryDefaults();
@@ -237,20 +238,8 @@ public class DriveTrain extends Subsystem{
     }
 
     public double getHeadingChange(){
-        double currentTime    = timer.get();
-        double currentHeading = robotHeading;
-        double returnVal      = 0;
-        if (currentTime - lastTime > .1 || currentTime - lastTime == 0) {
-          lastTime    = currentTime;
-          lastHeading = currentHeading;
-          return 0;
-        } else {
-          returnVal   = (currentHeading - lastHeading)/(currentTime - lastTime);
-          lastHeading = currentHeading;
-          lastTime = currentTime;
-          test1 = returnVal;
-          return returnVal;
-        }
+        test1 = gyro.getRate()*(180/3.14);
+        return test1;
       }
 
     public void calculateAndSetMotorPowers(){
@@ -319,7 +308,7 @@ public class DriveTrain extends Subsystem{
         SmartDashboard.putNumber ("Target Heading", targetHeading);
         SmartDashboard.putNumber ("Left Encoder Position", leftEncoder);
         SmartDashboard.putNumber ("Right Encoder Position", rightEncoder);
-        SmartDashboard.putNumber ("Heading Change RPM", test1);
+        SmartDashboard.putNumber ("Heading Change RPM", getHeadingChange());
 
    }
 

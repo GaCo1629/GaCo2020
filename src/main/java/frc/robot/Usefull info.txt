@@ -18,9 +18,11 @@ FuelSystem :
         Left Dpad     - decrease target turret heading by .5 degrees
 
     minion
+        A             - fire one ball
         left bumper   - activate automated turret heading and shooter rpm using limelight data
         dpad up       - bring up collecter
         dpad down     - drop collecter
+        left trigger  - prepair to fire/ run up all the balls
 
 DriveTrain
     Pilot

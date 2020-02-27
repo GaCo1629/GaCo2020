@@ -61,9 +61,10 @@ public class FuelSystem extends Subsystem {
   private final double MIN_DISTANCE_TO_TARGET   = 10;
   private final double MAX_DISTANCE_TO_TARGET   = 40;
   private final double MAX_SHOOTER_RPM          = 5700;
-  private final double MIN_SHOOTER_RPM          = 3000;
+  private final double MIN_SHOOTER_RPM          = 2000;
   private final double MAX_TURRET_ANGLE         = 100;
-  private final double TURRET_PROPORTIONAL_GAIN = 0.002;
+  private final double TURRET_PROPORTIONAL_GAIN = .002;
+  private final double TURRET_INTEGRAL_GAIN     = 0;
 
   private final double SHOOTER_RPM_TOLERANCE    = 75;
   private final double TURRET_DEGREE_TOLERANCE  = .4;
@@ -90,13 +91,15 @@ public class FuelSystem extends Subsystem {
 
 
   public boolean readyToShoot = false;
+  private boolean runCollector = false;
 
   private double tempRPM;
 
   private Timer timer = new Timer();  
 
+  //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
   PIDController shooterPID = new PIDController(.0003,.000001,.0005,5700,500, 0, false, "Shooter");
-  PIDController turretPID  = new PIDController(.04, .001, 0, 0, 2, .05, false, "Turret");
+  PIDController turretPID  = new PIDController(.04, .001, 0, 0, 10, .05, false, "Turret");
 
   //constructor
   public FuelSystem () {
@@ -234,6 +237,15 @@ public class FuelSystem extends Subsystem {
     } else {
       readyToShoot = false;
     }
+
+    //check to see if the lower state did show a ball and is now not showing a ball and if it is add one 
+    if(!lowerBallDetectorState && lastLowerBallDetectorState){
+      ballsInIndex++;
+    }
+
+    if(!upperBallDetectorState && lastUpperBallDetectorState){
+      ballsInIndex--;
+    }
   }
 
   public void setTurretHeading(double newHeading){
@@ -340,40 +352,54 @@ public class FuelSystem extends Subsystem {
     }
   }
 
-  public void modifyTurretPIDProportional(){
-    turretPID.modifyProportional(Math.abs(driveTrain.getHeadingChange()) * TURRET_PROPORTIONAL_GAIN);
-  }
-
   public double getTurretHeading(){
     return turretHeading;
   }
 
+  public void modifyTurretPIDProportional(){
+    turretPID.modifyProportional(Math.abs(driveTrain.getHeadingChange()) * TURRET_PROPORTIONAL_GAIN);
+  }
+
   public void indexBalls(){
-    //check to see if it should be firing one and then if the top sensor was just detecting a ball and is now not seeing a ball meaning one has just been fired
-    if(fireOneFlag && upperBallDetectorState && !lastUpperBallDetectorState){
+
+    runCollector = false;
+
+    if (gaCoDrive.rightTrigger()){
+      runCollector = true;
+    }
+    
+    if (gaCoDrive.leftTrigger()){
       runTransfer(1,1);
-      //check to see if it should be preparing to fire and make sure a ball has not been detected at the top
-    } else if(prepairToFireFlag && !upperBallDetectorState){
-      runTransfer(1,1);
-      fireOneFlag = false;
-      //check to see if a ball is detected at the bottom and on is not detected at the top
-    } else if(lowerBallDetectorState && !upperBallDetectorState){
-      runTransfer(1,0);
+      runCollector      = true;
       fireOneFlag       = false;
       prepairToFireFlag = false;
     } else {
-      runTransfer(0,0);
-      fireOneFlag       = false;
-      prepairToFireFlag = false;
+      //check to see if it should be firing one and then if the top sensor was just detecting a ball and is now not seeing a ball meaning one has just been fired
+      if(fireOneFlag && upperBallDetectorState && !lastUpperBallDetectorState){
+        runTransfer(1,1);
+        runCollector = true;
+        //check to see if it should be preparing to fire and make sure a ball has not been detected at the top
+      } else if(prepairToFireFlag && !upperBallDetectorState){
+        runTransfer(1,1);
+        runCollector = true;
+        fireOneFlag  = false;
+        //check to see if a ball is detected at the bottom and on is not detected at the top
+      } else if(lowerBallDetectorState && !upperBallDetectorState){
+        runTransfer(1,0);
+        runCollector      = true;
+        fireOneFlag       = false;
+        prepairToFireFlag = false;
+      } else {
+        runTransfer(0,0);
+        fireOneFlag       = false;
+        prepairToFireFlag = false;
+      }
     }
 
-    //check to see if the lower state did show a ball and is now not showing a ball and if it is add one 
-    if(!lowerBallDetectorState && lastLowerBallDetectorState){
-      ballsInIndex++;
-    }
-
-    if(!upperBallDetectorState && lastUpperBallDetectorState){
-      ballsInIndex--;
+    if(runCollector){
+      runCollector();
+    } else {
+      stopCollector();
     }
   }
 
@@ -386,16 +412,7 @@ public class FuelSystem extends Subsystem {
     //Driver 2 - (button) collector on/off
     //Driver 2 (button) run storage system
 
-    if (gaCoDrive.rightTrigger()){
-      runCollector();
-      runTransfer(1,1);
-    } else if (gaCoDrive.leftTrigger()){
-      runTransfer(-1,-1);
-      reverseCollector();
-    } else {
-      indexBalls();
-      stopCollector();
-    }
+    indexBalls();
 
     if(gaCoDrive2.leftTrigger()){
       //setting prepairToFireFlag equal to true will prepair to fire and then be set back to false when it is done prepairing to fire
@@ -410,7 +427,7 @@ public class FuelSystem extends Subsystem {
     toggleSolenoid();
 
     if(gaCoDrive2.leftBumper() && turretVision.targetVisible){
-      //modifyTurretPIDProportional();
+      modifyTurretPIDProportional();
       turnTurretTo(turretHeading + turretVision.x);
       setShooterRPM(getShooterRPM(turretVision.getDistanceFromTarget()));
     } else {
@@ -429,6 +446,8 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putNumber("distance to target", turretVision.getDistanceFromTarget());
     SmartDashboard.putNumber("Turret Required Correction", turretVision.x);
     SmartDashboard.putNumber("Temp RPM", tempRPM);
+    SmartDashboard.putNumber("Balls In Robot", ballsInIndex);
+
     SmartDashboard.putBoolean("Ready to Fire", readyToShoot);
     SmartDashboard.putBoolean("Lower Ball Detector", lowerBallDetectorState);
     SmartDashboard.putBoolean("Upper Ball Detector", upperBallDetectorState);
