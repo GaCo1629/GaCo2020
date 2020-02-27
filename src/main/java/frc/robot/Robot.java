@@ -20,6 +20,7 @@ public class Robot extends TimedRobot {
   private Climber       climber      = new Climber();
   private Vision        turretVision = new Vision("limelight");
   private PurePursuit   purePursuit  = new PurePursuit();
+  private Auto          auto         = new Auto();
 
   @Override
   public void robotInit() {
@@ -32,6 +33,19 @@ public class Robot extends TimedRobot {
     colorWheel.init(copilot);
     purePursuit.init(driveTrain);
     //climber.init(gaCoDrive);  
+  }
+  @Override
+  public void autonomousInit() {
+    // TODO Auto-generated method stub
+    super.autonomousInit();
+    auto.autonomousInit();
+  }
+
+ @Override
+  public void autonomousPeriodic() {
+    // TODO Auto-generated method stub
+    super.autonomousPeriodic();
+    auto.autonomousPeriodic();
   }
 
   @Override

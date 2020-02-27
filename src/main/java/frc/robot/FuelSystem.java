@@ -433,4 +433,7 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putBoolean("Lower Ball Detector", lowerBallDetectorState);
     SmartDashboard.putBoolean("Upper Ball Detector", upperBallDetectorState);
   }
+
+/// auto functions
+
 }
