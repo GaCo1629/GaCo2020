@@ -43,6 +43,7 @@ public class ColorWheel {
     private final Color kRedTarget = ColorMatch.makeColor(0.49, 0.37, 0.114);
     //private final Color kYellowTarget = ColorMatch.makeColor(0.361, 0.524, 0.113);
     private final Color kYellowTarget = ColorMatch.makeColor(0.31, 0.56, 0.113);
+    private final Color kBlackTarget = ColorMatch.makeColor(0, 0, 0);
 
     private final double colorMotorDiameter = 4;
     private final double colorWheelDiameter = 32;
@@ -55,9 +56,12 @@ public class ColorWheel {
 
     private Color detectedColor;
     private Color color;
-    private ColorMatchResult match;
-    private ColorMatchResult firstMatch;
-    private ColorMatchResult prevMatch;
+    private Color lastSmartColor;
+    private Color match;
+    private Color firstMatch;
+    private Color prevMatch;
+    private Color smartColor;
+    private ColorMatchResult tempMatch;
 
     public String origColor;
     public String curColor;
@@ -110,6 +114,7 @@ public class ColorWheel {
         m_colorMatcher.addColorMatch(kGreenTarget);
         m_colorMatcher.addColorMatch(kRedTarget);
         m_colorMatcher.addColorMatch(kYellowTarget);
+        m_colorMatcher.addColorMatch(kBlackTarget);
         //initialize motor to spin wheel
         //initialize psunamatics to push out wheel spinner
         //initialize camera/color sensor
@@ -117,6 +122,8 @@ public class ColorWheel {
         time.reset();
         time.start();
         firstTime = false;
+        lastSmartColor = kBlackTarget;
+        smartGetColor();
 
     }
 
@@ -125,13 +132,13 @@ public class ColorWheel {
         /*wheelCount = 0;
         //Reset the wheel count for use
         colorArm.set(DoubleSolenoid.Value.kForward);
-        detectedColor   = m_colorSensor.getColor();
+        detectedColor   = smartGetColor();
         firstMatch      = m_colorMatcher.matchClosestColor(detectedColor);
         //put out the color arm and save the first color
         colorMotor.set(maxPower);
         //Turn on the motor to max power (im currently looking into a way to set a max RPM value)
         if (wheelCount < 7){
-            detectedColor = m_colorSensor.getColor();
+            detectedColor = smartGetColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
             //Save the current color
             if (match != prevMatch){
@@ -176,8 +183,7 @@ public class ColorWheel {
 
             case Arm_Extended :
                 SmartDashboard.putString("Wheel State", "Arm Extended");
-                detectedColor   = m_colorSensor.getColor();
-                firstMatch      = m_colorMatcher.matchClosestColor(detectedColor);
+                firstMatch      = smartGetColor();
                 prevMatch       = firstMatch;
                 position        = Rot.Color_Recieved;
                 break;
@@ -191,12 +197,11 @@ public class ColorWheel {
             case Turning :
                 SmartDashboard.putString("Wheel State", "Wheel Turning");
                 if (wheelCount < 7){
-                    detectedColor = m_colorSensor.getColor();
-                    match = m_colorMatcher.matchClosestColor(detectedColor);
+                    match = smartGetColor();
                     //Save the current color
                     if (match != prevMatch){
                         //If the robot is looking at a different color than it just was, continue
-                        if ((match.color == kBlueTarget)/* && (match.confidence >= 0.95)*/){
+                        if ((match == kBlueTarget)/* && (match.confidence >= 0.95)*/){
                             wheelCount++;
                             //if the color currently being looked at is the first color, add one to wheel count
                         }
@@ -229,7 +234,7 @@ public class ColorWheel {
         colorMotor.set(maxPower * 0.5);
         //extends the color arm and sets the power to half the max RPM
         while (wheelCount < 1){
-            detectedColor = m_colorSensor.getColor();
+            detectedColor = smartGetColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
             if (match.color == kBlueTarget){
                 wheelCount++;
@@ -249,7 +254,7 @@ public class ColorWheel {
         colorMotor.set(maxPower * 0.5);
         //extends the color arm and sets the power to half the max RPM
         while (wheelCount < 1){
-            detectedColor = m_colorSensor.getColor();
+            detectedColor = smartGetColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
             if (match.color == kRedTarget){
                 wheelCount++;
@@ -268,7 +273,7 @@ public class ColorWheel {
         colorMotor.set(maxPower * 0.5);
         //extends the color arm and sets the power to half the max RPM
         while (wheelCount < 1){
-            detectedColor = m_colorSensor.getColor();
+            detectedColor = smartGetColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
             if (match.color == kYellowTarget){
                 wheelCount++;
@@ -287,7 +292,7 @@ public class ColorWheel {
         colorMotor.set(maxPower * 0.5);
         //extends the color arm and sets the power to half the max RPM
         if (wheelCount < 1){
-            detectedColor = m_colorSensor.getColor();
+            detectedColor = smartGetColor();
             match = m_colorMatcher.matchClosestColor(detectedColor);
             if (match.color == kGreenTarget){
                 wheelCount++;
@@ -358,6 +363,16 @@ public class ColorWheel {
         }
     }
 
+    private Color smartGetColor(){
+         smartColor = m_colorSensor.getColor();
+         tempMatch = m_colorMatcher.matchClosestColor(smartColor);
+
+         if (tempMatch.confidence >= 0.96 ){
+            lastSmartColor = tempMatch.color;
+         }
+         SmartDashboard.putString("Color Seen", lastSmartColor.toString());
+         return lastSmartColor;
+    }
 
 
     public void teleopPeriodic() {
@@ -430,33 +445,30 @@ public class ColorWheel {
         }*/
         turnRotations();
 
-        {
-            detectedColor = m_colorSensor.getColor();
-            match = m_colorMatcher.matchClosestColor(detectedColor);
-            if (match.color == kBlueTarget){
+        
+            if (lastSmartColor == kBlueTarget){
                 colorString = "Blue";
-            } else if (match.color == kYellowTarget){
+            } else if (lastSmartColor == kYellowTarget){
                 colorString = "Yellow";
-            } else if (match.color == kRedTarget){
+            } else if (lastSmartColor == kRedTarget){
                 colorString = "Red";
-            } else if (match.color == kGreenTarget){
+            } else if (lastSmartColor == kGreenTarget){
                 colorString = "Green";
+            } else if (lastSmartColor == kBlackTarget){
+                colorString = "Black";
             }
 
             /*if (colorFlag != 0){
                 matchColor();
             }*/
 
-            SmartDashboard.putNumber("Red", detectedColor.red);
-            SmartDashboard.putNumber("Green", detectedColor.green);
-            SmartDashboard.putNumber("Blue", detectedColor.blue);
-            SmartDashboard.putNumber("Confidence", match.confidence);
+            SmartDashboard.putNumber("Red", smartColor.red);
+            SmartDashboard.putNumber("Green", smartColor.green);
+            SmartDashboard.putNumber("Blue", smartColor.blue);
+            SmartDashboard.putNumber("Confidence", tempMatch.confidence);
             SmartDashboard.putString("Detected Color", colorString);
             SmartDashboard.putNumber("Rotations", wheelCount);
-            SmartDashboard.putNumber("Red", detectedColor.red);
-            SmartDashboard.putNumber("Blue", detectedColor.blue);
-            SmartDashboard.putNumber("Green", detectedColor.green);
-        }
+        
 
     }
 }
