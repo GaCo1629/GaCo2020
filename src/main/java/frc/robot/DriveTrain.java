@@ -202,9 +202,9 @@ public class DriveTrain extends Subsystem{
     
 
     //use the controller values to set axial and yaw values
-    public void setVectorsToController(){
-        axial = gaCoDrive.getLeftStickY();
-        yaw   = gaCoDrive.getRightStickX();
+    public void setVectorsToController( double a, double y){
+        axial = a; //axial
+        yaw   = y; //yaw
     }
         
     public void adjustPowerLevel(){
@@ -277,9 +277,9 @@ public class DriveTrain extends Subsystem{
         rightDriveMaster.set(right);
     }
 
-    public void moveRobot(){
+    public void moveRobot(double a, double y){
         adjustPowerLevel();
-        setVectorsToController();
+        setVectorsToController(a , y );
         //runHoldHeading();
         calculateAndSetMotorPowers();
     }
@@ -287,7 +287,7 @@ public class DriveTrain extends Subsystem{
     @Override
     public void teleopPeriodic(){
 
-        moveRobot();
+        moveRobot(gaCoDrive.getLeftStickY(), gaCoDrive.getRightStickX());
         show();
 
     //Driver 1 - left stick y drive forward/backward
