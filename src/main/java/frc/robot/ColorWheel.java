@@ -63,6 +63,7 @@ public class ColorWheel {
     public int wheelCount;
     
     Timer time = new Timer();
+    Timer lookTime = new Timer();
 
     private boolean firstTime = false;
     private double endTime = 0;
@@ -156,7 +157,7 @@ public class ColorWheel {
                 
                 wheelCount = 0;
                 
-                if (driverStation.l3()){
+                if (gaCoDrive.l3()){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
@@ -176,7 +177,7 @@ public class ColorWheel {
                 detectedColor   = m_colorSensor.getColor();
                 firstMatch      = m_colorMatcher.matchClosestColor(detectedColor);
                 prevMatch       = firstMatch;
-                position = Rot.Color_Recieved;
+                position        = Rot.Color_Recieved;
                 break;
 
             case Color_Recieved :
@@ -193,7 +194,7 @@ public class ColorWheel {
                     //Save the current color
                     if (match != prevMatch){
                         //If the robot is looking at a different color than it just was, continue
-                        if (match.color == firstMatch.color){
+                        if ((match.color == kBlueTarget)/* && (match.confidence >= 0.95)*/){
                             wheelCount++;
                             //if the color currently being looked at is the first color, add one to wheel count
                         }
@@ -278,7 +279,7 @@ public class ColorWheel {
 */
     //run the motor and use the sensor/camera so that the table turns to yellow
     public void turnToYellow(){
-        wheelCount = 0;
+        /*wheelCount = 0;
         //re sets wheelCount for use
         colorArm.set(DoubleSolenoid.Value.kForward);
         colorMotor.set(maxPower * 0.5);
@@ -297,7 +298,7 @@ public class ColorWheel {
             colorMotor.set(0);
             colorArm.set(DoubleSolenoid.Value.kReverse);
         }
-        /*switch (yellowE){
+        switch (yellowE){
             case Init:
                 SmartDashboard.putString("Wheel State", "Init");
                 if (wheelCount != 0){
@@ -415,7 +416,7 @@ public class ColorWheel {
             //SmartDashboard.putString("colorMotorOn", "Off");
         }
         
-        if (yellow == 1){
+        /*if (yellow == 1){
             turnToYellow();
         }
 
@@ -440,9 +441,9 @@ public class ColorWheel {
                 colorString = "Green";
             }
 
-            if (colorFlag != 0){
+            /*if (colorFlag != 0){
                 matchColor();
-            }
+            }*/
 
             SmartDashboard.putNumber("Red", detectedColor.red);
             SmartDashboard.putNumber("Green", detectedColor.green);
@@ -450,7 +451,10 @@ public class ColorWheel {
             SmartDashboard.putNumber("Confidence", match.confidence);
             SmartDashboard.putString("Detected Color", colorString);
             SmartDashboard.putNumber("Rotations", wheelCount);
-            //SmartDashboard.putNumber("End Time", endTime);
+            SmartDashboard.putNumber("Red", detectedColor.red);
+            SmartDashboard.putNumber("Blue", detectedColor.blue);
+            SmartDashboard.putNumber("Green", detectedColor.green);
         }
+
     }
 }
