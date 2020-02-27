@@ -85,8 +85,8 @@ public class FuelSystem extends Subsystem {
   private double turretHeadingModifier = 0;
   private double ballsInIndex          = 0;
 
-  private int prepairToFireFlag = 0;
-  private int fireOneFlag      = 0;
+  private boolean prepairToFireFlag = false;
+  private boolean fireOneFlag       = false;
 
 
   public boolean readyToShoot = false;
@@ -215,8 +215,10 @@ public class FuelSystem extends Subsystem {
     turretHeading = turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE + turretHeadingModifier;
     lastLowerBallDetectorState = lowerBallDetectorState;
     lastUpperBallDetectorState = upperBallDetectorState;
-    lowerBallDetectorState = lowerBallDetector.get();
-    upperBallDetectorState = upperBallDetector.get();
+
+    //inverse detector states so that true indicates that a ball has been detected
+    lowerBallDetectorState = !lowerBallDetector.get();
+    upperBallDetectorState = !upperBallDetector.get();
 
     /** say its ready to fire if
      * target is visible
@@ -347,26 +349,30 @@ public class FuelSystem extends Subsystem {
   }
 
   public void indexBalls(){
-    if(fireOneFlag == 1 && !(upperBallDetectorState && !lastUpperBallDetectorState)){
+    //check to see if it should be firing one and then if the top sensor was just detecting a ball and is now not seeing a ball meaning one has just been fired
+    if(fireOneFlag && upperBallDetectorState && !lastUpperBallDetectorState){
       runTransfer(1,1);
-    } else if(prepairToFireFlag == 1 && upperBallDetectorState){
+      //check to see if it should be preparing to fire and make sure a ball has not been detected at the top
+    } else if(prepairToFireFlag && !upperBallDetectorState){
       runTransfer(1,1);
-      fireOneFlag = 0;
-    } else if(!lowerBallDetectorState && upperBallDetectorState){
+      fireOneFlag = false;
+      //check to see if a ball is detected at the bottom and on is not detected at the top
+    } else if(lowerBallDetectorState && !upperBallDetectorState){
       runTransfer(1,0);
-      fireOneFlag       = 0;
-      prepairToFireFlag = 0;
+      fireOneFlag       = false;
+      prepairToFireFlag = false;
     } else {
       runTransfer(0,0);
-      fireOneFlag       = 0;
-      prepairToFireFlag = 0;
+      fireOneFlag       = false;
+      prepairToFireFlag = false;
     }
 
-    if(lowerBallDetectorState && !lastLowerBallDetectorState){
+    //check to see if the lower state did show a ball and is now not showing a ball and if it is add one 
+    if(!lowerBallDetectorState && lastLowerBallDetectorState){
       ballsInIndex++;
     }
 
-    if(upperBallDetectorState && !lastUpperBallDetectorState){
+    if(!upperBallDetectorState && lastUpperBallDetectorState){
       ballsInIndex--;
     }
   }
@@ -392,13 +398,13 @@ public class FuelSystem extends Subsystem {
     }
 
     if(gaCoDrive2.leftTrigger()){
-      //setting prepairToFireFlag equal to 1 will prepair to fire and then be set back to 0 when it is done prepairing to fire
-      prepairToFireFlag = 1;
+      //setting prepairToFireFlag equal to true will prepair to fire and then be set back to false when it is done prepairing to fire
+      prepairToFireFlag = true;
     }
 
     if(gaCoDrive2.a()){
-      //setting fireOneFlag equal to 1 will prepair to fire and then be set back to 0 when it has fired one
-      fireOneFlag = 1;
+      //setting fireOneFlag equal to true will prepair to fire and then be set back to false when it has fired one
+      fireOneFlag = true;
     }
 
     toggleSolenoid();
