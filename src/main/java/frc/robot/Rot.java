@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+//states for the color arm sequence
+
 public enum Rot {
     Init,
     Extend_Arm,

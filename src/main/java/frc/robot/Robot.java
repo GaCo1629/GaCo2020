@@ -11,9 +11,11 @@ import edu.wpi.first.wpilibj.TimedRobot;
  */
 
 public class Robot extends TimedRobot {
+  //int controllers
   private GaCoDrive pilot        = new GaCoDrive();
   private GaCoDrive copilot      = new GaCoDrive();
   private GaCoDrive minion       = new GaCoDrive(); 
+  //init subsystems
   private DriveTrain    driveTrain   = new DriveTrain();
   private FuelSystem    fuelSystem   = new FuelSystem();
   //private ColorWheel    colorWheel   = new ColorWheel();

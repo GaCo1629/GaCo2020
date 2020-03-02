@@ -3,6 +3,8 @@
 /*----------------------------------------------------------------------------*/
 package frc.robot;
 
+// Is this FTC example or frc code?
+
 public class PurePursuit{
 
     private DriveTrain driveTrain;

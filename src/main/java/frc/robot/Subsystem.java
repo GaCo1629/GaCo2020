@@ -3,6 +3,7 @@
 /*----------------------------------------------------------------------------*/
 
 package frc.robot;
+//Sample class that each sub system class is based off
 
 public class Subsystem {
 

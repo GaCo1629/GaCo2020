@@ -179,6 +179,7 @@ public class FuelSystem extends Subsystem {
     turret.set(turretPID.run(turretHeading, targetTurretHeading));
   }
 
+  //sets the shooter to the correct spid based on target or min or max
   public void setShooterRPM(double targetRPM){
 
     if(targetRPM > MAX_SHOOTER_RPM){
@@ -193,6 +194,7 @@ public class FuelSystem extends Subsystem {
     setShooterSpeed(shooterPID.run(shooterRPM, targetRPM));
   }
 
+  //clips a value based on range
   public double clip(double val, double range){
     if(val > range){
       val = range;
@@ -205,6 +207,7 @@ public class FuelSystem extends Subsystem {
     return val;
   }
 
+  //makes solinoid out and down 
   public void toggleSolenoid(){
     if (gaCoDrive2.dpadUp()){
       lowerCollector.set(DoubleSolenoid.Value.kForward);
@@ -281,22 +284,24 @@ public class FuelSystem extends Subsystem {
       turret.set(0);
     }
   }
-
+  //turns collector on
   public void runCollector (){
     collector.set(COLLECTOR_SPEED);
   }
 
-
+  //runs the transfer
   public void runTransfer (double upper, double lower){
     upperTransfer.set(upper);
     lowerTransfer.set(lower);
  
   }
 
+  //runs collector in reverse
   public void reverseCollector (){
     collector.set(-COLLECTOR_SPEED);
   }
 
+  //stops collector
   public void stopCollector(){
     collector.set(0);
   }
@@ -321,7 +326,8 @@ public class FuelSystem extends Subsystem {
     +(- 5.84237 * Math.pow(distanceFromTargetFT, 3)) + (0.054857 * Math.pow(distanceFromTargetFT, 4));
   return tempRPM;
   }
-
+   
+  //ajust shooter rpm and enables
   public void shooterOnRPM(){
     if (gaCoDrive.y()){
       shooterPIDEnabled = true;
@@ -351,21 +357,23 @@ public class FuelSystem extends Subsystem {
       setShooterSpeed(0); 
     }
   }
-
+  //returns turrett headings
   public double getTurretHeading(){
     return turretHeading;
   }
 
+  //modifies
   public void modifyTurretPIDProportional(){
     turretPID.modifyProportional(Math.abs(driveTrain.getHeadingChange()) * TURRET_PROPORTIONAL_GAIN);
   }
 
+  //indexes the balls
   public void indexBalls(){
 
-    runCollector = false;
+    runCollector = false; //stops collector
 
     if (gaCoDrive.rightTrigger()){
-      runCollector = true;
+      runCollector = true; //if trigger is pressed it runs collectors
     }
     
     if (gaCoDrive.leftTrigger()){

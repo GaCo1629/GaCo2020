@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*/
 /* Copyright (c) 2020 GaCo. All Rights Reserved.                              */
 /*----------------------------------------------------------------------------*/
-
+// dont use this class it is old
 package frc.robot;
 
 import com.revrobotics.CANEncoder;
