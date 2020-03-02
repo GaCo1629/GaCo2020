@@ -9,6 +9,8 @@ import com.revrobotics.CANSparkMax;
 
 import com.revrobotics.CANSparkMaxLowLevel;
 
+import javax.swing.text.StyledEditorKit.BoldAction;
+
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
@@ -71,6 +73,18 @@ public class DriveTrain extends Subsystem{
     private final double HEADING_GAIN                         = 0.05; //tweak this value to increase or decreasu auto correct power
     private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.75;
     private final double DEGREES_TOLERANCE                    = 1.5;
+
+    //encoder inches per tick
+    private final double INCHES_PER_REV = 0.39671806;
+    double lastDistanceTraveled = 0;
+    boolean robotIsMoving = false;
+    final double MAX_STOPPED_DISTANCE = 0.1; // Must move less inches in a cycle to be considered stopped.
+    double distanceTarget = 0;
+	boolean distanceCorrect = true;
+	double headingTarget = 0;
+	boolean headingCorrect = true;
+	double drivePower = 0;
+	double timeout = 0;
 
     //set default axial and yaw power level to the regular power level
     private double axialPowerLevel = AXIAL_REGULAR_POWER_LEVEL;
@@ -378,4 +392,46 @@ public class DriveTrain extends Subsystem{
         leftDriveMaster.set(left);
         */
         }
+
+
+        ////// using code from 2018 to make auto functions\\\\\\
+    public double encoderToInches( double inches){
+       return inches*INCHES_PER_REV;
+    }
+
+
+
+    // Get the average distance traveled by each wheel
+	double inchesTraveled() {
+
+		double distanceTravelled = encoderToInches((Math.abs(leftDriveEncoder.getPosition()) + Math.abs(rightDriveEncoder.getPosition()))/2);
+
+		// Wait for a short time before really checking for moving condition.
+		robotIsMoving = ((timer.get() < 0.5)
+				|| (Math.abs(distanceTravelled - lastDistanceTraveled) > MAX_STOPPED_DISTANCE));
+
+		lastDistanceTraveled = distanceTravelled; // Save last movement distance for next time around the loop
+
+		return (distanceTravelled);
+    }
+    // Reset both Encoders & timer
+	void resetEncoders() {
+		lastDistanceTraveled = -1; // pre-load with invalid value
+		leftDriveEncoder.setPosition(0);
+		rightDriveEncoder.setPosition(0);
+		timer.reset();
+	}
+
+    
+	void driveRobot(double inches, double fwd,  double timeoutS) {
+      //  if (driveFirstTime){
+      //  resetEncoders();
+      //  }
+
+	    if (inchesTraveled()<inches && timer.get()<timeoutS){
+            moveRobot(fwd, 0);
+           // driveFirstTime = false;
+        }	
+		
+	}
 }
