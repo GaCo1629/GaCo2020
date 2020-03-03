@@ -104,9 +104,9 @@ public class Climber extends Subsystem{
 
     public void runClimberTest(){
         if(gaCoDrive2.rightTrigger()){
-            setPower(.5);
+            setPower(1);
         } else if (gaCoDrive2.rightBumper()) {
-            setPower(-.5);
+            setPower(-.3);
         } else {
             setPower(0);
         }

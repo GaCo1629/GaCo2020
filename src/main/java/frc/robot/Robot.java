@@ -20,7 +20,7 @@ public class Robot extends TimedRobot {
   private FuelSystem    fuelSystem   = new FuelSystem();
   //private ColorWheel    colorWheel   = new ColorWheel();
   private Climber       climber      = new Climber();
-  private Vision        turretVision = new Vision("limelight");
+  private Vision        turretVision = new Vision("limelight-turret");
   private PurePursuit   purePursuit  = new PurePursuit();
   private Auto          auto         = new Auto();
 
