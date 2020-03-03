@@ -221,9 +221,14 @@ public class FuelSystem extends Subsystem {
         lowerCollector.set(DoubleSolenoid.Value.kForward);
         collectorIsDown = true;
 
-        
-    } else if (gaCoDrive2.dpadDown() || (!collectorIsRunning && timer.get() > 2)){
+        // if manually lowered, reset timer
+        //if (gaCoDrive2.dpadUp()) {
+          timer.reset();
+        //}
+
+    } else if (gaCoDrive2.dpadDown() || (!collectorIsRunning && timer.get() > 3)){
         lowerCollector.set(DoubleSolenoid.Value.kReverse);
+        collectorIsDown = false;
     }
   }
 
@@ -272,7 +277,7 @@ public class FuelSystem extends Subsystem {
   //turn turret
   public void turnTurretPID(){
   
-    //enable turret PID if left stick button is pressed and disable it if right stick is pressed
+    //enable turret PID if DPAD Up is pressed and disable it if DPAD Down is pressed
     if(gaCoDrive.dpadUp()){
       turretPIDEnabled = true;
     } else if (gaCoDrive.dpadDown()){
@@ -295,6 +300,7 @@ public class FuelSystem extends Subsystem {
       turret.set(0);
     }
   }
+
   //turns collector on
   public void runCollector (){
     collector.set(COLLECTOR_SPEED);
@@ -338,12 +344,13 @@ public class FuelSystem extends Subsystem {
     }
 
     tempRPM = 24958.1 + -3699.15 * distanceFromTargetFT + (226.289 * Math.pow(distanceFromTargetFT, 2))
-    +(- 5.84237 * Math.pow(distanceFromTargetFT, 3)) + (0.054857 * Math.pow(distanceFromTargetFT, 4));
-  return tempRPM;
+              +(- 5.84237 * Math.pow(distanceFromTargetFT, 3)) + (0.054857 * Math.pow(distanceFromTargetFT, 4));
+    return tempRPM;
   }
    
   //ajust shooter rpm and enables
   public void shooterOnRPM(){
+
     if (gaCoDrive.y()){
       shooterPIDEnabled = true;
     } else if (gaCoDrive.a()){
@@ -372,6 +379,7 @@ public class FuelSystem extends Subsystem {
       setShooterSpeed(0); 
     }
   }
+
   //returns turrett headings
   public double getTurretHeading(){
     return turretHeading;
@@ -392,8 +400,9 @@ public class FuelSystem extends Subsystem {
     }
     
     if (gaCoDrive.leftTrigger()){
+      // Manual Override
       runTransfer(1,1);
-      runCollector      = true;
+      //runCollector      = true;
       fireOneFlag       = false;
       prepairToFireFlag = false;
     } else {
