@@ -8,9 +8,6 @@ import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 
 import com.revrobotics.CANSparkMaxLowLevel;
-
-import javax.swing.text.StyledEditorKit.BoldAction;
-
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;

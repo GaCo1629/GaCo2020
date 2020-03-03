@@ -25,11 +25,11 @@ public class GaCoDrive{
     final int R_TRIGGER = 3;
     final int L_TRIGGER = 2;
 
-    final int R_STICK   = 12;
+    final int R_STICK   = 9;
     final int R_STICK_V = 5 ;
     final int R_STICK_H = 4 ;
 
-    final int L_STICK   = 11;
+    final int L_STICK   = 10;
     final int L_STICK_V = 1 ;
     final int L_STICK_H = 0 ;
 

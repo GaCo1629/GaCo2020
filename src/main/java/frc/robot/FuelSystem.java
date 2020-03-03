@@ -52,10 +52,10 @@ public class FuelSystem extends Subsystem {
   private boolean lastUpperBallDetectorState = true;
   private boolean lastLowerBallDetectorState = true;
 
-  private boolean upperBallDetectorState     = true;
-  private boolean lowerBallDetectorState     = true;
+  private boolean upperBallDetected     = true;
+  private boolean lowerBallDetected     = true;
 
-  private final double COLLECTOR_SPEED = .4;
+  private final double COLLECTOR_SPEED = 1.0;
 
   private final double TURRET_REVS_PER_DEGREE   = 1.27866;
   private final double MIN_DISTANCE_TO_TARGET   = 10;
@@ -92,6 +92,8 @@ public class FuelSystem extends Subsystem {
 
   public boolean readyToShoot = false;
   private boolean runCollector = false;
+  private boolean collectorIsDown = false;
+  private boolean collectorIsRunning = false;
 
   private double tempRPM;
 
@@ -156,6 +158,7 @@ public class FuelSystem extends Subsystem {
 
     readyToShoot = false;
 
+    timer.start();    
     timer.reset();
   }
   
@@ -164,6 +167,10 @@ public class FuelSystem extends Subsystem {
 
   }
 
+  // =========================================================
+  // Turret Control
+  // =========================================================
+  
   //turn the turret to a given angle
   public void turnTurretTo(double targetAngle){
 
@@ -208,23 +215,27 @@ public class FuelSystem extends Subsystem {
   }
 
   //makes solinoid out and down 
-  public void toggleSolenoid(){
-    if (gaCoDrive2.dpadUp()){
-      lowerCollector.set(DoubleSolenoid.Value.kForward);
-  } else if (gaCoDrive2.dpadDown()){
-      lowerCollector.set(DoubleSolenoid.Value.kReverse);
-  }
+  public void collectorUpDown(){
+    // lower collector
+    if (gaCoDrive2.dpadUp() || collectorIsRunning){
+        lowerCollector.set(DoubleSolenoid.Value.kForward);
+        collectorIsDown = true;
+
+        
+    } else if (gaCoDrive2.dpadDown() || (!collectorIsRunning && timer.get() > 2)){
+        lowerCollector.set(DoubleSolenoid.Value.kReverse);
+    }
   }
 
   public void updateVariables(){
     shooterRPM = shooterEncoder.getVelocity();
     turretHeading = turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE + turretHeadingModifier;
-    lastLowerBallDetectorState = lowerBallDetectorState;
-    lastUpperBallDetectorState = upperBallDetectorState;
+    lastLowerBallDetectorState = lowerBallDetected;
+    lastUpperBallDetectorState = upperBallDetected;
 
     //inverse detector states so that true indicates that a ball has been detected
-    lowerBallDetectorState = !lowerBallDetector.get();
-    upperBallDetectorState = !upperBallDetector.get();
+    lowerBallDetected = !lowerBallDetector.get();
+    upperBallDetected = !upperBallDetector.get();
 
     /** say its ready to fire if
      * target is visible
@@ -242,11 +253,11 @@ public class FuelSystem extends Subsystem {
     }
 
     //check to see if the lower state did show a ball and is now not showing a ball and if it is add one 
-    if(!lowerBallDetectorState && lastLowerBallDetectorState){
+    if(!lowerBallDetected && lastLowerBallDetectorState){
       ballsInIndex++;
     }
 
-    if(!upperBallDetectorState && lastUpperBallDetectorState){
+    if(!upperBallDetected && lastUpperBallDetectorState){
       ballsInIndex--;
     }
   }
@@ -287,6 +298,8 @@ public class FuelSystem extends Subsystem {
   //turns collector on
   public void runCollector (){
     collector.set(COLLECTOR_SPEED);
+    collectorIsRunning = true;
+    timer.reset();
   }
 
   //runs the transfer
@@ -304,6 +317,8 @@ public class FuelSystem extends Subsystem {
   //stops collector
   public void stopCollector(){
     collector.set(0);
+    collectorIsRunning = false;
+ 
   }
 
   //set the shooter to a given speed in RPM
@@ -383,16 +398,16 @@ public class FuelSystem extends Subsystem {
       prepairToFireFlag = false;
     } else {
       //check to see if it should be firing one and then if the top sensor was just detecting a ball and is now not seeing a ball meaning one has just been fired
-      if(fireOneFlag && upperBallDetectorState && !lastUpperBallDetectorState){
+      if(fireOneFlag && upperBallDetected && !lastUpperBallDetectorState){
         runTransfer(1,1);
         runCollector = true;
         //check to see if it should be preparing to fire and make sure a ball has not been detected at the top
-      } else if(prepairToFireFlag && !upperBallDetectorState){
+      } else if(prepairToFireFlag && !upperBallDetected){
         runTransfer(1,1);
         runCollector = true;
         fireOneFlag  = false;
         //check to see if a ball is detected at the bottom and on is not detected at the top
-      } else if(lowerBallDetectorState && !upperBallDetectorState){
+      } else if(lowerBallDetected && !upperBallDetected){
         runTransfer(1,0);
         runCollector      = true;
         fireOneFlag       = false;
@@ -404,7 +419,8 @@ public class FuelSystem extends Subsystem {
       }
     }
 
-    if(runCollector){
+    // Run the collector unless there is a ball at either end of transfer
+    if(runCollector && !(upperBallDetected || lowerBallDetected)){
       runCollector();
     } else {
       stopCollector();
@@ -432,7 +448,7 @@ public class FuelSystem extends Subsystem {
       fireOneFlag = true;
     }
 
-    toggleSolenoid();
+    collectorUpDown();
 
     if(gaCoDrive2.leftBumper() && turretVision.targetVisible){
       modifyTurretPIDProportional();
@@ -457,8 +473,8 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putNumber("Balls In Robot", ballsInIndex);
 
     SmartDashboard.putBoolean("Ready to Fire", readyToShoot);
-    SmartDashboard.putBoolean("Lower Ball Detector", lowerBallDetectorState);
-    SmartDashboard.putBoolean("Upper Ball Detector", upperBallDetectorState);
+    SmartDashboard.putBoolean("Lower Ball Detector", lowerBallDetected);
+    SmartDashboard.putBoolean("Upper Ball Detector", upperBallDetected);
   }
 
 /// auto functions
