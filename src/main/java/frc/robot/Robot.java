@@ -36,6 +36,21 @@ public class Robot extends TimedRobot {
     purePursuit.init(driveTrain);
     climber.init(minion);  
   }
+  
+  @Override
+  public void robotPeriodic(){
+    turretVision.updateTarget();
+
+    fuelSystem.updateVariables();
+    driveTrain.readSensors();
+    climber.updateValues();
+
+    driveTrain.show();
+    fuelSystem.show();
+    climber.show();
+  }
+
+
   @Override
   public void autonomousInit() {
     // TODO Auto-generated method stub
@@ -64,17 +79,4 @@ public class Robot extends TimedRobot {
     //colorWheel.teleopPeriodic();
     climber.teleopPeriodic();
   }  
-  
-  @Override
-  public void robotPeriodic(){
-    turretVision.updateTarget();
-
-    fuelSystem.updateVariables();
-    driveTrain.updateVariables();
-    climber.updateValues();
-
-    driveTrain.show();
-    fuelSystem.show();
-    climber.show();
-  }
 }

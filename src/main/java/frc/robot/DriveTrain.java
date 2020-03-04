@@ -101,9 +101,6 @@ public class DriveTrain extends Subsystem{
     private double robotHeadingModifier      = 0;
     private boolean turning                  = false; 
 
-    private double lastHeading = 0;
-
-
     //declare variables for tracting robot location
     public double x             = 0;
     public double y             = 0;
@@ -112,7 +109,6 @@ public class DriveTrain extends Subsystem{
     private double test1;
 
     public Point robotLocation = new Point(0,0,0);
-
     private double turretHeadingFieldCentric;
 
     //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
@@ -181,6 +177,86 @@ public class DriveTrain extends Subsystem{
         timer.start();
     }
 
+    // =============================================================
+    //  TELEOP METHODS
+    // =============================================================
+
+    @Override
+    public void teleopInit() {
+        //reset all gyro and auto heading variables
+        turning                   = false;
+        autoHeading               = false;
+        requiredHeadingCorrection = 0;
+        robotHeadingModifier      = 0;
+        timer.reset();
+     
+    }
+
+    @Override
+    public void teleopPeriodic(){
+        adjustPowerLevel();
+         //reduce axial and yaw according to power level
+        axial = gaCoDrive.getLeftStickY()*axialPowerLevel;
+        yaw =  gaCoDrive.getRightStickX() * yawPowerLevel;
+       
+        calculateAndSetMotorPowers(axial, yaw);
+        show();
+    }
+
+    public void adjustPowerLevel(){
+        if (gaCoDrive.leftBumper()){
+            axialPowerLevel = AXIAL_SLOW_POWER_LEVEL;
+            yawPowerLevel   = YAW_SLOW_POWER_LEVEL;
+        } else if (gaCoDrive.rightBumper()){
+            axialPowerLevel = AXIAL_FAST_POWER_LEVEL;
+            yawPowerLevel   = YAW_FAST_POWER_LEVEL;
+        } else {
+            axialPowerLevel = AXIAL_REGULAR_POWER_LEVEL;
+            yawPowerLevel   = YAW_REGULAR_POWER_LEVEL;
+        }
+    }
+
+    public void calculateAndSetMotorPowers( double anAxial, double aYaw){
+
+        //adjust axial to avoid tipping
+        double deltaTime  = timer.get() - lastTime;
+        double deltaPower = anAxial - lastAxial;
+
+        if(deltaTime != 0){
+            if(Math.abs(deltaPower/deltaTime) > MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE){
+                anAxial = lastAxial + Math.signum(deltaPower) * deltaTime * MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE;
+            }
+        }
+    
+        lastTime = timer.get();
+        lastAxial = anAxial;
+
+        //calculate left and right motor powers
+        double left  = anAxial + aYaw;
+        double right = anAxial - aYaw;
+
+        //scale them down so that the maxium of left/right is equal to one
+        double max = Math.max(Math.abs(left), Math.abs(right));
+
+        if(max > 1){
+            left  /= max;
+            right /= max;
+        }
+
+        //set motors to calculated values
+        leftDriveMaster.set(left);
+        rightDriveMaster.set(right);
+    }
+
+    // =============================================================
+    // Auto METHODS
+    // =============================================================
+
+    
+    // =============================================================
+    //  GENERAL DRIVE METHODS
+    // =============================================================
+
     //sets heading to input value
     public void setHeading(double newHeading){
         gyro.zeroYaw();
@@ -210,28 +286,9 @@ public class DriveTrain extends Subsystem{
             yaw = headingPID.run(robotHeading, targetHeading);
         }
     }
-    
+  
 
-    //use the controller values to set axial and yaw values
-    public void setVectorsToController( double a, double y){
-        axial = a; //axial
-        yaw   = y; //yaw
-    }
-        
-    public void adjustPowerLevel(){
-        if (gaCoDrive.leftBumper()){
-            axialPowerLevel = AXIAL_SLOW_POWER_LEVEL;
-            yawPowerLevel   = YAW_SLOW_POWER_LEVEL;
-        } else if (gaCoDrive.rightBumper()){
-            axialPowerLevel = AXIAL_FAST_POWER_LEVEL;
-            yawPowerLevel   = YAW_FAST_POWER_LEVEL;
-        } else {
-            axialPowerLevel = AXIAL_REGULAR_POWER_LEVEL;
-            yawPowerLevel   = YAW_REGULAR_POWER_LEVEL;
-        }
-    }
-
-    public void updateVariables(){
+    public void readSensors(){
         //update drive encoders
         leftEncoder  = leftDriveEncoder.getPosition();
         rightEncoder = rightDriveEncoder.getPosition();
@@ -253,60 +310,7 @@ public class DriveTrain extends Subsystem{
         return test1;
       }
 
-    public void calculateAndSetMotorPowers(){
-        //reduce axial and yaw according to power level
-        yaw   *= yawPowerLevel;
-        axial *= axialPowerLevel;
-
-        //adjust axial to avoid tipping
-        double deltaTime  = timer.get() - lastTime;
-        double deltaPower = axial - lastAxial;
-
-        if(deltaTime != 0){
-            if(Math.abs(deltaPower/deltaTime) > MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE){
-                axial = lastAxial + Math.signum(deltaPower) * deltaTime * MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE;
-            }
-        }
-    
-        lastTime = timer.get();
-        lastAxial = axial;
-
-        //calculate left and right motor powers
-        double left  = axial + yaw;
-        double right = axial - yaw;
-
-        //scale them down so that the maxium of left/right is equal to one
-        double max = Math.max(Math.abs(left), Math.abs(right));
-
-        if(max > 1){
-            left  /= max;
-            right /= max;
-        }
-
-        //set motors to calculated values
-        leftDriveMaster.set(left);
-        rightDriveMaster.set(right);
-    }
-
-    public void moveRobot(double a, double y){
-        adjustPowerLevel();
-        setVectorsToController(a , y );
-        //runHoldHeading();
-        calculateAndSetMotorPowers();
-    }
-
-    @Override
-    public void teleopPeriodic(){
-
-        moveRobot(gaCoDrive.getLeftStickY(), gaCoDrive.getRightStickX());
-        show();
-
-    //Driver 1 - left stick y drive forward/backward
-    //Driver 1 - right stick x turn left/right
-    //Driver 1 - right bumper Power mode
-    //Driver 1 - left bumper Slow mode
-    }
-
+   
     @Override
     public void show() {
         SmartDashboard.putNumber ("Robot X", x);
@@ -380,15 +384,7 @@ public class DriveTrain extends Subsystem{
             rightDriveMaster.set(0);
         }
     */
-    
-    /*
-        double left    = driverStation.getLeftStickY();
-        double right   = driverStation.getRightStickY();
-    
-        rightDriveMaster.set(right);
-        leftDriveMaster.set(left);
-        */
-        }
+     }
 
 
         ////// using code from 2018 to make auto functions\\\\\\
@@ -396,39 +392,13 @@ public class DriveTrain extends Subsystem{
        return inches*INCHES_PER_REV;
     }
 
-
-
-    // Get the average distance traveled by each wheel
-	double inchesTraveled() {
-
-		double distanceTravelled = encoderToInches((Math.abs(leftDriveEncoder.getPosition()) + Math.abs(rightDriveEncoder.getPosition()))/2);
-
-		// Wait for a short time before really checking for moving condition.
-		robotIsMoving = ((timer.get() < 0.5)
-				|| (Math.abs(distanceTravelled - lastDistanceTraveled) > MAX_STOPPED_DISTANCE));
-
-		lastDistanceTraveled = distanceTravelled; // Save last movement distance for next time around the loop
-
-		return (distanceTravelled);
-    }
+  
     // Reset both Encoders & timer
 	void resetEncoders() {
-		lastDistanceTraveled = -1; // pre-load with invalid value
 		leftDriveEncoder.setPosition(0);
 		rightDriveEncoder.setPosition(0);
-		timer.reset();
 	}
 
     
-	void driveRobot(double inches, double fwd,  double timeoutS) {
-      //  if (driveFirstTime){
-      //  resetEncoders();
-      //  }
-
-	    if (inchesTraveled()<inches && timer.get()<timeoutS){
-            moveRobot(fwd, 0);
-           // driveFirstTime = false;
-        }	
-		
-	}
+	
 }

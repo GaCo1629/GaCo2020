@@ -61,7 +61,7 @@ public class Vision {
         targetVisible = true;
    
         //Smart Dashboard Display
-        SmartDashboard.putBoolean("ValidTarget?", targetVisible);
+       
         SmartDashboard.putNumber("LimelightX", x);
         SmartDashboard.putNumber("LimelightY", y);
         SmartDashboard.putNumber("TargetWidth", width);
@@ -70,6 +70,7 @@ public class Vision {
      } else {
        targetVisible = false;
      }
+     SmartDashboard.putBoolean("ValidTarget?", targetVisible);
     
      
     }  

@@ -312,7 +312,6 @@ public class FuelSystem extends Subsystem {
   public void runTransfer (double upper, double lower){
     upperTransfer.set(upper);
     lowerTransfer.set(lower);
- 
   }
 
   //runs collector in reverse
@@ -324,7 +323,6 @@ public class FuelSystem extends Subsystem {
   public void stopCollector(){
     collector.set(0);
     collectorIsRunning = false;
- 
   }
 
   //set the shooter to a given speed in RPM
