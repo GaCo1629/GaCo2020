@@ -120,6 +120,14 @@ public class GaCoDrive{
         }  
     }    
 
+    public double dpad(){
+        if(isLogitech){
+            return (stick.getPOV());
+        } else {
+            return (stick.getPOV() + 90);
+        }  
+    }  
+
     public double getleftStickX(){
         return stick.getRawAxis(L_STICK_H);
     }

@@ -41,6 +41,13 @@ ColorWheel
 
         Left bumper    - Color Wheel turns on at 0.5 power
         Right Bumper   - Color Wheel turns on at -0.5 power
+
+Climber
+    minion
+        Right Trigger  - run climber up
+        Right Bumper   - run climber down
+        B              - run climber down until it stops and reset encoders
+        Y              - run climber to the top set position
         
 CAN Bus Ids
 NEO Motors

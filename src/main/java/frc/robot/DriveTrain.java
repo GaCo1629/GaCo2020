@@ -24,7 +24,10 @@ public class DriveTrain extends Subsystem{
     rightDriveBackCANid   = 15
     */
 
-    private GaCoDrive     gaCoDrive;
+    private GaCoDrive     pilot;
+    private GaCoDrive     copilot;
+    private GaCoDrive     minion;
+
     private Vision        turretVision;
     private FuelSystem    fuelSystem;
 
@@ -119,8 +122,10 @@ public class DriveTrain extends Subsystem{
     }
 
     //initalize hardware for the drive train
-    public void init(GaCoDrive gaCoDrive, Vision turretVision, FuelSystem fuelSystem){
-        this.gaCoDrive      = gaCoDrive;
+    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Vision turretVision, FuelSystem fuelSystem){
+        this.pilot      = pilot;
+        this.copilot    = copilot;
+        this.minion     = minion;
         this.turretVision   = turretVision;
         this.fuelSystem     = fuelSystem;
 
@@ -196,18 +201,18 @@ public class DriveTrain extends Subsystem{
     public void teleopPeriodic(){
         adjustPowerLevel();
          //reduce axial and yaw according to power level
-        axial = gaCoDrive.getLeftStickY()*axialPowerLevel;
-        yaw =  gaCoDrive.getRightStickX() * yawPowerLevel;
+        axial = pilot.getLeftStickY()  * axialPowerLevel;
+        yaw   = pilot.getRightStickX() * yawPowerLevel;
        
         calculateAndSetMotorPowers(axial, yaw);
         show();
     }
 
     public void adjustPowerLevel(){
-        if (gaCoDrive.leftBumper()){
+        if (pilot.leftBumper()){
             axialPowerLevel = AXIAL_SLOW_POWER_LEVEL;
             yawPowerLevel   = YAW_SLOW_POWER_LEVEL;
-        } else if (gaCoDrive.rightBumper()){
+        } else if (pilot.rightBumper()){
             axialPowerLevel = AXIAL_FAST_POWER_LEVEL;
             yawPowerLevel   = YAW_FAST_POWER_LEVEL;
         } else {
@@ -286,7 +291,13 @@ public class DriveTrain extends Subsystem{
             yaw = headingPID.run(robotHeading, targetHeading);
         }
     }
-  
+    
+
+    //use the controller values to set axial and yaw values
+    public void setVectorsToController( double a, double y){
+        axial = a; //axial
+        yaw   = y; //yaw
+    }
 
     public void readSensors(){
         //update drive encoders
@@ -310,7 +321,48 @@ public class DriveTrain extends Subsystem{
         return test1;
       }
 
-   
+    public void calculateAndSetMotorPowers(){
+        //reduce axial and yaw according to power level
+        yaw   *= yawPowerLevel;
+        axial *= axialPowerLevel;
+
+        //adjust axial to avoid tipping
+        double deltaTime  = timer.get() - lastTime;
+        double deltaPower = axial - lastAxial;
+
+        if(deltaTime != 0){
+            if(Math.abs(deltaPower/deltaTime) > MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE){
+                axial = lastAxial + Math.signum(deltaPower) * deltaTime * MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE;
+            }
+        }
+    
+        lastTime = timer.get();
+        lastAxial = axial;
+
+        //calculate left and right motor powers
+        double left  = axial + yaw;
+        double right = axial - yaw;
+
+        //scale them down so that the maxium of left/right is equal to one
+        double max = Math.max(Math.abs(left), Math.abs(right));
+
+        if(max > 1){
+            left  /= max;
+            right /= max;
+        }
+
+        //set motors to calculated values
+        leftDriveMaster.set(left);
+        rightDriveMaster.set(right);
+    }
+
+    public void moveRobot(double a, double y){
+        adjustPowerLevel();
+        setVectorsToController(a , y );
+        //runHoldHeading();
+        calculateAndSetMotorPowers();
+    }
+
     @Override
     public void show() {
         SmartDashboard.putNumber ("Robot X", x);
