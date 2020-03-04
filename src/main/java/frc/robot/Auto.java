@@ -89,7 +89,19 @@ public class Auto extends Subsystem {
 //shows values
     @Override
     public void show(){
-        
+
+        startPosition.setDefaultOption("None", StartPosition.NONE);
+        startPosition.addOption("Center", StartPosition.CENTER);
+        startPosition.addOption("Far Trench", StartPosition.FAR_TRENCH);
+        startPosition.addOption("Close Trench", StartPosition.CLOSE_TRENCH);
+         SmartDashboard.putData("Start Position", startPosition);
+         
+           //numBalls choser
+           numBalls.setDefaultOption("None", NumBalls.NONE);
+           numBalls.addOption("Center", NumBalls.THREE);
+           numBalls.addOption("Far Trench", NumBalls.SIX);
+           numBalls.addOption("Close Trench", NumBalls.TEN);
+           SmartDashboard.putData("number of balls", numBalls);
     }
 
 
