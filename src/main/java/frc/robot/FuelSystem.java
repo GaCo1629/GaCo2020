@@ -28,8 +28,15 @@ collector right 0,1
 
 public class FuelSystem extends Subsystem {
 
-  private GaCoDrive gaCoDrive;
-  private GaCoDrive gaCoDrive2;
+  private GaCoDrive pilot;
+  private GaCoDrive copilot;
+  private GaCoDrive minion;
+
+  private boolean copilotYLastState = false;
+  private boolean minionLastAState  = false;
+
+  private boolean visionEnabled     = true;
+
   private Vision        turretVision;
   private DriveTrain    driveTrain;
 
@@ -66,8 +73,10 @@ public class FuelSystem extends Subsystem {
   private final double TURRET_PROPORTIONAL_GAIN = .002;
   private final double TURRET_INTEGRAL_GAIN     = 0;
 
+  private boolean collectorSolinoidDown         = false;
+
   private final double SHOOTER_RPM_TOLERANCE    = 75;
-  private final double TURRET_DEGREE_TOLERANCE  = .4;
+  private final double TURRET_DEGREE_TOLERANCE  = .5;
 
   private static final int L_SHOOTER_ID  = 21;
   private static final int R_SHOOTER_ID  = 20;
@@ -92,6 +101,7 @@ public class FuelSystem extends Subsystem {
 
   public boolean readyToShoot = false;
   private boolean runCollector = false;
+  private boolean reverseCollector = false;
 
   private double tempRPM;
 
@@ -107,9 +117,10 @@ public class FuelSystem extends Subsystem {
   }
 
   //initalize fuel system 
-  public void init(GaCoDrive gaCoDrive, GaCoDrive gaCoDrive2, Vision turretVision, DriveTrain driveTrain){
-    this.gaCoDrive  = gaCoDrive;
-    this.gaCoDrive2 = gaCoDrive2;
+  public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Vision turretVision, DriveTrain driveTrain){
+    this.pilot   = pilot;
+    this.copilot = copilot;
+    this.minion  = minion;
     this.turretVision   = turretVision;
     this.driveTrain     = driveTrain;
 
@@ -145,12 +156,12 @@ public class FuelSystem extends Subsystem {
     //reset turret heading variables
     turretHeading       = 0;
     targetTurretHeading = 0;
-    turretPIDEnabled    = false;
+    turretPIDEnabled    = true;
 
     //reset shooter RPM variables
     shooterRPM          = 0;
     targetSpeedRPM      = 2300;
-    shooterPIDEnabled   = false;
+    shooterPIDEnabled   = true;
 
     lowerCollector.set(DoubleSolenoid.Value.kReverse);
 
@@ -209,11 +220,13 @@ public class FuelSystem extends Subsystem {
 
   //makes solinoid out and down 
   public void toggleSolenoid(){
-    if (gaCoDrive2.dpadUp()){
-      lowerCollector.set(DoubleSolenoid.Value.kForward);
-  } else if (gaCoDrive2.dpadDown()){
+    if(collectorSolinoidDown){
       lowerCollector.set(DoubleSolenoid.Value.kReverse);
-  }
+      collectorSolinoidDown = false;
+    } else {
+      lowerCollector.set(DoubleSolenoid.Value.kForward);
+      collectorSolinoidDown = true;
+    }
   }
 
   public void updateVariables(){
@@ -260,30 +273,32 @@ public class FuelSystem extends Subsystem {
 
   //turn turret
   public void turnTurretPID(){
-  
-    //enable turret PID if left stick button is pressed and disable it if right stick is pressed
-    if(gaCoDrive.dpadUp()){
-      turretPIDEnabled = true;
-    } else if (gaCoDrive.dpadDown()){
-      turretPIDEnabled = false;
+
+    if(copilot.dpad() == 0){
+      targetTurretHeading = -driveTrain.robotHeading;
+    } else if (copilot.dpad() == 45){
+      targetTurretHeading = -driveTrain.robotHeading + 15;
+    } else if (copilot.dpad() == -45){
+      targetTurretHeading = -driveTrain.robotHeading - 15;
+    } else if (copilot.dpad() == -90){
+      targetTurretHeading = -driveTrain.robotHeading - 30;
+    } else if (copilot.dpad() == 90){
+      targetTurretHeading = -driveTrain.robotHeading + 30;
     }
     
     //move the target angle right if right d pad is pressed and left if left d pad is pressed
-    if (gaCoDrive.dpadLeft()) {
-      targetTurretHeading -= .5;
+    if (minion.dpadLeft()) {
+      targetTurretHeading -= 1;
     }
 
-    if (gaCoDrive.dpadRight()){
-      targetTurretHeading += .5;
+    if (minion.dpadRight()){
+      targetTurretHeading += 1;
     }
       
-      //run the PID loop if it has been enabled
-    if(turretPIDEnabled) {
-      turnTurretTo(targetTurretHeading);
-    } else {
-      turret.set(0);
-    }
+    //run the PID loop 
+    turnTurretTo(targetTurretHeading);
   }
+
   //turns collector on
   public void runCollector (){
     collector.set(COLLECTOR_SPEED);
@@ -329,18 +344,17 @@ public class FuelSystem extends Subsystem {
    
   //ajust shooter rpm and enables
   public void shooterOnRPM(){
-    if (gaCoDrive.y()){
-      shooterPIDEnabled = true;
-    } else if (gaCoDrive.a()){
-      shooterPIDEnabled = false;
-    }
       
-    if (gaCoDrive.b()) {
-      targetSpeedRPM +=  10;
+    if(minion.y()){
+      targetSpeedRPM = 4000;
+    }
+
+    if (minion.rightTrigger()) {
+      targetSpeedRPM -=  100;
     }
     
-    if (gaCoDrive.x()) {
-      targetSpeedRPM -=  10;
+    if (minion.rightBumper()) {
+      targetSpeedRPM +=  100;
     }
       
     if (targetSpeedRPM > 6200 ){
@@ -370,42 +384,63 @@ public class FuelSystem extends Subsystem {
   //indexes the balls
   public void indexBalls(){
 
-    runCollector = false; //stops collector
+    reverseCollector = false; //stops collector
+    runCollector = false;
 
-    if (gaCoDrive.rightTrigger()){
+    if (copilot.rightTrigger()){
       runCollector = true; //if trigger is pressed it runs collectors
+    } else if (copilot.rightBumper()) {
+      reverseCollector = true;
     }
-    
-    if (gaCoDrive.leftTrigger()){
+
+    if (copilot.b()){
       runTransfer(1,1);
       runCollector      = true;
       fireOneFlag       = false;
       prepairToFireFlag = false;
-    } else {
+      reverseCollector  = false;
+    } else if (copilot.y()){
+      runTransfer(-1,-1);
+      runCollector      = false;
+      reverseCollector  = true;
+      fireOneFlag       = false;
+      prepairToFireFlag = false;
+    } else if (copilot.leftTrigger()){
+        if(readyToShoot || !visionEnabled){
+          runTransfer(1,1);
+        } else {
+          runTransfer(0, 0);
+        }
+      runCollector      = false;
+      reverseCollector  = false;
+      fireOneFlag       = false;
+      prepairToFireFlag = false;
       //check to see if it should be firing one and then if the top sensor was just detecting a ball and is now not seeing a ball meaning one has just been fired
-      if(fireOneFlag && upperBallDetectorState && !lastUpperBallDetectorState){
+    } else if(fireOneFlag && !(!upperBallDetectorState && lastUpperBallDetectorState) && (readyToShoot || !visionEnabled)){
         runTransfer(1,1);
-        runCollector = true;
+        runCollector      = true;
+        prepairToFireFlag = false;
         //check to see if it should be preparing to fire and make sure a ball has not been detected at the top
-      } else if(prepairToFireFlag && !upperBallDetectorState){
-        runTransfer(1,1);
+    } else if(prepairToFireFlag && !upperBallDetectorState){
+        runTransfer(.8,.8);
         runCollector = true;
         fireOneFlag  = false;
         //check to see if a ball is detected at the bottom and on is not detected at the top
-      } else if(lowerBallDetectorState && !upperBallDetectorState){
+    } else if(lowerBallDetectorState && !upperBallDetectorState){
         runTransfer(1,0);
         runCollector      = true;
         fireOneFlag       = false;
         prepairToFireFlag = false;
-      } else {
+    } else {
         runTransfer(0,0);
         fireOneFlag       = false;
         prepairToFireFlag = false;
-      }
     }
 
     if(runCollector){
       runCollector();
+    } else if (reverseCollector){
+      reverseCollector();
     } else {
       stopCollector();
     }
@@ -422,19 +457,28 @@ public class FuelSystem extends Subsystem {
 
     indexBalls();
 
-    if(gaCoDrive2.leftTrigger()){
+    if(copilot.a()){
       //setting prepairToFireFlag equal to true will prepair to fire and then be set back to false when it is done prepairing to fire
       prepairToFireFlag = true;
     }
 
-    if(gaCoDrive2.a()){
+    if(copilot.leftBumper()){
       //setting fireOneFlag equal to true will prepair to fire and then be set back to false when it has fired one
       fireOneFlag = true;
     }
 
-    toggleSolenoid();
+    if(minion.a() && !minionLastAState){
+      if(visionEnabled) {
+        visionEnabled = false;
+        //turn off limelight LED
+      } else {
+        visionEnabled = true;
+        //turn on limelight LED
+      }
+    }
+    minionLastAState = minion.a();
 
-    if(gaCoDrive2.leftBumper() && turretVision.targetVisible){
+    if(turretVision.targetVisible && visionEnabled){
       modifyTurretPIDProportional();
       turnTurretTo(turretHeading + turretVision.x);
       setShooterRPM(getShooterRPM(turretVision.getDistanceFromTarget()));
@@ -455,6 +499,8 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putNumber("Turret Required Correction", turretVision.x);
     SmartDashboard.putNumber("Temp RPM", tempRPM);
     SmartDashboard.putNumber("Balls In Robot", ballsInIndex);
+    SmartDashboard.putBoolean("Vision Enabled", visionEnabled);
+
 
     SmartDashboard.putBoolean("Ready to Fire", readyToShoot);
     SmartDashboard.putBoolean("Lower Ball Detector", lowerBallDetectorState);

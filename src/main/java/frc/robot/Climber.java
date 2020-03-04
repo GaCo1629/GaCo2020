@@ -42,7 +42,9 @@ public class Climber extends Subsystem{
     private double lastTime    = 0;
     private boolean firstLoop = true;
 
-    GaCoDrive gaCoDrive2;
+    GaCoDrive pilot;
+    GaCoDrive copilot;
+    GaCoDrive minion;
 
     //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
     PIDController climberPID = new PIDController(.2, .005, 0, 0, 5, .01, false, "climber");
@@ -52,8 +54,10 @@ public class Climber extends Subsystem{
     }
 
 
-    public void init(GaCoDrive gaCoDrive2) {
-        this.gaCoDrive2 = gaCoDrive2;
+    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion) {
+        this.pilot   = pilot;
+        this.copilot = copilot;
+        this.minion  = minion;
 
         leftLift  = new CANSparkMax(LEFT_LIFT_CAN_ID,  CANSparkMaxLowLevel.MotorType.kBrushless);
         rightLift = new CANSparkMax(RIGHT_LIFT_CAN_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -103,9 +107,9 @@ public class Climber extends Subsystem{
     }
 
     public void runClimberTest(){
-        if(gaCoDrive2.rightTrigger()){
+        if(minion.rightTrigger()){
             setPower(.5);
-        } else if (gaCoDrive2.rightBumper()) {
+        } else if (minion.rightBumper()) {
             setPower(-.5);
         } else {
             setPower(0);
@@ -117,11 +121,6 @@ public class Climber extends Subsystem{
         rightLift.set(climberPID.run(rightLiftPosition, leftLiftPosition));
     }
 
-    //pull down on climber with full power
-    public void climb(){
-
-    }
-
     public void resetEncoders(){
         leftLiftEncoder.setPosition(0);
         rightLiftEncoder.setPosition(0);
@@ -130,18 +129,23 @@ public class Climber extends Subsystem{
     @Override
     public void teleopPeriodic() {
 
-
-        if(gaCoDrive2.b()){
+        if(minion.rightStick() && minion.rightBumper()){
             resetClimber();
-        } else if(gaCoDrive2.y()){
+        } else if(minion.leftTrigger()){
             extendUp();
             firstLoop = true;
+        } else if(minion.leftBumper()){
+            setPower(1);
+            firstLoop = true;
+        } else if(minion.x()){
+            setPower(-1);
+            firstLoop = true;
         } else {
-            runClimberTest();
+            setPower(0);
             firstLoop = true;
         }
 
-        if(gaCoDrive2.leftStick()){
+        if(minion.leftStick()){
             resetEncoders();
         }
         //Driver 2 - (Button) Extend Up Climber
@@ -150,7 +154,7 @@ public class Climber extends Subsystem{
     }
 
     public void updateValues(){
-        lastLeftLiftPosition = leftLiftPosition;
+        lastLeftLiftPosition  = leftLiftPosition;
         lastRightLiftPosition = rightLiftPosition;
         leftLiftPosition  = leftLiftEncoder.getPosition();
         rightLiftPosition = rightLiftEncoder.getPosition();
@@ -161,7 +165,5 @@ public class Climber extends Subsystem{
         SmartDashboard.putNumber ("Climber Right Encoder", rightLiftPosition);
         SmartDashboard.putNumber ("Climber Left Encoder Velocity", leftLiftEncoder.getVelocity());
         SmartDashboard.putNumber ("Climber Right Encoder Velocity", rightLiftEncoder.getVelocity());
-
-
     }
 }

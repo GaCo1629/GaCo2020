@@ -27,7 +27,10 @@ public class DriveTrain extends Subsystem{
     rightDriveBackCANid   = 15
     */
 
-    private GaCoDrive     gaCoDrive;
+    private GaCoDrive     pilot;
+    private GaCoDrive     copilot;
+    private GaCoDrive     minion;
+
     private Vision        turretVision;
     private FuelSystem    fuelSystem;
 
@@ -126,8 +129,10 @@ public class DriveTrain extends Subsystem{
     }
 
     //initalize hardware for the drive train
-    public void init(GaCoDrive gaCoDrive, Vision turretVision, FuelSystem fuelSystem){
-        this.gaCoDrive      = gaCoDrive;
+    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Vision turretVision, FuelSystem fuelSystem){
+        this.pilot      = pilot;
+        this.copilot    = copilot;
+        this.minion     = minion;
         this.turretVision   = turretVision;
         this.fuelSystem     = fuelSystem;
 
@@ -222,10 +227,10 @@ public class DriveTrain extends Subsystem{
     }
         
     public void adjustPowerLevel(){
-        if (gaCoDrive.leftBumper()){
+        if (pilot.leftBumper()){
             axialPowerLevel = AXIAL_SLOW_POWER_LEVEL;
             yawPowerLevel   = YAW_SLOW_POWER_LEVEL;
-        } else if (gaCoDrive.rightBumper()){
+        } else if (pilot.rightBumper()){
             axialPowerLevel = AXIAL_FAST_POWER_LEVEL;
             yawPowerLevel   = YAW_FAST_POWER_LEVEL;
         } else {
@@ -301,7 +306,7 @@ public class DriveTrain extends Subsystem{
     @Override
     public void teleopPeriodic(){
 
-        moveRobot(gaCoDrive.getLeftStickY(), gaCoDrive.getRightStickX());
+        moveRobot(pilot.getLeftStickY(), pilot.getRightStickX());
         show();
 
     //Driver 1 - left stick y drive forward/backward
