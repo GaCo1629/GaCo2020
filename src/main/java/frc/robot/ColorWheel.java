@@ -25,7 +25,7 @@ import com.revrobotics.ColorMatch;
 
 
 // Public class to contain all the hardware elements (BotBits)
-public class ColorWheel {
+public class ColorWheel extends Subsystem{
 
     GaCoDrive gaCoDrive;
 
@@ -118,15 +118,25 @@ public class ColorWheel {
         //initialize motor to spin wheel
         //initialize psunamatics to push out wheel spinner
         //initialize camera/color sensor
+    }
 
+
+    @Override 
+    public void teleopInit(){
         time.reset();
         time.start();
         firstTime = false;
         lastSmartColor = kBlackTarget;
         smartGetColor();
 
-    }
+        position = Rot.Init;
+        yellow = 0;
+        wheelCount = 0;
+        
+        colorMotor.set(0);
+        colorArm.set(DoubleSolenoid.Value.kReverse);
 
+    }
     //run the motor and use the sensor/camera so that the table turns 3.5 rotations
     public void turnRotations(){
         /*wheelCount = 0;
@@ -196,7 +206,7 @@ public class ColorWheel {
 
             case Turning :
                 SmartDashboard.putString("Wheel State", "Wheel Turning");
-                if (wheelCount < 7){
+                if (wheelCount < 8){
                     match = smartGetColor();
                     //Save the current color
                     if (match != prevMatch){
@@ -210,16 +220,16 @@ public class ColorWheel {
                     //set the current color to the previous color
                 } else {
                     colorMotor.set(0);
-                    position = Rot.Arm_Retracted;
                     endTime = time.get() + 0.5;
+                    position = Rot.Arm_Retracted;
                 }
                 break;
 
             case Arm_Retracted :
                 SmartDashboard.putString("Wheel State", "Arm Retracted");
-                colorArm.set(DoubleSolenoid.Value.kReverse);
                 curTime = time.get();
                 if (time.get() >= endTime){
+                    colorArm.set(DoubleSolenoid.Value.kReverse);
                     position = Rot.Init;
                 }
                 break;
@@ -286,15 +296,15 @@ public class ColorWheel {
 */
     //run the motor and use the sensor/camera so that the table turns to yellow
     public void turnToYellow(){
-        /*wheelCount = 0;
+        wheelCount = 0;
         //re sets wheelCount for use
         colorArm.set(DoubleSolenoid.Value.kForward);
         colorMotor.set(maxPower * 0.5);
         //extends the color arm and sets the power to half the max RPM
         if (wheelCount < 1){
             detectedColor = smartGetColor();
-            match = m_colorMatcher.matchClosestColor(detectedColor);
-            if (match.color == kGreenTarget){
+            match = smartGetColor();
+            if (match == kGreenTarget){
                 wheelCount++;
             }
         } else {
@@ -304,14 +314,14 @@ public class ColorWheel {
         if (yellow == 0){
             colorMotor.set(0);
             colorArm.set(DoubleSolenoid.Value.kReverse);
-        }
+        }/*
         switch (yellowE){
             case Init:
                 SmartDashboard.putString("Wheel State", "Init");
                 if (wheelCount != 0){
                     wheelCount = 0;
                 }
-                if (driverStation.rightTrigger()){
+                if (gaCoDrive.rightTrigger()){
                     SmartDashboard.putString("Turn to:", "Yellow");
                     startTime = time.get();
                     yellowE = CRot.Extend_Arm;
@@ -433,10 +443,10 @@ public class ColorWheel {
             //SmartDashboard.putString("colorMotorOn", "Off");
         }
         
-        /*if (yellow == 1){
+        if (yellow == 1){
             turnToYellow();
         }
-
+/*
         if (gaCoDrive.l3()){
             SmartDashboard.putString("Turn to rotation", "On");
             flagTurn = 1;
@@ -457,6 +467,13 @@ public class ColorWheel {
             } else if (lastSmartColor == kBlackTarget){
                 colorString = "Black";
             }
+
+            if (gaCoDrive.leftBumper()){
+                colorArm.set(DoubleSolenoid.Value.kReverse);
+                colorMotor.set(0);
+                position = Rot.Init;
+            }
+
 
             /*if (colorFlag != 0){
                 matchColor();
