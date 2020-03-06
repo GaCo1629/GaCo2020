@@ -22,7 +22,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 // Public class to contain all the hardware elements (BotBits)
 public class ColorWheel extends Subsystem{
 
-    GaCoDrive gaCoDrive;
+    private GaCoDrive pilot;
+    private GaCoDrive copilot;
+    private GaCoDrive minion;
 
     private VictorSP colorMotor;
     //private Solenoid colorArm;
@@ -71,8 +73,10 @@ public class ColorWheel extends Subsystem{
     public ColorWheel() {
     }
 
-    public void init(GaCoDrive gaCoDrive) {
-        this.gaCoDrive = gaCoDrive;
+    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion) {
+        this.pilot   = pilot;
+        this.copilot = copilot;
+        this.minion  = minion;
 
         colorMotor  = new VictorSP(COLOR_MOTOR_ID);
 
@@ -109,6 +113,8 @@ public class ColorWheel extends Subsystem{
         colorMotor.set(0);
         colorArm.set(DoubleSolenoid.Value.kReverse);
 
+        stopColorArm();
+
     }
     //run the motor and use the sensor/camera so that the table turns 3.5 rotations
     public void turnRotations(){
@@ -119,7 +125,7 @@ public class ColorWheel extends Subsystem{
                 
                 wheelCount = 0;
                 
-                if (gaCoDrive.l3()){
+                if (minion.l3()){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
@@ -187,7 +193,7 @@ public class ColorWheel extends Subsystem{
                 
                 wheelCount = 0;
                 
-                if (gaCoDrive.r3() && (colorFlag == Colors.Red)){
+                if (minion.r3() && (colorFlag == Colors.Red)){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
@@ -256,7 +262,7 @@ public class ColorWheel extends Subsystem{
                 
                 wheelCount = 0;
                 
-                if (gaCoDrive.r3() && (colorFlag == Colors.Blue)){
+                if (minion.r3() && (colorFlag == Colors.Blue)){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
@@ -324,7 +330,7 @@ public class ColorWheel extends Subsystem{
                 
                 wheelCount = 0;
                 
-                if (gaCoDrive.r3() && (colorFlag == Colors.Green)){
+                if (minion.r3() && (colorFlag == Colors.Green)){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
@@ -392,7 +398,7 @@ public class ColorWheel extends Subsystem{
                 
                 wheelCount = 0;
                 
-                if (gaCoDrive.r3() && (colorFlag == Colors.Yellow)){
+                if (minion.r3() && (colorFlag == Colors.Yellow)){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
@@ -510,61 +516,13 @@ public class ColorWheel extends Subsystem{
         //Driver 2 - (Button) Spin wheel to yellow
 
         
-
-
-        if (gaCoDrive.x()){
-            colorArm.set(DoubleSolenoid.Value.kForward);
-        } else if (gaCoDrive.y()){
-            colorArm.set(DoubleSolenoid.Value.kReverse);
-        }
-
-        if (gaCoDrive.leftTrigger()){
-
-            SmartDashboard.putString("Turn to:", "Test"); //Red
-
-            /*if(firstTime == false){
-                firstTime = true;
-                startTime = time.get();
-                colorMotor.set(.5);
-                colorArm.set(DoubleSolenoid.Value.kForward);
-            }
-
-
-            if(time.get() - startTime > 5) {
-                colorMotor.set(0);
-                colorArm.set(DoubleSolenoid.Value.kReverse);
-                SmartDashboard.putString("Turn to:", "Test");
-            }*/
-
-            
-            
-            
-        } /* else if (gaCoDrive.a()){
-            SmartDashboard.putString("Turn to:", "");
-
-        } else if (gaCoDrive.b()){
-            SmartDashboard.putString("Turn to:", "");
-
-        } */else if (gaCoDrive.rightTrigger()){
-            SmartDashboard.putString("Turn to:", "Yellow");
-        } else if (gaCoDrive.leftBumper()){
-            colorMotor.set(0.5);
-            SmartDashboard.putString("colorMotorOn", "Foward");
-        } else if (gaCoDrive.rightBumper()){
-            colorMotor.set(-0.5);
-            SmartDashboard.putString("colorMotorOn", "Reverse");
-        } else {
-            //colorMotor.set(0);
-            //SmartDashboard.putString("colorMotorOn", "Off");
-        }
-        
         turnRotations();
         turnToRed();
         turnToBlue();
         turnToGreen();
         turnToYellow();
 
-        if (gaCoDrive.r3() || gaCoDrive.l3()){
+        if (minion.r3() || minion.l3()){
             if ((position != Rot.Init) && (redE != CRot.Init)){
                 SmartDashboard.putString("Wheel Conflicts", "TRUE");
                 stopColorArm();
@@ -595,11 +553,6 @@ public class ColorWheel extends Subsystem{
                 colorString = "Black";
             }
 
-            if (gaCoDrive.leftBumper()){
-                colorArm.set(DoubleSolenoid.Value.kReverse);
-                colorMotor.set(0);
-                position = Rot.Init;
-            }
 
 
 

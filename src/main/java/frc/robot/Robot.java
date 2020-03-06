@@ -18,7 +18,7 @@ public class Robot extends TimedRobot {
   //init subsystems
   private DriveTrain    driveTrain   = new DriveTrain();
   private FuelSystem    fuelSystem   = new FuelSystem();
-  //private ColorWheel    colorWheel   = new ColorWheel();
+  private ColorWheel    colorWheel   = new ColorWheel();
   private Climber       climber      = new Climber();
   private Vision        turretVision = new Vision("limelight-turret");
   private PurePursuit   purePursuit  = new PurePursuit();
@@ -32,7 +32,7 @@ public class Robot extends TimedRobot {
     minion.init(2, false);
     driveTrain.init(pilot, copilot, minion, turretVision, fuelSystem);
     fuelSystem.init(pilot, copilot, minion, turretVision, driveTrain);
-    //colorWheel.init(pilot, copilot, minion);
+    colorWheel.init(pilot, copilot, minion);
     purePursuit.init(driveTrain);
     climber.init(pilot, copilot, minion);  
   }
