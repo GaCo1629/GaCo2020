@@ -7,6 +7,7 @@ package frc.robot;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
+//import com.revrobotics.CANSparkMaxLowLevel.FollowConfig;
 
 import frc.robot.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -115,8 +116,10 @@ public class FuelSystem extends Subsystem {
   //constructor
   public FuelSystem () {
         
+
   }
 
+ 
   //initalize fuel system 
   public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Vision turretVision, DriveTrain driveTrain){
     this.pilot   = pilot;
@@ -132,7 +135,9 @@ public class FuelSystem extends Subsystem {
 
     leftShooter.restoreFactoryDefaults();
     rightShooter.restoreFactoryDefaults();
-      
+    
+    //leftShooter.Config();
+   // rightShooter.Config();
     //invert left motor so that positive values shoots the balls out 
     leftShooter.setInverted(true);
       
@@ -170,6 +175,10 @@ public class FuelSystem extends Subsystem {
 
     timer.start();    
     timer.reset();
+  }
+
+  public void robotPeriodic(){
+  
   }
   
   @Override
@@ -457,6 +466,10 @@ public class FuelSystem extends Subsystem {
     } else {
       stopCollector();
     }
+  }
+
+  public double getShooterRPM(){
+    return shooterRPM;
   }
 
   @Override

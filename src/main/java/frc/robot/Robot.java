@@ -48,20 +48,22 @@ public class Robot extends TimedRobot {
     driveTrain.show();
     fuelSystem.show();
     climber.show();
+
+    auto.show();
   }
 
 
   @Override
   public void autonomousInit() {
     // TODO Auto-generated method stub
-    super.autonomousInit();
+    //super.autonomousInit();
     auto.autonomousInit();
   }
 
  @Override
   public void autonomousPeriodic() {
     // TODO Auto-generated method stub
-    super.autonomousPeriodic();
+   // super.autonomousPeriodic();
     auto.autonomousPeriodic();
   }
 

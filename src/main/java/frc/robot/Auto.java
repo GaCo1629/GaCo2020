@@ -34,20 +34,7 @@ public class Auto extends Subsystem {
 
     public void init(){
         //start postion choser
-        startPosition.setDefaultOption("None", StartPosition.NONE);
-        startPosition.addOption("Center", StartPosition.CENTER);
-        startPosition.addOption("Far Trench", StartPosition.FAR_TRENCH);
-        startPosition.addOption("Close Trench", StartPosition.CLOSE_TRENCH);
-         SmartDashboard.putData("Start Position", startPosition);
-         
-           //numBalls choser
-           numBalls.setDefaultOption("None", NumBalls.NONE);
-           numBalls.addOption("Center", NumBalls.THREE);
-           numBalls.addOption("Far Trench", NumBalls.SIX);
-           numBalls.addOption("Close Trench", NumBalls.TEN);
-           SmartDashboard.putData("number of balls", numBalls);
-
- 
+        show();
     }
 
     @Override
@@ -98,9 +85,9 @@ public class Auto extends Subsystem {
          
            //numBalls choser
            numBalls.setDefaultOption("None", NumBalls.NONE);
-           numBalls.addOption("Center", NumBalls.THREE);
-           numBalls.addOption("Far Trench", NumBalls.SIX);
-           numBalls.addOption("Close Trench", NumBalls.TEN);
+           numBalls.addOption("three", NumBalls.THREE);
+           numBalls.addOption("six", NumBalls.SIX);
+           numBalls.addOption("ten", NumBalls.TEN);
            SmartDashboard.putData("number of balls", numBalls);
     }
 
@@ -112,12 +99,33 @@ public class Auto extends Subsystem {
     switch (selNumBalls){
         
         case NONE:
+        break;
+
+        case THREE:
+        fuelSystem.setShooterSpeed(1000);
+        break;
+
+        case SIX:
+        break;
+
+        case TEN:
+        break;
+       // timeout.hasElapsed(3);
+      //  for (int i =0 ; i < 3; i++ ){
+       // if (fuelSystem.getShooterRPM()  <= 1150 || fuelSystem.getShooterRPM()  >= 950 ){
+        //    fuelSystem.runTransfer(.75, .75);
+      //  }
+       // i++;
+      //  }
+     //   fuelSystem.runTransfer(0,0);
+       // fuelSystem.setShooterRPM(0);
+    }
         
         
 
     }
 
-    }
+    
     private void closeLogic(){
         switch (selNumBalls){
 
@@ -133,6 +141,7 @@ public class Auto extends Subsystem {
 
     }
 // AUTO MOVE
+
 
 
 }
