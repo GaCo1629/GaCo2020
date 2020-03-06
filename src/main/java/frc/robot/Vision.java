@@ -28,6 +28,7 @@ public class Vision {
     public  Vision (String name) {
         limelightName = name;
     }
+
     public double getDistanceFromTarget() {
       double distanceToTarget;
       if(width <= MIN_WIDTH){
@@ -38,22 +39,22 @@ public class Vision {
       else  {
         distanceToTarget = 106+ (-1.52*width) +( 0.0103*Math.pow(width, 2)) + -0.000033*Math.pow(width, 3) + 0.0000000406*Math.pow(width, 4);
       }
-     return distanceToTarget;    
+      return distanceToTarget;    
     }
 
     public void updateTarget(){
-        //Set Up Tables
-     NetworkTable      table = NetworkTableInstance.getDefault().getTable(limelightName);
-     NetworkTableEntry tv    = table.getEntry("tv");
-     NetworkTableEntry tx    = table.getEntry("tx");
-     NetworkTableEntry ty    = table.getEntry("ty");
-     NetworkTableEntry thor  = table.getEntry("thor");
-     NetworkTableEntry ts    = table.getEntry("ts");
+      //Set Up Tables
+      NetworkTable      table = NetworkTableInstance.getDefault().getTable(limelightName);
+      NetworkTableEntry tv    = table.getEntry("tv");
+      NetworkTableEntry tx    = table.getEntry("tx");
+      NetworkTableEntry ty    = table.getEntry("ty");
+      NetworkTableEntry thor  = table.getEntry("thor");
+      NetworkTableEntry ts    = table.getEntry("ts");
      
         //Set Variable to Current Values
-     valid = tv.getDouble(0.0);
+      valid = tv.getDouble(0.0);
      
-     if (valid == 1) {
+      if (valid == 1) {
         x = tx.getDouble(0.0);
         y = ty.getDouble(0.0);
         width = thor.getDouble(0.0);
@@ -67,14 +68,12 @@ public class Vision {
         SmartDashboard.putNumber("TargetWidth", width);
         SmartDashboard.putNumber("TargetSkew", skew);
 
-     } else {
+      } else {
        targetVisible = false;
-     }
-     SmartDashboard.putBoolean("ValidTarget?", targetVisible);
-    
-     
+      }
+      
+      SmartDashboard.putBoolean("ValidTarget?", targetVisible);
     }  
-
 }
 
 

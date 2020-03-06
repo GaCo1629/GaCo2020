@@ -114,8 +114,8 @@ public class ColorWheel extends Subsystem{
         colorArm.set(DoubleSolenoid.Value.kReverse);
 
         stopColorArm();
-
     }
+
     //run the motor and use the sensor/camera so that the table turns 3.5 rotations
     public void turnRotations(){
         switch (position){

@@ -10,5 +10,4 @@ public enum Colors {
     Green,
     Blue,
     Black
-
 } 

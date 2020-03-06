@@ -4,8 +4,8 @@
 package frc.robot;
 //sector for the auto positions
 enum StartPosition{
-CLOSE_TRENCH,
-FAR_TRENCH,
-CENTER, 
-NONE
+  CLOSE_TRENCH,
+  FAR_TRENCH,
+  CENTER, 
+  NONE
 }
