@@ -62,13 +62,13 @@ public class DriveTrain extends Subsystem{
     
     //set final power levels for modifing power levels  
     private final double AXIAL_SLOW_POWER_LEVEL    = 0.2;
-    private final double YAW_SLOW_POWER_LEVEL      = 0.1;
+    private final double YAW_SLOW_POWER_LEVEL      = 0.2;
 
     private final double AXIAL_REGULAR_POWER_LEVEL = 0.5;
     private final double YAW_REGULAR_POWER_LEVEL   = 0.4;
 
     private final double AXIAL_FAST_POWER_LEVEL    = 0.7;
-    private final double YAW_FAST_POWER_LEVEL      = 0.5;
+    private final double YAW_FAST_POWER_LEVEL      = 0.4;
 
 
     //set gyro final variables

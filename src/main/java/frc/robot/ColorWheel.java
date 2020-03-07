@@ -25,6 +25,7 @@ public class ColorWheel extends Subsystem{
     private GaCoDrive pilot;
     private GaCoDrive copilot;
     private GaCoDrive minion;
+    private Controller controller;
 
     private VictorSP colorMotor;
     //private Solenoid colorArm;
@@ -73,10 +74,11 @@ public class ColorWheel extends Subsystem{
     public ColorWheel() {
     }
 
-    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion) {
+    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Controller controller) {
         this.pilot   = pilot;
         this.copilot = copilot;
         this.minion  = minion;
+        this.controller = controller;
 
         colorMotor  = new VictorSP(COLOR_MOTOR_ID);
 
@@ -125,7 +127,7 @@ public class ColorWheel extends Subsystem{
                 
                 wheelCount = 0;
                 
-                if (minion.l3()){
+                if (controller.runColorWheelRotations){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
@@ -193,7 +195,7 @@ public class ColorWheel extends Subsystem{
                 
                 wheelCount = 0;
                 
-                if (minion.r3() && (colorFlag == Colors.Red)){
+                if (controller.runColorWheelPosition && (colorFlag == Colors.Red)){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
@@ -262,7 +264,7 @@ public class ColorWheel extends Subsystem{
                 
                 wheelCount = 0;
                 
-                if (minion.r3() && (colorFlag == Colors.Blue)){
+                if (controller.runColorWheelPosition && (colorFlag == Colors.Blue)){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
@@ -330,7 +332,7 @@ public class ColorWheel extends Subsystem{
                 
                 wheelCount = 0;
                 
-                if (minion.r3() && (colorFlag == Colors.Green)){
+                if (controller.runColorWheelPosition && (colorFlag == Colors.Green)){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
@@ -398,7 +400,7 @@ public class ColorWheel extends Subsystem{
                 
                 wheelCount = 0;
                 
-                if (minion.r3() && (colorFlag == Colors.Yellow)){
+                if (controller.runColorWheelPosition && (colorFlag == Colors.Yellow)){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;

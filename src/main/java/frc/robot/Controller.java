@@ -27,10 +27,10 @@ public class Controller extends Subsystem{
     public boolean collectorUp                     = false;
     public boolean collectorDown                   = false;
     public boolean toggleAutoVision                = false;
-    public boolean setShooterRPM3900               = false;
+    public boolean setShooterRPM3400               = false;
+    public boolean setShooterRPM3800               = false;
     public boolean setShooterRPM4200               = false;
-    public boolean setShooterRPM4500               = false;
-    public boolean setShooterRPM4800               = false;
+    public boolean setShooterRPM4600               = false;
     public boolean shooterRPMPlus100               = false;
     public boolean shooterRPMMinus100              = false;
     public boolean longRangeShooterDefult          = false;
@@ -60,8 +60,6 @@ public class Controller extends Subsystem{
     public boolean resetRobotHeading               = false;
     public boolean powerMode                       = false;
     public boolean slowMode                        = false;
-
-    public boolean resetLimelightYAverage          = false;
     //35
 
     //constructor
@@ -86,10 +84,10 @@ public class Controller extends Subsystem{
         collectorUp                     = false;
         collectorDown                   = false;
         toggleAutoVision                = false;
-        setShooterRPM3900               = false;
+        setShooterRPM3400               = false;
+        setShooterRPM3800               = false;
         setShooterRPM4200               = false;
-        setShooterRPM4500               = false;
-        setShooterRPM4800               = false;
+        setShooterRPM4600               = false;
         shooterRPMPlus100               = false;
         shooterRPMMinus100              = false;
         automatedRPMPlus25              = false;
@@ -120,8 +118,6 @@ public class Controller extends Subsystem{
         powerMode                       = false;
         slowMode                        = false;
 
-        resetLimelightYAverage          = false;
-
     // =============================================================
     // Pilot Buttons
     // =============================================================    
@@ -131,7 +127,7 @@ public class Controller extends Subsystem{
         }
   
         if(pilot.leftBumper()){
-            slowMode = true;
+            powerMode = true;
         }
   
         if(pilot.a()){
@@ -139,7 +135,7 @@ public class Controller extends Subsystem{
         }
   
         if(pilot.x()){
-            resetLimelightYAverage = true;
+
         }
   
         if(pilot.b()){
@@ -156,7 +152,7 @@ public class Controller extends Subsystem{
         }
       
         if(pilot.rightBumper()){
-            powerMode = true;
+            slowMode = true;
         }
   
         if(pilot.dpadUp()){
@@ -282,19 +278,19 @@ public class Controller extends Subsystem{
         if(!copilot.leftStick()){
 
             if(minion.leftTrigger()){
-                setShooterRPM3900 = true;
+                setShooterRPM3400 = true;
             }
 
             if(minion.leftBumper()){
-                setShooterRPM4200 = true;
+                setShooterRPM3800 = true;
             }
 
             if(minion.a()){
-                setShooterRPM4500 = true;
+                setShooterRPM4200 = true;
             }
 
             if(minion.x()){
-                setShooterRPM4800 = true;
+                setShooterRPM4600 = true;
             }
 
             if(minion.b()){

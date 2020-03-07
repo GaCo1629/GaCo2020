@@ -37,8 +37,8 @@ public class FuelSystem extends Subsystem {
   private boolean autoTurretEnabled = true;
   private boolean autoRPMEnabled    = true;
 
-  private Vision        turretVision;
-  private DriveTrain    driveTrain;
+  private Vision     turretVision;
+  private DriveTrain driveTrain;
 
   private VictorSP lowerTransfer;
   private VictorSP upperTransfer;
@@ -73,7 +73,7 @@ public class FuelSystem extends Subsystem {
   private final double TURRET_PROPORTIONAL_GAIN = .002;
   private final double TURRET_INTEGRAL_GAIN     = 0;
 
-  private final double SHOOTER_RPM_TOLERANCE    = 75;
+  private final double SHOOTER_RPM_TOLERANCE    = 50;
   private final double TURRET_DEGREE_TOLERANCE  = .5;
 
   private static final int L_SHOOTER_ID  = 21;
@@ -101,16 +101,19 @@ public class FuelSystem extends Subsystem {
   public boolean readyToShoot         = false;
   private boolean runCollector        = false;
   private boolean reverseCollector    = false;
-  private boolean collectorIsDown     = false;
   private boolean collectorIsRunning  = false;
   private boolean fire                = false;
 
+  private double shooterMotorPower = 0;
+
   private double tempRPM;
 
-  private Timer timer = new Timer();  
+  private Timer collectorTimer = new Timer();  
+  private Timer indexingTimer = new Timer();  
+
 
   //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
-  PIDController shooterPID = new PIDController(.0003,.000001,.0002,5700,500, 0, false, "Shooter");
+  PIDController shooterPID = new PIDController(.0004,.000001,.0002,5400,200, 0, false, "Shooter");
   PIDController turretPID  = new PIDController(.04, .001, 0, 0, 10, .05, false, "Turret");
 
   //constructor
@@ -166,21 +169,21 @@ public class FuelSystem extends Subsystem {
     autoRPMEnabled      = true;
     fire                = false;
 
-
     lowerCollector.set(DoubleSolenoid.Value.kReverse);
 
     readyToShoot = false;
 
-    timer.start();    
-    timer.reset();
+    collectorTimer.start();    
+    indexingTimer.start();
+
+    collectorTimer.reset();
+    indexingTimer.reset();
   }
   
   @Override
   public void teleopInit() {
 
   }
-
-
   // =========================================================
   // Turret Control
   // =========================================================
@@ -212,6 +215,7 @@ public class FuelSystem extends Subsystem {
     }
 
     targetSpeedRPM = targetRPM;
+    shooterMotorPower = shooterPID.run(shooterRPM, targetRPM);
     setShooterSpeed(shooterPID.run(shooterRPM, targetRPM));
   }
 
@@ -233,16 +237,10 @@ public class FuelSystem extends Subsystem {
     // lower collector
     if (controller.collectorDown){
         lowerCollector.set(DoubleSolenoid.Value.kForward);
-        collectorIsDown = true;
+        collectorTimer.reset();
 
-        // if manually lowered, reset timer
-        //if (gaCoDrive2.dpadUp()) {
-          timer.reset();
-        //}
-
-    } else if (controller.collectorUp || (!collectorIsRunning && timer.get() > 3)){
+    } else if (controller.collectorUp || (!collectorIsRunning && collectorTimer.get() > 3)){
         lowerCollector.set(DoubleSolenoid.Value.kReverse);
-        collectorIsDown = false;
     }
   }
 
@@ -252,11 +250,11 @@ public class FuelSystem extends Subsystem {
     lastLowerBallDetectorState = lowerBallDetected;
     lastUpperBallDetectorState = upperBallDetected;
 
-    if(controller.turretTargetMinus3 || controller.turretTargetPlus3 || controller.turretTargetPlusPoint1 || controller.turretTargetPlusPoint1 || controller.longRangeShooterDefult){
+    if(controller.turretTargetMinus3 || controller.turretTargetPlus3 || controller.turretTargetPlusPoint1 || controller.turretTargetMinusPoint1 || controller.longRangeShooterDefult){
       autoTurretEnabled = false;
     }
 
-    if(controller.setShooterRPM3900 || controller.setShooterRPM4200 || controller.setShooterRPM4500 || controller.setShooterRPM4800 || controller.longRangeShooterDefult || controller.shooterRPMMinus100 || controller.shooterRPMPlus100){
+    if(controller.setShooterRPM3400 || controller.setShooterRPM3800 || controller.setShooterRPM4200 || controller.setShooterRPM4600 || controller.longRangeShooterDefult || controller.shooterRPMMinus100 || controller.shooterRPMPlus100){
       autoRPMEnabled = false;
     }
 
@@ -353,7 +351,7 @@ public class FuelSystem extends Subsystem {
   public void runCollector (){
     collector.set(COLLECTOR_SPEED);
     collectorIsRunning = true;
-    timer.reset();
+    collectorTimer.reset();
   }
 
   //runs the transfer
@@ -366,7 +364,7 @@ public class FuelSystem extends Subsystem {
   public void reverseCollector (){
     collector.set(-COLLECTOR_SPEED);
     collectorIsRunning = true;
-    timer.reset();
+    collectorTimer.reset();
   }
 
   //stops collector
@@ -392,7 +390,8 @@ public class FuelSystem extends Subsystem {
     }
 
     tempRPM = 24958.1 + -3699.15 * distanceFromTargetFT + (226.289 * Math.pow(distanceFromTargetFT, 2))
-            +(- 5.84237 * Math.pow(distanceFromTargetFT, 3)) + (0.054857 * Math.pow(distanceFromTargetFT, 4));
+    +(- 5.84237 * Math.pow(distanceFromTargetFT, 3)) + (0.054857 * Math.pow(distanceFromTargetFT, 4));
+              
     return tempRPM;
   }
    
@@ -400,11 +399,11 @@ public class FuelSystem extends Subsystem {
   public void shooterOnRPM(){
 
     if (controller.shooterRPMMinus100) {
-      targetSpeedRPM -=  25;
+      targetSpeedRPM -=  100;
     }
     
     if (controller.shooterRPMPlus100) {
-      targetSpeedRPM +=  25;
+      targetSpeedRPM +=  100;
     }
       
     if (targetSpeedRPM > 6200 ){
@@ -488,7 +487,7 @@ public class FuelSystem extends Subsystem {
 
     //check to see if it should be preparing to fire and make sure a ball has not been detected at the top
     } else if(prepairToFireFlag && !upperBallDetected){
-      runTransfer(.75,.75);
+      runTransfer(.6,.6);
       runCollector = true;
       fireOneFlag  = false;
       fire         = false;
@@ -541,10 +540,6 @@ public class FuelSystem extends Subsystem {
 
     indexBalls();
 
-    if(controller.resetLimelightYAverage){
-      turretVision.resetAverageVariables();
-    }
-
     if(controller.automatedRPMMinus25){
       automatedShooterRPMModifier -= 25;
     }
@@ -566,8 +561,13 @@ public class FuelSystem extends Subsystem {
       fireOneFlag = true;
     }
 
-    if(controller.setShooterRPM3900){
-      targetSpeedRPM = 3900;
+    if(controller.setShooterRPM3400){
+      targetSpeedRPM = 3400;
+      autoRPMEnabled = false;
+    }
+
+    if(controller.setShooterRPM3800){
+      targetSpeedRPM = 3800;
       autoRPMEnabled = false;
     }
 
@@ -576,13 +576,8 @@ public class FuelSystem extends Subsystem {
       autoRPMEnabled = false;
     }
 
-    if(controller.setShooterRPM4500){
-      targetSpeedRPM = 4500;
-      autoRPMEnabled = false;
-    }
-
-    if(controller.setShooterRPM4800){
-      targetSpeedRPM = 4800;
+    if(controller.setShooterRPM4600){
+      targetSpeedRPM = 4600;
       autoRPMEnabled = false;
     }
 
@@ -640,6 +635,12 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putBoolean("Ready to Fire", readyToShoot);
     SmartDashboard.putBoolean("Lower Ball Detector", lowerBallDetected);
     SmartDashboard.putBoolean("Upper Ball Detector", upperBallDetected);
+    SmartDashboard.putBoolean("Correct Turret Heading", correctTurretHeading);
+    SmartDashboard.putBoolean("Correct RPM", correctRPM);
+
+
+
+    SmartDashboard.putNumber("Shooter Power Input", shooterMotorPower);
   }
 
 /// auto functions
