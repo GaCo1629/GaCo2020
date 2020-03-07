@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.Timer;
 
 
 
-public class Auto extends Subsystem {
+public class Auto extends TimedRobot {
     //selctable choosers to tell auto
     private SendableChooser <StartPosition> startPosition = new SendableChooser<>();
     private SendableChooser <NumBalls> numBalls = new SendableChooser<>();
@@ -41,6 +41,7 @@ public class Auto extends Subsystem {
     public void autonomousInit(){
         selStartPosition = startPosition.getSelected();
         selNumBalls = numBalls.getSelected();
+        fuelSystem.setTurretHeading(0);
      
 
     }
@@ -74,7 +75,7 @@ public class Auto extends Subsystem {
 
 
 //shows values
-    @Override
+    
     public void show(){
 
         startPosition.setDefaultOption("None", StartPosition.NONE);
@@ -102,7 +103,9 @@ public class Auto extends Subsystem {
         break;
 
         case THREE:
-        fuelSystem.setShooterSpeed(1000);
+        fuelSystem.runTransfer(1, 1);
+        timeout.delay(4);
+        fuelSystem.runTransfer(0, 0);
         break;
 
         case SIX:
