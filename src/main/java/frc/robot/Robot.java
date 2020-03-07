@@ -43,25 +43,28 @@ public class Robot extends TimedRobot {
 
     fuelSystem.updateVariables();
     driveTrain.readSensors();
-    climber.updateValues();
+    //climber.updateValues();
 
     driveTrain.show();
     fuelSystem.show();
-    climber.show();
+    //climber.show();
+
+    auto.show();
   }
 
 
   @Override
   public void autonomousInit() {
     // TODO Auto-generated method stub
+    //super.autonomousInit();
     super.autonomousInit();
-    auto.autonomousInit();
+    auto.init(driveTrain, fuelSystem, turretVision);
   }
 
  @Override
   public void autonomousPeriodic() {
     // TODO Auto-generated method stub
-    super.autonomousPeriodic();
+   // super.autonomousPeriodic();
     auto.autonomousPeriodic();
   }
 

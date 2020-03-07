@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.Timer;
 
 
 
-public class Auto extends Subsystem {
+public class Auto extends TimedRobot {
     //selctable choosers to tell auto
     private SendableChooser <StartPosition> startPosition = new SendableChooser<>();
     private SendableChooser <NumBalls> numBalls = new SendableChooser<>();
@@ -27,27 +27,17 @@ public class Auto extends Subsystem {
     private Timer timeout; // timer
 
 // intiliaze the needed classes
-    private DriveTrain    driveTrain   = new DriveTrain();
-    private FuelSystem    fuelSystem   = new FuelSystem();
-    private Vision        turretVision = new Vision("limelight");
+    private DriveTrain    driveTrain;
+    private FuelSystem    fuelSystem;
+    private Vision        turretVision;
    
 
-    public void init(){
+    public void init(DriveTrain driveTrain, FuelSystem fuelSystem, Vision turretVision){
         //start postion choser
-        startPosition.setDefaultOption("None", StartPosition.NONE);
-        startPosition.addOption("Center", StartPosition.CENTER);
-        startPosition.addOption("Far Trench", StartPosition.FAR_TRENCH);
-        startPosition.addOption("Close Trench", StartPosition.CLOSE_TRENCH);
-         SmartDashboard.putData("Start Position", startPosition);
-         
-           //numBalls choser
-           numBalls.setDefaultOption("None", NumBalls.NONE);
-           numBalls.addOption("Center", NumBalls.THREE);
-           numBalls.addOption("Far Trench", NumBalls.SIX);
-           numBalls.addOption("Close Trench", NumBalls.TEN);
-           SmartDashboard.putData("number of balls", numBalls);
-
- 
+        this.driveTrain = driveTrain;
+        this.fuelSystem = fuelSystem;
+        this.turretVision = turretVision;
+        show();
     }
 
     @Override
@@ -60,7 +50,11 @@ public class Auto extends Subsystem {
 
     @Override
     public void autonomousPeriodic(){
-        switch (selStartPosition){
+        fuelSystem.runTransfer(1, 1);
+        Timer.delay(2);
+        fuelSystem.runTransfer(0, 0);
+
+       switch (selStartPosition){
             //run code for figuring out where to go based on having center postion
             case CENTER: 
             centerLogic();
@@ -81,13 +75,13 @@ public class Auto extends Subsystem {
             //do nothing
             break;
             }
-
+            
         }
        
 
 
 //shows values
-    @Override
+    
     public void show(){
 
         startPosition.setDefaultOption("None", StartPosition.NONE);
@@ -98,9 +92,9 @@ public class Auto extends Subsystem {
          
            //numBalls choser
            numBalls.setDefaultOption("None", NumBalls.NONE);
-           numBalls.addOption("Center", NumBalls.THREE);
-           numBalls.addOption("Far Trench", NumBalls.SIX);
-           numBalls.addOption("Close Trench", NumBalls.TEN);
+           numBalls.addOption("three", NumBalls.THREE);
+           numBalls.addOption("six", NumBalls.SIX);
+           numBalls.addOption("ten", NumBalls.TEN);
            SmartDashboard.putData("number of balls", numBalls);
     }
 
@@ -112,12 +106,37 @@ public class Auto extends Subsystem {
     switch (selNumBalls){
         
         case NONE:
+        break;
+
+        case THREE:
+        fuelSystem.runTransfer(1, 1);
+            Timer.delay(4);
+        fuelSystem.runTransfer(0, 0);
+        Timer.delay(4);
+
+        break;
+
+        case SIX:
+        break;
+
+        case TEN:
+        break;
+       // timeout.hasElapsed(3);
+      //  for (int i =0 ; i < 3; i++ ){
+       // if (fuelSystem.getShooterRPM()  <= 1150 || fuelSystem.getShooterRPM()  >= 950 ){
+        //    fuelSystem.runTransfer(.75, .75);
+      //  }
+       // i++;
+      //  }
+     //   fuelSystem.runTransfer(0,0);
+       // fuelSystem.setShooterRPM(0);
+    }
         
         
 
     }
 
-    }
+    
     private void closeLogic(){
         switch (selNumBalls){
 
@@ -133,6 +152,7 @@ public class Auto extends Subsystem {
 
     }
 // AUTO MOVE
+
 
 
 }
