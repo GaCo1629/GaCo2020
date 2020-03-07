@@ -27,13 +27,16 @@ public class Auto extends TimedRobot {
     private Timer timeout; // timer
 
 // intiliaze the needed classes
-    private DriveTrain    driveTrain   = new DriveTrain();
-    private FuelSystem    fuelSystem   = new FuelSystem();
-    private Vision        turretVision = new Vision("limelight");
+    private DriveTrain    driveTrain;
+    private FuelSystem    fuelSystem;
+    private Vision        turretVision;
    
 
-    public void init(){
+    public void init(DriveTrain driveTrain, FuelSystem fuelSystem, Vision turretVision){
         //start postion choser
+        this.driveTrain = driveTrain;
+        this.fuelSystem = fuelSystem;
+        this.turretVision = turretVision;
         show();
     }
 
@@ -41,14 +44,17 @@ public class Auto extends TimedRobot {
     public void autonomousInit(){
         selStartPosition = startPosition.getSelected();
         selNumBalls = numBalls.getSelected();
-        fuelSystem.setTurretHeading(0);
      
 
     }
 
     @Override
     public void autonomousPeriodic(){
-        switch (selStartPosition){
+        fuelSystem.runTransfer(1, 1);
+        Timer.delay(2);
+        fuelSystem.runTransfer(0, 0);
+
+       switch (selStartPosition){
             //run code for figuring out where to go based on having center postion
             case CENTER: 
             centerLogic();
@@ -69,7 +75,7 @@ public class Auto extends TimedRobot {
             //do nothing
             break;
             }
-
+            
         }
        
 
@@ -104,8 +110,10 @@ public class Auto extends TimedRobot {
 
         case THREE:
         fuelSystem.runTransfer(1, 1);
-        timeout.delay(4);
+            Timer.delay(4);
         fuelSystem.runTransfer(0, 0);
+        Timer.delay(4);
+
         break;
 
         case SIX:

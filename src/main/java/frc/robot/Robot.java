@@ -33,8 +33,8 @@ public class Robot extends TimedRobot {
     driveTrain.init(pilot, copilot, minion, turretVision, fuelSystem);
     fuelSystem.init(pilot, copilot, minion, turretVision, driveTrain);
     //colorWheel.init(pilot, copilot, minion);
-    purePursuit.init(driveTrain);
-    climber.init(pilot, copilot, minion);  
+    //purePursuit.init(driveTrain);
+    //climber.init(pilot, copilot, minion);  
   }
   
   @Override
@@ -43,11 +43,11 @@ public class Robot extends TimedRobot {
 
     fuelSystem.updateVariables();
     driveTrain.readSensors();
-    climber.updateValues();
+    //climber.updateValues();
 
     driveTrain.show();
     fuelSystem.show();
-    climber.show();
+    //climber.show();
 
     auto.show();
   }
@@ -57,7 +57,8 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     // TODO Auto-generated method stub
     //super.autonomousInit();
-    auto.autonomousInit();
+    super.autonomousInit();
+    auto.init(driveTrain, fuelSystem, turretVision);
   }
 
  @Override
