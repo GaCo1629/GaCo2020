@@ -18,7 +18,7 @@ public class Robot extends TimedRobot {
   //init subsystems
   private DriveTrain    driveTrain   = new DriveTrain();
   private FuelSystem    fuelSystem   = new FuelSystem();
-  //private ColorWheel    colorWheel   = new ColorWheel();
+  private ColorWheel    colorWheel   = new ColorWheel();
   private Climber       climber      = new Climber();
   private Vision        turretVision = new Vision("limelight-turret");
   private Auto          auto         = new Auto();

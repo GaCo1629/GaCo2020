@@ -8,13 +8,7 @@ package frc.robot;
 //import com.revrobotics.CANSparkMax;
 //import com.revrobotics.CANSparkMaxLowLevel;
 import edu.wpi.first.wpilibj.I2C;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import java.lang.Math;
-//import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -22,12 +16,15 @@ import edu.wpi.first.wpilibj.VictorSP;
 import com.revrobotics.ColorSensorV3;
 import com.revrobotics.ColorMatchResult;
 import com.revrobotics.ColorMatch;
+import edu.wpi.first.wpilibj.DriverStation;
 
 
 // Public class to contain all the hardware elements (BotBits)
-public class ColorWheel {
+public class ColorWheel extends Subsystem{
 
-    GaCoDrive gaCoDrive;
+    private GaCoDrive pilot;
+    private GaCoDrive copilot;
+    private GaCoDrive minion;
 
     private VictorSP colorMotor;
     //private Solenoid colorArm;
@@ -45,17 +42,6 @@ public class ColorWheel {
     private final Color kYellowTarget = ColorMatch.makeColor(0.31, 0.56, 0.113);
     private final Color kBlackTarget = ColorMatch.makeColor(0, 0, 0);
 
-    private final double colorMotorDiameter = 4;
-    private final double colorWheelDiameter = 32;
-    private final double fullRPM = 21020;
-    private double colorMotorCircumference;
-    private double colorWheelCircumference;
-    private double maxRPM;
-    private double maxPower;
-    private double pastTime = 0;
-
-    private Color detectedColor;
-    private Color color;
     private Color lastSmartColor;
     private Color match;
     private Color firstMatch;
@@ -71,18 +57,12 @@ public class ColorWheel {
     Timer time = new Timer();
     Timer lookTime = new Timer();
 
-    private boolean firstTime = false;
     private double endTime = 0;
-    private double curTime = 0;
-    private int flagTurn = 0;
-    private int yellow = 0;
-    private int green = 0;
-    private int blue = 0;
-    private int red = 0;
-    public int colorFlag = 0;
     String gameData;
 
+    public Colors colorFlag;
     public Rot position = Rot.Init;
+    
     public CRot yellowE = CRot.Init;
     public CRot redE = CRot.Init;
     public CRot blueE = CRot.Init;
@@ -93,8 +73,10 @@ public class ColorWheel {
     public ColorWheel() {
     }
 
-    public void init(GaCoDrive gaCoDrive) {
-        this.gaCoDrive = gaCoDrive;
+    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion) {
+        this.pilot   = pilot;
+        this.copilot = copilot;
+        this.minion  = minion;
 
         colorMotor  = new VictorSP(COLOR_MOTOR_ID);
 
@@ -103,10 +85,6 @@ public class ColorWheel {
         colorArm.set(DoubleSolenoid.Value.kReverse);
         //This line has placeholder values ^
 
-        colorMotorCircumference = colorMotorDiameter * Math.PI;
-        colorWheelCircumference = colorWheelDiameter * Math.PI;
-        maxRPM      = (60 * colorWheelCircumference)/colorMotorCircumference;
-        maxPower    = /*(maxRPM)/fullRPM;*/ 0.5;
 
         //Find the maximum speed at which the wheel is allowed to spin.
 
@@ -118,47 +96,28 @@ public class ColorWheel {
         //initialize motor to spin wheel
         //initialize psunamatics to push out wheel spinner
         //initialize camera/color sensor
+    }
 
+
+    @Override 
+    public void teleopInit(){
         time.reset();
         time.start();
-        firstTime = false;
         lastSmartColor = kBlackTarget;
         smartGetColor();
 
+        position = Rot.Init;
+        colorFlag = Colors.Black;
+        wheelCount = 0;
+        
+        colorMotor.set(0);
+        colorArm.set(DoubleSolenoid.Value.kReverse);
+
+        stopColorArm();
     }
 
     //run the motor and use the sensor/camera so that the table turns 3.5 rotations
     public void turnRotations(){
-        /*wheelCount = 0;
-        //Reset the wheel count for use
-        colorArm.set(DoubleSolenoid.Value.kForward);
-        detectedColor   = smartGetColor();
-        firstMatch      = m_colorMatcher.matchClosestColor(detectedColor);
-        //put out the color arm and save the first color
-        colorMotor.set(maxPower);
-        //Turn on the motor to max power (im currently looking into a way to set a max RPM value)
-        if (wheelCount < 7){
-            detectedColor = smartGetColor();
-            match = m_colorMatcher.matchClosestColor(detectedColor);
-            //Save the current color
-            if (match != prevMatch){
-                //If the robot is looking at a different color than it just was, continue
-                if (match.color == firstMatch.color){
-                    wheelCount++;
-                    //if the color currently being looked at is the first color, add one to wheel count
-                }
-            }
-            prevMatch = match;
-            //set the current color to the previous color
-        } else {
-            flagTurn = 0;
-        }
-        //when 3.5 rotations have occured, exit the loop
-        if (flagTurn == 0){
-        colorMotor.set(0);
-        colorArm.set(DoubleSolenoid.Value.kReverse);
-        }
-        //turn the motor off and retract */
         switch (position){
             case Init :
                 //reset variables if needed, acitvate through a button
@@ -166,7 +125,7 @@ public class ColorWheel {
                 
                 wheelCount = 0;
                 
-                if (gaCoDrive.l3()){
+                if (minion.l3()){
                     SmartDashboard.putString("Turn to rotation", "On");
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
@@ -196,12 +155,12 @@ public class ColorWheel {
 
             case Turning :
                 SmartDashboard.putString("Wheel State", "Wheel Turning");
-                if (wheelCount < 7){
+                if (wheelCount < 8){
                     match = smartGetColor();
                     //Save the current color
                     if (match != prevMatch){
                         //If the robot is looking at a different color than it just was, continue
-                        if ((match == kBlueTarget)/* && (match.confidence >= 0.95)*/){
+                        if ((match == kBlueTarget)){
                             wheelCount++;
                             //if the color currently being looked at is the first color, add one to wheel count
                         }
@@ -210,152 +169,325 @@ public class ColorWheel {
                     //set the current color to the previous color
                 } else {
                     colorMotor.set(0);
-                    position = Rot.Arm_Retracted;
                     endTime = time.get() + 0.5;
+                    position = Rot.Arm_Retracted;
                 }
                 break;
 
             case Arm_Retracted :
                 SmartDashboard.putString("Wheel State", "Arm Retracted");
-                colorArm.set(DoubleSolenoid.Value.kReverse);
-                curTime = time.get();
                 if (time.get() >= endTime){
+                    colorArm.set(DoubleSolenoid.Value.kReverse);
                     position = Rot.Init;
                 }
                 break;
         }
     }
-/*
+
     //run the motor and use the sensor/camera so that the table turns to red
     public void turnToRed(){
-        wheelCount = 0;
-        //re sets wheelCount for use
-        colorArm.set(DoubleSolenoid.Value.kForward);
-        colorMotor.set(maxPower * 0.5);
-        //extends the color arm and sets the power to half the max RPM
-        while (wheelCount < 1){
-            detectedColor = smartGetColor();
-            match = m_colorMatcher.matchClosestColor(detectedColor);
-            if (match.color == kBlueTarget){
-                wheelCount++;
-                //if the color is equal to the necessary ofset, exit the loop
-            }
+       switch (redE){
+            case Init :
+                //reset variables if needed, acitvate through a button
+                SmartDashboard.putString("Color State", "Init");
+                
+                wheelCount = 0;
+                
+                if (minion.r3() && (colorFlag == Colors.Red)){
+                    SmartDashboard.putString("Turn to rotation", "On");
+                    colorArm.set(DoubleSolenoid.Value.kForward);
+                    endTime = time.get() + 0.5;
+                    redE    = CRot.Extend_Arm;
+                }
+                break;
+
+            case Extend_Arm :
+                SmartDashboard.putString("Color State", "Extend Arm");
+                if (time.get() >= endTime){
+                    redE = CRot.Arm_Extended;
+                }
+                break;
+
+            case Arm_Extended :
+                SmartDashboard.putString("Wheel State", "Arm Extended");
+                firstMatch      = smartGetColor();
+                prevMatch       = firstMatch;
+                redE            = CRot.Color_Recieved;
+                break;
+
+            case Color_Recieved :
+                SmartDashboard.putString("Wheel State", "Color Recieved");
+                colorMotor.set(0.5);
+                redE    = CRot.Turning;
+                break;
+
+            case Turning :
+                SmartDashboard.putString("Wheel State", "Wheel Turning");
+                if (wheelCount < 1){
+                    match = smartGetColor();
+                    //Save the current color
+                    if (match != prevMatch){
+                        //If the robot is looking at a different color than it just was, continue
+                        if ((match == kBlueTarget)){
+                            wheelCount++;
+                            //if the color currently being looked at is Green, add one to wheel count
+                        }
+                    }
+                    prevMatch = match;
+                    //set the current color to the previous color
+                } else {
+                    colorMotor.set(0);
+                    endTime = time.get() + 0.5;
+                    redE    = CRot.Arm_Retracted;
+                }
+                break;
+
+            case Arm_Retracted :
+                SmartDashboard.putString("Wheel State", "Arm Retracted");
+                if (time.get() >= endTime){
+                    colorArm.set(DoubleSolenoid.Value.kReverse);
+                    redE = CRot.Init;
+                }
+                break;
         }
-        colorMotor.set(0);
-        colorArm.set(DoubleSolenoid.Value.kReverse);
 
     }
 
     //run the motor and use the sensor/camera so that the table turns to blue
     public void turnToBlue(){
-        wheelCount = 0;
-        //re sets wheelCount for use
-        colorArm.set(DoubleSolenoid.Value.kForward);
-        colorMotor.set(maxPower * 0.5);
-        //extends the color arm and sets the power to half the max RPM
-        while (wheelCount < 1){
-            detectedColor = smartGetColor();
-            match = m_colorMatcher.matchClosestColor(detectedColor);
-            if (match.color == kRedTarget){
-                wheelCount++;
-                //if the color is equal to the necessary ofset, exit the loop
-            }
+        switch (blueE){
+            case Init :
+                //reset variables if needed, acitvate through a button
+                SmartDashboard.putString("Color State", "Init");
+                
+                wheelCount = 0;
+                
+                if (minion.r3() && (colorFlag == Colors.Blue)){
+                    SmartDashboard.putString("Turn to rotation", "On");
+                    colorArm.set(DoubleSolenoid.Value.kForward);
+                    endTime = time.get() + 0.5;
+                    blueE   = CRot.Extend_Arm;
+                }
+                break;
+
+            case Extend_Arm :
+                SmartDashboard.putString("Color State", "Extend Arm");
+                if (time.get() >= endTime){
+                    blueE = CRot.Arm_Extended;
+                }
+                break;
+
+            case Arm_Extended :
+                SmartDashboard.putString("Wheel State", "Arm Extended");
+                firstMatch      = smartGetColor();
+                prevMatch       = firstMatch;
+                blueE           = CRot.Color_Recieved;
+                break;
+
+            case Color_Recieved :
+                SmartDashboard.putString("Wheel State", "Color Recieved");
+                colorMotor.set(0.5);
+                blueE    = CRot.Turning;
+                break;
+
+            case Turning :
+                SmartDashboard.putString("Wheel State", "Wheel Turning");
+                if (wheelCount < 1){
+                    match = smartGetColor();
+                    //Save the current color
+                    if (match != prevMatch){
+                        //If the robot is looking at a different color than it just was, continue
+                        if ((match == kRedTarget)){
+                            wheelCount++;
+                            //if the color currently being looked at is Green, add one to wheel count
+                        }
+                    }
+                    prevMatch = match;
+                    //set the current color to the previous color
+                } else {
+                    colorMotor.set(0);
+                    endTime = time.get() + 0.5;
+                    blueE   = CRot.Arm_Retracted;
+                }
+                break;
+
+            case Arm_Retracted :
+                SmartDashboard.putString("Wheel State", "Arm Retracted");
+                if (time.get() >= endTime){
+                    colorArm.set(DoubleSolenoid.Value.kReverse);
+                    blueE = CRot.Init;
+                }
+                break;
         }
-        colorMotor.set(0);
-        colorArm.set(DoubleSolenoid.Value.kReverse);
     }
 
     //run the motor and use the sensor/camera so that the table turns to green
     public void turnToGreen(){
-        wheelCount = 0;
-        //re sets wheelCount for use
-        colorArm.set(DoubleSolenoid.Value.kForward);
-        colorMotor.set(maxPower * 0.5);
-        //extends the color arm and sets the power to half the max RPM
-        while (wheelCount < 1){
-            detectedColor = smartGetColor();
-            match = m_colorMatcher.matchClosestColor(detectedColor);
-            if (match.color == kYellowTarget){
-                wheelCount++;
-                //if the color is equal to the necessary ofset, exit the loop
-            }
+        switch (greenE){
+            case Init :
+                //reset variables if needed, acitvate through a button
+                SmartDashboard.putString("Color State", "Init");
+                
+                wheelCount = 0;
+                
+                if (minion.r3() && (colorFlag == Colors.Green)){
+                    SmartDashboard.putString("Turn to rotation", "On");
+                    colorArm.set(DoubleSolenoid.Value.kForward);
+                    endTime = time.get() + 0.5;
+                    greenE  = CRot.Extend_Arm;
+                }
+                break;
+
+            case Extend_Arm :
+                SmartDashboard.putString("Color State", "Extend Arm");
+                if (time.get() >= endTime){
+                    greenE = CRot.Arm_Extended;
+                }
+                break;
+
+            case Arm_Extended :
+                SmartDashboard.putString("Wheel State", "Arm Extended");
+                firstMatch      = smartGetColor();
+                prevMatch       = firstMatch;
+                greenE          = CRot.Color_Recieved;
+                break;
+
+            case Color_Recieved :
+                SmartDashboard.putString("Wheel State", "Color Recieved");
+                colorMotor.set(0.5);
+                greenE    = CRot.Turning;
+                break;
+
+            case Turning :
+                SmartDashboard.putString("Wheel State", "Wheel Turning");
+                if (wheelCount < 1){
+                    match = smartGetColor();
+                    //Save the current color
+                    if (match != prevMatch){
+                        //If the robot is looking at a different color than it just was, continue
+                        if ((match == kYellowTarget)){
+                            wheelCount++;
+                            //if the color currently being looked at is Green, add one to wheel count
+                        }
+                    }
+                    prevMatch = match;
+                    //set the current color to the previous color
+                } else {
+                    colorMotor.set(0);
+                    endTime = time.get() + 0.5;
+                    greenE  = CRot.Arm_Retracted;
+                }
+                break;
+
+            case Arm_Retracted :
+                SmartDashboard.putString("Wheel State", "Arm Retracted");
+                if (time.get() >= endTime){
+                    colorArm.set(DoubleSolenoid.Value.kReverse);
+                    greenE = CRot.Init;
+                }
+                break;
         }
-        colorMotor.set(0);
-        colorArm.set(DoubleSolenoid.Value.kReverse);
     }
-*/
+
     //run the motor and use the sensor/camera so that the table turns to yellow
     public void turnToYellow(){
-        /*wheelCount = 0;
-        //re sets wheelCount for use
-        colorArm.set(DoubleSolenoid.Value.kForward);
-        colorMotor.set(maxPower * 0.5);
-        //extends the color arm and sets the power to half the max RPM
-        if (wheelCount < 1){
-            detectedColor = smartGetColor();
-            match = m_colorMatcher.matchClosestColor(detectedColor);
-            if (match.color == kGreenTarget){
-                wheelCount++;
-            }
-        } else {
-            yellow = 0;
-            //if the color is equal to the necessary ofset, exit the flag loop
-        }
-        if (yellow == 0){
-            colorMotor.set(0);
-            colorArm.set(DoubleSolenoid.Value.kReverse);
-        }
         switch (yellowE){
-            case Init:
-                SmartDashboard.putString("Wheel State", "Init");
-                if (wheelCount != 0){
-                    wheelCount = 0;
-                }
-                if (driverStation.rightTrigger()){
-                    SmartDashboard.putString("Turn to:", "Yellow");
-                    startTime = time.get();
+            case Init :
+                //reset variables if needed, acitvate through a button
+                SmartDashboard.putString("Color State", "Init");
+                
+                wheelCount = 0;
+                
+                if (minion.r3() && (colorFlag == Colors.Yellow)){
+                    SmartDashboard.putString("Turn to rotation", "On");
+                    colorArm.set(DoubleSolenoid.Value.kForward);
+                    endTime = time.get() + 0.5;
                     yellowE = CRot.Extend_Arm;
                 }
-            break;
-            case Extend_Arm:
-                colorArm.set(DoubleSolenoid.Value.kForward);
-            break;
-            case Arm_Extended:
-            
-            break;
-            case Color_Recieved:
-            
-            break;
-            case Turning:
-            
-            break;
-            case Arm_Retracted:
-            
-            break;
-        }*/
+                break;
 
+            case Extend_Arm :
+                SmartDashboard.putString("Color State", "Extend Arm");
+                if (time.get() >= endTime){
+                    yellowE = CRot.Arm_Extended;
+                }
+                break;
+
+            case Arm_Extended :
+                SmartDashboard.putString("Wheel State", "Arm Extended");
+                firstMatch      = smartGetColor();
+                prevMatch       = firstMatch;
+                yellowE         = CRot.Color_Recieved;
+                break;
+
+            case Color_Recieved :
+                SmartDashboard.putString("Wheel State", "Color Recieved");
+                colorMotor.set(0.5);
+                yellowE = CRot.Turning;
+                break;
+
+            case Turning :
+                SmartDashboard.putString("Wheel State", "Wheel Turning");
+                if (wheelCount < 1){
+                    match = smartGetColor();
+                    //Save the current color
+                    if (match != prevMatch){
+                        //If the robot is looking at a different color than it just was, continue
+                        if ((match == kGreenTarget)){
+                            wheelCount++;
+                            //if the color currently being looked at is Green, add one to wheel count
+                        }
+                    }
+                    prevMatch = match;
+                    //set the current color to the previous color
+                } else {
+                    colorMotor.set(0);
+                    endTime = time.get() + 0.5;
+                    yellowE = CRot.Arm_Retracted;
+                }
+                break;
+
+            case Arm_Retracted :
+                SmartDashboard.putString("Wheel State", "Arm Retracted");
+                if (time.get() >= endTime){
+                    colorArm.set(DoubleSolenoid.Value.kReverse);
+                    yellowE = CRot.Init;
+                }
+                break;
+        }
+
+    }
+
+    public void stopColorArm(){
+        position = Rot.Init;
+        redE     = CRot.Init;
+        yellowE  = CRot.Init;
+        blueE    = CRot.Init;
+        greenE   = CRot.Init;
+        colorArm.set(DoubleSolenoid.Value.kReverse);
+        colorMotor.set(0);
     }
 
     public void matchColor(){
-        //gameData = DriverStation.getInstance().getGameSpecificMessage();
+        gameData = DriverStation.getInstance().getGameSpecificMessage();
         if(gameData.length() > 0)
         {
             switch (gameData.charAt(0))
             {
                 case 'R' :
-                    colorFlag = 1;
+                    colorFlag = Colors.Red;
                 break;
                 case 'B' :
-                    colorFlag = 2;
+                    colorFlag = Colors.Blue;
                 break;
                 case 'Y' :
-                    colorFlag = 3;
+                    colorFlag = Colors.Yellow;
                 break;
                 case 'G' :
-                    colorFlag = 4;
+                    colorFlag = Colors.Green;
                 break;
                 default :
-                    colorFlag = -1;
+                    colorFlag = Colors.Black;
                 break;
             }
         } else {
@@ -384,66 +516,29 @@ public class ColorWheel {
         //Driver 2 - (Button) Spin wheel to yellow
 
         
-
-
-        if (gaCoDrive.x()){
-            colorArm.set(DoubleSolenoid.Value.kForward);
-        } else if (gaCoDrive.y()){
-            colorArm.set(DoubleSolenoid.Value.kReverse);
-        }
-
-        if (gaCoDrive.leftTrigger()){
-
-            SmartDashboard.putString("Turn to:", "Test"); //Red
-
-            /*if(firstTime == false){
-                firstTime = true;
-                startTime = time.get();
-                colorMotor.set(.5);
-                colorArm.set(DoubleSolenoid.Value.kForward);
-            }
-
-
-            if(time.get() - startTime > 5) {
-                colorMotor.set(0);
-                colorArm.set(DoubleSolenoid.Value.kReverse);
-                SmartDashboard.putString("Turn to:", "Test");
-            }*/
-
-            
-            
-            
-        } /* else if (gaCoDrive.a()){
-            SmartDashboard.putString("Turn to:", "");
-
-        } else if (gaCoDrive.b()){
-            SmartDashboard.putString("Turn to:", "");
-
-        } */else if (gaCoDrive.rightTrigger()){
-            SmartDashboard.putString("Turn to:", "Yellow");
-            yellow = 1;
-        } else if (gaCoDrive.leftBumper()){
-            colorMotor.set(0.5);
-            SmartDashboard.putString("colorMotorOn", "Foward");
-        } else if (gaCoDrive.rightBumper()){
-            colorMotor.set(-0.5);
-            SmartDashboard.putString("colorMotorOn", "Reverse");
-        } else {
-            //colorMotor.set(0);
-            //SmartDashboard.putString("colorMotorOn", "Off");
-        }
-        
-        /*if (yellow == 1){
-            turnToYellow();
-        }
-
-        if (gaCoDrive.l3()){
-            SmartDashboard.putString("Turn to rotation", "On");
-            flagTurn = 1;
-        } else {
-            SmartDashboard.putString("Turn to rotation", "Off");
-        }*/
         turnRotations();
+        turnToRed();
+        turnToBlue();
+        turnToGreen();
+        turnToYellow();
+
+        if (minion.r3() || minion.l3()){
+            if ((position != Rot.Init) && (redE != CRot.Init)){
+                SmartDashboard.putString("Wheel Conflicts", "TRUE");
+                stopColorArm();
+            } else if ((position != Rot.Init) && (yellowE != CRot.Init)){
+                SmartDashboard.putString("Wheel Conflicts", "TRUE");
+                stopColorArm();
+            } else if ((position != Rot.Init) && (greenE != CRot.Init)){
+                SmartDashboard.putString("Wheel Conflicts", "TRUE");
+                stopColorArm();
+            } else if ((position != Rot.Init) && (blueE != CRot.Init)){
+                SmartDashboard.putString("Wheel Conflicts", "TRUE");
+                stopColorArm();
+            } else {
+                SmartDashboard.putString("Wheel Conflicts", "FALSE");
+            }
+        }
 
         
             if (lastSmartColor == kBlueTarget){
@@ -458,9 +553,8 @@ public class ColorWheel {
                 colorString = "Black";
             }
 
-            /*if (colorFlag != 0){
-                matchColor();
-            }*/
+
+
 
             SmartDashboard.putNumber("Red", smartColor.red);
             SmartDashboard.putNumber("Green", smartColor.green);
@@ -468,6 +562,7 @@ public class ColorWheel {
             SmartDashboard.putNumber("Confidence", tempMatch.confidence);
             SmartDashboard.putString("Detected Color", colorString);
             SmartDashboard.putNumber("Rotations", wheelCount);
+            SmartDashboard.putString("Req Color", colorFlag.toString());
         
 
     }
