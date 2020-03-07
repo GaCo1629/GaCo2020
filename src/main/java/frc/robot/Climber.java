@@ -35,16 +35,14 @@ public class Climber extends Subsystem{
     private double lastLeftLiftPosition  = 0;
     private double lastRightLiftPosition = 0;
 
-    private int timesThroughLoop = 0;
-
     private Timer timer = new Timer();
     private double currentTime = 0;
-    private double lastTime    = 0;
     private boolean firstLoop = true;
 
-    GaCoDrive pilot;
-    GaCoDrive copilot;
-    GaCoDrive minion;
+    private GaCoDrive pilot;
+    private GaCoDrive copilot;
+    private GaCoDrive minion;
+    private Controller controller;
 
     //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
     PIDController climberPID = new PIDController(.2, .005, 0, 0, 5, .01, false, "climber");
@@ -54,10 +52,11 @@ public class Climber extends Subsystem{
     }
 
 
-    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion) {
+    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Controller controller) {
         this.pilot   = pilot;
         this.copilot = copilot;
         this.minion  = minion;
+        this.controller = controller;
 
         leftLift  = new CANSparkMax(LEFT_LIFT_CAN_ID,  CANSparkMaxLowLevel.MotorType.kBrushless);
         rightLift = new CANSparkMax(RIGHT_LIFT_CAN_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -129,15 +128,15 @@ public class Climber extends Subsystem{
     @Override
     public void teleopPeriodic() {
 
-        if(minion.rightStick() && minion.rightBumper()){
+        if(controller.homeClimber){
             resetClimber();
-        } else if(minion.leftTrigger()){
+        } else if(controller.autoClimberUp){
             extendUp();
             firstLoop = true;
-        } else if(minion.leftBumper()){
+        } else if(controller.manualClimberUp){
             setPower(1);
             firstLoop = true;
-        } else if(minion.x()){
+        } else if(controller.manualClimberDown){
             setPower(-1);
             firstLoop = true;
         } else {

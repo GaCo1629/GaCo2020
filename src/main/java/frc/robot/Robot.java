@@ -21,8 +21,8 @@ public class Robot extends TimedRobot {
   //private ColorWheel    colorWheel   = new ColorWheel();
   private Climber       climber      = new Climber();
   private Vision        turretVision = new Vision("limelight-turret");
-  private PurePursuit   purePursuit  = new PurePursuit();
   private Auto          auto         = new Auto();
+  private Controller    controller   = new Controller();
 
   @Override
   public void robotInit() {
@@ -30,11 +30,11 @@ public class Robot extends TimedRobot {
     pilot.init(0, true);
     copilot.init(1, false);
     minion.init(2, false);
-    driveTrain.init(pilot, copilot, minion, turretVision, fuelSystem);
-    fuelSystem.init(pilot, copilot, minion, turretVision, driveTrain);
+    driveTrain.init(pilot, copilot, minion, controller, turretVision, fuelSystem);
+    fuelSystem.init(pilot, copilot, minion, controller, turretVision, driveTrain);
     //colorWheel.init(pilot, copilot, minion);
-    purePursuit.init(driveTrain);
-    climber.init(pilot, copilot, minion);  
+    climber.init(pilot, copilot, minion, controller);  
+    controller.init(pilot, copilot, minion);
   }
   
   @Override
@@ -78,5 +78,6 @@ public class Robot extends TimedRobot {
     fuelSystem.teleopPeriodic();
     //colorWheel.teleopPeriodic();
     climber.teleopPeriodic();
+    controller.getButtons();
   }  
 }

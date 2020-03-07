@@ -120,13 +120,41 @@ public class GaCoDrive{
         }  
     }    
 
-    public double dpad(){
+    public boolean dpadUpLeft(){
         if(isLogitech){
-            return (stick.getPOV());
+            return (stick.getPOV() == 315);
         } else {
-            return (stick.getPOV() + 90);
+            return (stick.getPOV() == 225);
         }  
     }  
+
+    public boolean dpadUpRight(){
+        if(isLogitech){
+            return (stick.getPOV() == 45);
+        } else {
+            return (stick.getPOV() == 315);
+        }  
+    }
+
+    public boolean dpadDownLeft(){
+        if(isLogitech){
+            return (stick.getPOV() == 225);
+        } else {
+            return (stick.getPOV() == 135);
+        }  
+    }
+
+    public boolean dpadDownRight(){
+        if(isLogitech){
+            return (stick.getPOV() == 135);
+        } else {
+            return (stick.getPOV() == 45);
+        }  
+    }
+
+    public double getDpad(){
+        return stick.getPOV();
+    }
 
     public double getleftStickX(){
         return stick.getRawAxis(L_STICK_H);

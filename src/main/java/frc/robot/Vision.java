@@ -22,6 +22,9 @@ public class Vision {
     public boolean targetVisible = false;
     private final double MIN_WIDTH = 50;
     private final double MAX_WIDTH = 370;
+    private double averageLimelightY = 0;
+    private double limelightYCounter = 0;
+    private double cycleCounter      = 0;
     
     private String limelightName;
 
@@ -39,6 +42,12 @@ public class Vision {
         distanceToTarget = 106+ (-1.52*width) +( 0.0103*Math.pow(width, 2)) + -0.000033*Math.pow(width, 3) + 0.0000000406*Math.pow(width, 4);
       }
      return distanceToTarget;    
+    }
+
+    public void resetAverageVariables(){
+      cycleCounter      = 0;
+      limelightYCounter = 0;
+      averageLimelightY = 0;
     }
 
     public void updateTarget(){
@@ -59,6 +68,12 @@ public class Vision {
         width = thor.getDouble(0.0);
         skew = ts.getDouble(0.0);
         targetVisible = true;
+
+        limelightYCounter += y;
+        cycleCounter ++;
+
+        averageLimelightY = limelightYCounter/cycleCounter;
+
    
         //Smart Dashboard Display
        
@@ -71,6 +86,8 @@ public class Vision {
        targetVisible = false;
      }
      SmartDashboard.putBoolean("ValidTarget?", targetVisible);
+     SmartDashboard.putNumber("Average Limelight Y", averageLimelightY);
+
     
      
     }  
