@@ -43,11 +43,11 @@ public class Robot extends TimedRobot {
 
     fuelSystem.updateVariables();
     driveTrain.readSensors();
-    //climber.updateValues();
+    climber.updateValues();
 
     driveTrain.show();
     fuelSystem.show();
-    //climber.show();
+    climber.show();
 
     auto.show();
   }

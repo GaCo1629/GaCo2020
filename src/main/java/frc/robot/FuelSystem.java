@@ -318,7 +318,7 @@ public class FuelSystem extends Subsystem {
 
   public void setTurretHeading(double newHeading){
     turretEncoder.setPosition(0);
-    turretHeading         = newHeading;
+    turretHeading         = 0;
     targetTurretHeading   = newHeading;
     turretHeadingModifier = newHeading;
   }
@@ -564,7 +564,7 @@ public class FuelSystem extends Subsystem {
     }
 
     if(controller.resetTurretHeading){
-      turretHeading = 0;
+      setTurretHeading(0);
     }
 
     if(controller.runUpBalls){

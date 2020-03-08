@@ -46,8 +46,8 @@ public class DriveTrain extends Subsystem{
     private CANEncoder leftDriveEncoder;
     private CANEncoder rightDriveEncoder;
 
-    private double leftEncoder;
-    private double rightEncoder;
+    public double leftEncoder;
+    public double rightEncoder;
 
     //gyro
     private AHRS gyro; 
@@ -264,6 +264,10 @@ public class DriveTrain extends Subsystem{
         }
     }
 
+    public void setPowerLevels(double axialPower, double yawPower){
+      
+    }
+
     public void calculateAndSetMotorPowers( double anAxial, double aYaw){
 
         //adjust axial to avoid tipping
@@ -334,7 +338,7 @@ public class DriveTrain extends Subsystem{
     
 
     //use the controller values to set axial and yaw values
-    public void setVectorsToController( double a, double y){
+    public void setVectors( double a, double y){
         axial = a; //axial
         yaw   = y; //yaw
     }
@@ -396,9 +400,9 @@ public class DriveTrain extends Subsystem{
         rightDriveMaster.set(right);
     }
 
-    public void moveRobot(double a, double y){
+    public void moveRobot(double a, double y, double axialPower, double yawPower){
         adjustPowerLevel();
-        setVectorsToController(a , y );
+        setVectors(a , y );
         //runHoldHeading();
         calculateAndSetMotorPowers();
         if(controller.resetRobotHeading){

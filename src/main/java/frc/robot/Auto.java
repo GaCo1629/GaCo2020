@@ -24,6 +24,8 @@ public class Auto extends TimedRobot {
  
     private NumBalls selNumBalls;
     private int flag = 0;
+    private double startLeftDriveEncoder = 0;
+    private double startRightDriveEncoder = 0;
    
     private Timer timeout; // timer
 
@@ -143,15 +145,24 @@ public class Auto extends TimedRobot {
                 }
             if(fuelSystem.readyToShoot){
                 fuelSystem.runTransfer(1, 1);
+            } else {
+                fuelSystem.runTransfer(0, 0);
             }
-            if(fuelSystem.ballsInIndex < 1){
-                flag ++;
+            if(fuelSystem.ballsInIndex < 1 || timeout.get() > 4){
+                flag++;
             }
-            if(timeout.get() > 4){
-                if(timeout.get() < 6){
+            if(flag == 3){
+                if(timeout.get() < 6 && fuelSystem.ballsInIndex > 0){
                     fuelSystem.runTransfer(1, 1);
+                } else {
+                    fuelSystem.runTransfer(0, 0);
+                    flag++;
                 }
             }
+            if(flag == 4){
+                
+            }
+
         }
         case SIX:
         break;
