@@ -231,6 +231,16 @@ public class DriveTrain extends Subsystem{
     }
 
     @Override
+    public void autonomousInit() {
+      turning                   = false;
+      autoHeading               = false;
+      requiredHeadingCorrection = 0;
+      robotHeadingModifier      = 0;
+      timer.reset();      
+      super.autonomousInit();
+    }
+
+    @Override
     public void teleopPeriodic(){
         adjustPowerLevel();
          //reduce axial and yaw according to power level

@@ -23,6 +23,7 @@ public class Auto extends TimedRobot {
     private StartPosition selStartPosition;
  
     private NumBalls selNumBalls;
+    private int flag = 0;
    
     private Timer timeout; // timer
 
@@ -34,9 +35,11 @@ public class Auto extends TimedRobot {
 
     public void init(DriveTrain driveTrain, FuelSystem fuelSystem, Vision turretVision){
         //start postion choser
+        timeout = new Timer();
         this.driveTrain = driveTrain;
         this.fuelSystem = fuelSystem;
         this.turretVision = turretVision;
+        flag = 0;
         show();
     }
 
@@ -44,15 +47,18 @@ public class Auto extends TimedRobot {
     public void autonomousInit(){
         selStartPosition = startPosition.getSelected();
         selNumBalls = numBalls.getSelected();
+        fuelSystem.setBallsInRobot(3);
      
 
     }
 
     @Override
     public void autonomousPeriodic(){
-        fuelSystem.runTransfer(1, 1);
-        Timer.delay(2);
-        fuelSystem.runTransfer(0, 0);
+        //fuelSystem.runTransfer(1, 1);
+        //Timer.delay(2);
+        //fuelSystem.runTransfer(0, 0);
+        timeout.reset();
+        timeout.start();
 
        switch (selStartPosition){
             //run code for figuring out where to go based on having center postion
@@ -84,18 +90,20 @@ public class Auto extends TimedRobot {
     
     public void show(){
 
-        startPosition.setDefaultOption("None", StartPosition.NONE);
+        startPosition.setDefaultOption("Center", StartPosition.CENTER);
         startPosition.addOption("Center", StartPosition.CENTER);
         startPosition.addOption("Far Trench", StartPosition.FAR_TRENCH);
         startPosition.addOption("Close Trench", StartPosition.CLOSE_TRENCH);
          SmartDashboard.putData("Start Position", startPosition);
          
            //numBalls choser
-           numBalls.setDefaultOption("None", NumBalls.NONE);
+           numBalls.setDefaultOption("three", NumBalls.THREE);
            numBalls.addOption("three", NumBalls.THREE);
            numBalls.addOption("six", NumBalls.SIX);
            numBalls.addOption("ten", NumBalls.TEN);
            SmartDashboard.putData("number of balls", numBalls);
+           SmartDashboard.putNumber("auto flag", flag);
+
     }
 
 
@@ -106,16 +114,45 @@ public class Auto extends TimedRobot {
     switch (selNumBalls){
         
         case NONE:
+
         break;
 
         case THREE:
-        fuelSystem.runTransfer(1, 1);
-            Timer.delay(4);
-        fuelSystem.runTransfer(0, 0);
-        Timer.delay(4);
+        fuelSystem.turnOffVision();
 
-        break;
-
+        if(flag == 0){
+            timeout.reset();
+            fuelSystem.setShooterRPM(4000);
+            fuelSystem.shooterOnRPM();
+            fuelSystem.turnTurretTo(-90);
+            if(fuelSystem.correctRPM && fuelSystem.correctTurretHeading){
+                flag ++;
+                fuelSystem.turnTurretTo(fuelSystem.getTurretHeading());
+            }
+        }
+        if(flag == 1){
+            fuelSystem.toggleVision();
+            flag++;
+        }
+        if(flag == 2){
+            timeout.reset();
+            if(turretVision.targetVisible){
+                    fuelSystem.setShooterRPM(fuelSystem.getShooterRPM(turretVision.getDistanceFromTarget()));
+                } else {
+                    fuelSystem.shooterOnRPM();
+                }
+            if(fuelSystem.readyToShoot){
+                fuelSystem.runTransfer(1, 1);
+            }
+            if(fuelSystem.ballsInIndex < 1){
+                flag ++;
+            }
+            if(timeout.get() > 4){
+                if(timeout.get() < 6){
+                    fuelSystem.runTransfer(1, 1);
+                }
+            }
+        }
         case SIX:
         break;
 

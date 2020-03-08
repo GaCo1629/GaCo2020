@@ -57,8 +57,10 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     // TODO Auto-generated method stub
     //super.autonomousInit();
+    driveTrain.autonomousInit();
     super.autonomousInit();
     auto.init(driveTrain, fuelSystem, turretVision);
+    auto.autonomousInit();
   }
 
  @Override

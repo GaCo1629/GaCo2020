@@ -91,7 +91,7 @@ public class FuelSystem extends Subsystem {
   private double turretHeading         = 0;
   private double targetTurretHeading   = 0;
   private double turretHeadingModifier = 0;
-  private double ballsInIndex          = 0;
+  public double ballsInIndex          = 0;
 
   private boolean prepairToFireFlag = false;
   private boolean fireOneFlag       = false;
@@ -252,9 +252,13 @@ public class FuelSystem extends Subsystem {
     }
   }
 
+  public void setBallsInRobot(int ballsInRobot){
+    ballsInIndex = ballsInRobot;
+  }
+
   public void updateVariables(){
     shooterRPM = shooterEncoder.getVelocity();
-    turretHeading = turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE + turretHeadingModifier;
+    turretHeading = (turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE) + turretHeadingModifier;
     lastLowerBallDetectorState = lowerBallDetected;
     lastUpperBallDetectorState = upperBallDetected;
 
@@ -625,6 +629,11 @@ public class FuelSystem extends Subsystem {
       turnTurretPID();
       shooterOnRPM();
     }
+  }
+
+  public void turnOffVision(){
+    autoRPMEnabled = false;
+    autoTurretEnabled = false;
   }
 
   @Override
