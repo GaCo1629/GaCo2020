@@ -69,6 +69,10 @@ public class ColorWheel extends Subsystem{
     public CRot blueE = CRot.Init;
     public CRot greenE = CRot.Init;
 
+    public MRot direction = MRot.Off;
+
+    public boolean manual = false;
+
 
     // constructor
     public ColorWheel() {
@@ -110,7 +114,13 @@ public class ColorWheel extends Subsystem{
 
         position = Rot.Init;
         colorFlag = Colors.Black;
+        redE = CRot.Init;
+        yellowE = CRot.Init;
+        blueE = CRot.Init;
+        greenE = CRot.Init;
+        direction = MRot.Off;
         wheelCount = 0;
+        manual = false;
         
         colorMotor.set(0);
         colorArm.set(DoubleSolenoid.Value.kReverse);
@@ -132,6 +142,7 @@ public class ColorWheel extends Subsystem{
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
                     position = Rot.Extend_Arm;
+                    controller.runColorWheelRotations = false;
                 }
                 break;
 
@@ -200,6 +211,7 @@ public class ColorWheel extends Subsystem{
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
                     redE    = CRot.Extend_Arm;
+                    controller.runColorWheelPosition = false;
                 }
                 break;
 
@@ -269,6 +281,7 @@ public class ColorWheel extends Subsystem{
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
                     blueE   = CRot.Extend_Arm;
+                    controller.runColorWheelPosition = false;
                 }
                 break;
 
@@ -337,6 +350,7 @@ public class ColorWheel extends Subsystem{
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
                     greenE  = CRot.Extend_Arm;
+                    controller.runColorWheelPosition = false;
                 }
                 break;
 
@@ -405,6 +419,7 @@ public class ColorWheel extends Subsystem{
                     colorArm.set(DoubleSolenoid.Value.kForward);
                     endTime = time.get() + 0.5;
                     yellowE = CRot.Extend_Arm;
+                    controller.runColorWheelPosition = false;
                 }
                 break;
 
@@ -460,12 +475,48 @@ public class ColorWheel extends Subsystem{
 
     }
 
+    public void manualColor(){
+        switch(direction){
+            case Left :
+                colorArm.set(DoubleSolenoid.Value.kForward);
+                colorMotor.set(0.5);
+                if (!controller.runColorWheelLeftManual){
+                    direction = MRot.Off;
+                }
+                break;
+
+            case Right :
+                colorArm.set(DoubleSolenoid.Value.kForward);
+                colorMotor.set(-0.5);
+                if (!controller.runColorWheelRightManual){
+                    direction = MRot.Off;
+                }
+                break;
+
+            case Off :
+                colorArm.set(DoubleSolenoid.Value.kReverse);
+                colorMotor.set(0);
+                if (controller.runColorWheelLeftManual) {
+                    direction = MRot.Left;
+                } else if(controller.runColorWheelRightManual) {
+                    direction = MRot.Right;
+                }
+                break;
+        }
+    }
+
     public void stopColorArm(){
-        position = Rot.Init;
-        redE     = CRot.Init;
-        yellowE  = CRot.Init;
-        blueE    = CRot.Init;
-        greenE   = CRot.Init;
+        position  = Rot.Init;
+        redE      = CRot.Init;
+        yellowE   = CRot.Init;
+        blueE     = CRot.Init;
+        greenE    = CRot.Init;
+        direction = MRot.Off;
+        manual    = false;
+        controller.runColorWheelPosition    = false;
+        controller.runColorWheelPosition    = false;
+        controller.runColorWheelLeftManual  = false;
+        controller.runColorWheelRightManual = false;
         colorArm.set(DoubleSolenoid.Value.kReverse);
         colorMotor.set(0);
     }
@@ -523,6 +574,7 @@ public class ColorWheel extends Subsystem{
         turnToBlue();
         turnToGreen();
         turnToYellow();
+        manualColor();
 
         if (minion.r3() || minion.l3()){
             if ((position != Rot.Init) && (redE != CRot.Init)){
