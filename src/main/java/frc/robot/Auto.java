@@ -93,6 +93,8 @@ public class Auto extends TimedRobot {
            numBalls.addOption("six", NumBalls.SIX);
            numBalls.addOption("ten", NumBalls.TEN);
            SmartDashboard.putData("number of balls", numBalls);
+
+           SmartDashboard.putNumber("auto timer", timeOut.get());
     }
 
 
@@ -117,6 +119,7 @@ public class Auto extends TimedRobot {
             fuelSystem.setShooterRPM(5500);
         }
         fuelSystem.autoFireAll(5000);
+        driveTrain.tankDrive(.5, 0, 12, 5000);
         
 
         break;

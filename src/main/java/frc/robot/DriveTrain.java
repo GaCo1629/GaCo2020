@@ -634,6 +634,18 @@ public class DriveTrain extends Subsystem{
 
     return (reqPower * sign);
   }
+
+  public void tankDrive( double ax, double ya, double inches, double time){
+    resetEncoders();
+    axial= ax;
+    yaw = ya;
+    double encoders = (Math.abs(leftDriveEncoder.getPosition()) + Math.abs(rightDriveEncoder.getPosition()))/2;
+    while(auto.timeOut.get()<time && encoders < encoderToInches(inches)){
+      calculateAndSetMotorPowers();
+      encoders = (Math.abs(leftDriveEncoder.getPosition()) + Math.abs(rightDriveEncoder.getPosition()))/2;
+    }
+    stopRobot();
+  }
   
   
 
