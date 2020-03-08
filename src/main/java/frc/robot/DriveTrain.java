@@ -28,6 +28,7 @@ public class DriveTrain extends Subsystem{
     private GaCoDrive     pilot;
     private GaCoDrive     copilot;
     private GaCoDrive     minion;
+    private Controller    controller;
 
     private Vision        turretVision;
     private FuelSystem    fuelSystem;
@@ -61,12 +62,12 @@ public class DriveTrain extends Subsystem{
     
     //set final power levels for modifing power levels  
     private final double AXIAL_SLOW_POWER_LEVEL    = 0.2;
-    private final double YAW_SLOW_POWER_LEVEL      = 0.1;
+    private final double YAW_SLOW_POWER_LEVEL      = 0.2;
 
-    private final double AXIAL_REGULAR_POWER_LEVEL = 0.3;
-    private final double YAW_REGULAR_POWER_LEVEL   = 0.2;
+    private final double AXIAL_REGULAR_POWER_LEVEL = 0.5;
+    private final double YAW_REGULAR_POWER_LEVEL   = 0.4;
 
-    private final double AXIAL_FAST_POWER_LEVEL    = 0.6;
+    private final double AXIAL_FAST_POWER_LEVEL    = 0.7;
     private final double YAW_FAST_POWER_LEVEL      = 0.4;
 
 
@@ -152,10 +153,11 @@ public class DriveTrain extends Subsystem{
     }
 
     //initalize hardware for the drive train
-    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Vision turretVision, FuelSystem fuelSystem){
+    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Controller controller, Vision turretVision, FuelSystem fuelSystem){
         this.pilot      = pilot;
         this.copilot    = copilot;
         this.minion     = minion;
+        this.controller = controller;
         this.turretVision   = turretVision;
         this.fuelSystem     = fuelSystem;
     
@@ -240,10 +242,10 @@ public class DriveTrain extends Subsystem{
     }
 
     public void adjustPowerLevel(){
-        if (pilot.leftBumper()){
+        if (controller.powerMode){
             axialPowerLevel = AXIAL_SLOW_POWER_LEVEL;
             yawPowerLevel   = YAW_SLOW_POWER_LEVEL;
-        } else if (pilot.rightBumper()){
+        } else if (controller.slowMode){
             axialPowerLevel = AXIAL_FAST_POWER_LEVEL;
             yawPowerLevel   = YAW_FAST_POWER_LEVEL;
         } else {
@@ -295,10 +297,7 @@ public class DriveTrain extends Subsystem{
 
     //sets heading to input value
     public void setHeading(double newHeading){
-        gyro.zeroYaw();
-        robotHeading         = newHeading;
-        targetHeading        = newHeading;
-        robotHeadingModifier = newHeading;
+        robotHeadingModifier -= robotHeading;
     }    
 
     //use the target heading and robot heading to modify the yaw value to continue driving strait
@@ -392,6 +391,9 @@ public class DriveTrain extends Subsystem{
         setVectorsToController(a , y );
         //runHoldHeading();
         calculateAndSetMotorPowers();
+        if(controller.resetRobotHeading){
+          setHeading(0);
+        }
     }
 
     @Override
