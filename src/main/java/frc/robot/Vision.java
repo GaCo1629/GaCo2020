@@ -44,10 +44,11 @@ public class Vision {
       } else if (width >= MAX_WIDTH){
         distanceToTarget = 23.1;
        }
-      else  {
+      else  
         distanceToTarget = -(.0000174948 * Math.pow(y, 5)) + (.00099589 * Math.pow(y, 4)) - (.022156 * Math.pow(y, 3)) + (.271437 * Math.pow(y, 2)) - (2.54782 * y) + 25.7234;
       //}
-      return distanceToTarget;    
+      return distanceToTarget;  
+      
     }
 
     public void updateTarget(){

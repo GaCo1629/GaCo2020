@@ -30,8 +30,8 @@ public class Robot extends TimedRobot {
     pilot.init(0, true);
     copilot.init(1, false);
     minion.init(2, false);
-    driveTrain.init(pilot, copilot, minion, controller, turretVision, fuelSystem);
-    fuelSystem.init(pilot, copilot, minion, controller, turretVision, driveTrain);
+    driveTrain.init(pilot, copilot, minion, controller, turretVision, fuelSystem, auto);
+    fuelSystem.init(pilot, copilot, minion, controller, turretVision, driveTrain, auto);
     //colorWheel.init(pilot, copilot, minion, controller);
     climber.init(pilot, copilot, minion, controller);  
     controller.init(pilot, copilot, minion);

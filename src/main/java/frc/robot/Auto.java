@@ -24,7 +24,7 @@ public class Auto extends TimedRobot {
  
     private NumBalls selNumBalls;
    
-    private Timer timeout; // timer
+    public Timer timeOut; // timer
 
 // intiliaze the needed classes
     private DriveTrain    driveTrain;
@@ -50,10 +50,7 @@ public class Auto extends TimedRobot {
 
     @Override
     public void autonomousPeriodic(){
-        fuelSystem.runTransfer(1, 1);
-        Timer.delay(2);
-        fuelSystem.runTransfer(0, 0);
-
+        fuelSystem.autoAimSpeed();
        switch (selStartPosition){
             //run code for figuring out where to go based on having center postion
             case CENTER: 
@@ -106,30 +103,33 @@ public class Auto extends TimedRobot {
     switch (selNumBalls){
         
         case NONE:
+        timeOut.reset();
+        fuelSystem.runTransfer(1, 1);
+        Timer.delay(4);
+        fuelSystem.runTransfer(0, 0);
+        Timer.delay(4);
         break;
 
         case THREE:
-        fuelSystem.runTransfer(1, 1);
-            Timer.delay(4);
-        fuelSystem.runTransfer(0, 0);
-        Timer.delay(4);
+        //should set speed to max if no vision and shoot all with vision if possible
+        timeOut.reset();
+        if (!turretVision.targetVisible){
+            fuelSystem.setShooterRPM(5500);
+        }
+        fuelSystem.autoFireAll(5000);
+        
 
         break;
 
         case SIX:
+        timeOut.reset();
         break;
 
         case TEN:
+        timeOut.reset();
+
         break;
-       // timeout.hasElapsed(3);
-      //  for (int i =0 ; i < 3; i++ ){
-       // if (fuelSystem.getShooterRPM()  <= 1150 || fuelSystem.getShooterRPM()  >= 950 ){
-        //    fuelSystem.runTransfer(.75, .75);
-      //  }
-       // i++;
-      //  }
-     //   fuelSystem.runTransfer(0,0);
-       // fuelSystem.setShooterRPM(0);
+      
     }
         
         
@@ -139,6 +139,7 @@ public class Auto extends TimedRobot {
     
     private void closeLogic(){
         switch (selNumBalls){
+            
 
         }
     
@@ -146,6 +147,7 @@ public class Auto extends TimedRobot {
     }
     private void farLogic(){
         switch (selNumBalls){
+            
 
         }
     

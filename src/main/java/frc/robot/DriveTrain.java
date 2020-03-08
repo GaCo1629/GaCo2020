@@ -32,6 +32,7 @@ public class DriveTrain extends Subsystem{
 
     private Vision        turretVision;
     private FuelSystem    fuelSystem;
+    private Auto          auto;
 
     //declaring motors
     //one master and two slaves per side
@@ -153,13 +154,14 @@ public class DriveTrain extends Subsystem{
     }
 
     //initalize hardware for the drive train
-    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Controller controller, Vision turretVision, FuelSystem fuelSystem){
+    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Controller controller, Vision turretVision, FuelSystem fuelSystem, Auto auto){
         this.pilot      = pilot;
         this.copilot    = copilot;
         this.minion     = minion;
         this.controller = controller;
         this.turretVision   = turretVision;
         this.fuelSystem     = fuelSystem;
+        this.auto = auto;
     
 
         leftDriveMaster  = new CANSparkMax(LEFT_DRIVE_MASTER_CAN_ID,  CANSparkMaxLowLevel.MotorType.kBrushless);

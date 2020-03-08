@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.time.zone.ZoneOffsetTransitionRule.TimeDefinition;
+
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
@@ -33,6 +35,7 @@ public class FuelSystem extends Subsystem {
   private GaCoDrive copilot;
   private GaCoDrive minion;
   private Controller controller;
+  private Auto auto;
 
   private boolean visionEnabled     = true;
   private boolean autoTurretEnabled = true;
@@ -111,6 +114,7 @@ public class FuelSystem extends Subsystem {
 
   private Timer collectorTimer = new Timer();  
   private Timer indexingTimer = new Timer();  
+  private Timer timeOut = new Timer();
 
 
   //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
@@ -123,13 +127,14 @@ public class FuelSystem extends Subsystem {
 
  
   //initalize fuel system 
-  public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Controller controller, Vision turretVision, DriveTrain driveTrain){
+  public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Controller controller, Vision turretVision, DriveTrain driveTrain, Auto auto){
     this.pilot   = pilot;
     this.copilot = copilot;
     this.minion  = minion;
     this.controller = controller;
     this.turretVision   = turretVision;
     this.driveTrain     = driveTrain;
+    this.auto = auto;
 
     //initialize motors
     leftShooter  = new CANSparkMax(L_SHOOTER_ID, CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -655,5 +660,56 @@ public class FuelSystem extends Subsystem {
   }
 
 /// auto functions
+//auto run the speed and turrett aiming for autonomus
+public void autoAimSpeed(){
+ // while (auto.timeOut.get()< endTime){
+  if(turretVision.targetVisible){
+    if(autoRPMEnabled){
+      setShooterRPM(getShooterRPM(turretVision.getDistanceFromTarget()) + automatedShooterRPMModifier);
+    } else {
+      shooterOnRPM();
+    }
+      turnTurretTo(turretHeading + turretVision.x);
+   
+  } else {
+  shooterOnRPM();
+  }
+//}
+}
+//fires all in given time in autonomus
+  public void autoFireAll(double endTime){
+    while (auto.timeOut.get()< endTime){
+    if(!upperBallDetected){
+      runTransfer(.6,.6);
+    } else if((readyToShoot || !visionEnabled) && correctRPM && correctTurretHeading){
+      fire = true;
+      runTransfer(1,1);
+    } else {
+      if(fire){
+        runTransfer(1,1);
+      } else {
+        runTransfer(0,0);
+      }
+    }
+  }
+}
+//fires one in autonumus
+  public void autoFireOne(double endTime){
+  while (auto.timeOut.get()< endTime){
+  if(!upperBallDetected){
+    runTransfer(.6,.6);
+  } else if ((readyToShoot || !visionEnabled)&& correctRPM && correctTurretHeading) {
+    fire = true;
+    runTransfer(1,1);
+  } else {
+    if(fire){
+      runTransfer(1,1);
+    } else {
+      runTransfer(0,0);
+    }     
+  }
+}
+}
+
 
 }
