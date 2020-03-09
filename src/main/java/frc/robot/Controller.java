@@ -4,7 +4,7 @@
 
 package frc.robot;
 
-public class Controller extends Subsystem{
+public class Controller{
 
     //IMPORTANT - stick buttons for the non logitech controllers are reversed, left is the bottom button and right is the top one
 
@@ -17,6 +17,13 @@ public class Controller extends Subsystem{
     private boolean lastMinionRightBumper  = false;
 
 
+    //  Analog controls
+    public  double  pilotLeftX  = 0;
+    public  double  joystickForward  = 0;
+    public  double  joystickTurn = 0;
+    public  double  pilotRightY = 0;
+
+    // Digital Controls
     public boolean fireAll                         = false;
     public boolean fireOne                         = false;
     public boolean runUpBalls                      = false;
@@ -73,7 +80,11 @@ public class Controller extends Subsystem{
         this.minion     = minion;
     }
 
-    public void getButtons(){
+    public void readInputs(){
+
+        joystickForward         = pilot.getLeftStickY();
+        joystickTurn            = pilot.getRightStickX();
+
         fireAll                         = false;
         fireOne                         = false;
         runUpBalls                      = false;

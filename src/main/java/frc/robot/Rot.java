@@ -13,5 +13,4 @@ public enum Rot {
     Color_Recieved,
     Turning,
     Arm_Retracted
-
 } 

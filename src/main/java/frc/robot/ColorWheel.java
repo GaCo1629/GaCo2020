@@ -4,9 +4,6 @@
 
 package frc.robot;
 
-//import com.revrobotics.CANEncoder;
-//import com.revrobotics.CANSparkMax;
-//import com.revrobotics.CANSparkMaxLowLevel;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Timer;
@@ -22,24 +19,19 @@ import edu.wpi.first.wpilibj.DriverStation;
 // Public class to contain all the hardware elements (BotBits)
 public class ColorWheel extends Subsystem{
 
-    private GaCoDrive pilot;
-    private GaCoDrive copilot;
-    private GaCoDrive minion;
     private Controller controller;
 
     private VictorSP colorMotor;
     //private Solenoid colorArm;
     private DoubleSolenoid colorArm;
     private final int COLOR_MOTOR_ID  = 0;
-    
+
     private final I2C.Port i2cPort = I2C.Port.kOnboard;
     private final ColorSensorV3 m_colorSensor = new ColorSensorV3(i2cPort);
     private final ColorMatch m_colorMatcher = new ColorMatch();
     private final Color kBlueTarget = ColorMatch.makeColor(0.143, 0.427, 0.429);
     private final Color kGreenTarget = ColorMatch.makeColor(0.197, 0.561, 0.240);
-    //private final Color kRedTarget = ColorMatch.makeColor(0.561, 0.232, 0.114);
     private final Color kRedTarget = ColorMatch.makeColor(0.49, 0.37, 0.114);
-    //private final Color kYellowTarget = ColorMatch.makeColor(0.361, 0.524, 0.113);
     private final Color kYellowTarget = ColorMatch.makeColor(0.31, 0.56, 0.113);
     private final Color kBlackTarget = ColorMatch.makeColor(0, 0, 0);
 
@@ -54,16 +46,16 @@ public class ColorWheel extends Subsystem{
     public String curColor;
     public String colorString;
     public int wheelCount;
-    
+
     Timer time = new Timer();
     Timer lookTime = new Timer();
 
     private double endTime = 0;
     String gameData;
 
-    public Colors colorFlag;
+    public Colors colorFlag = Colors.Black;
     public Rot position = Rot.Init;
-    
+
     public CRot yellowE = CRot.Init;
     public CRot redE = CRot.Init;
     public CRot blueE = CRot.Init;
@@ -78,20 +70,14 @@ public class ColorWheel extends Subsystem{
     public ColorWheel() {
     }
 
-    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Controller controller) {
-        this.pilot   = pilot;
-        this.copilot = copilot;
-        this.minion  = minion;
+    public void init(Controller controller) {
+
         this.controller = controller;
 
         colorMotor  = new VictorSP(COLOR_MOTOR_ID);
-
-
         colorArm = new DoubleSolenoid(1,2,3);
         colorArm.set(DoubleSolenoid.Value.kReverse);
         //This line has placeholder values ^
-
-
         //Find the maximum speed at which the wheel is allowed to spin.
 
         m_colorMatcher.addColorMatch(kBlueTarget);
@@ -99,6 +85,11 @@ public class ColorWheel extends Subsystem{
         m_colorMatcher.addColorMatch(kRedTarget);
         m_colorMatcher.addColorMatch(kYellowTarget);
         m_colorMatcher.addColorMatch(kBlackTarget);
+
+        colorFlag = Colors.Black;
+        lastSmartColor = kBlackTarget;
+        smartGetColor();
+
         //initialize motor to spin wheel
         //initialize psunamatics to push out wheel spinner
         //initialize camera/color sensor
@@ -549,14 +540,14 @@ public class ColorWheel extends Subsystem{
     }
 
     private Color smartGetColor(){
-         smartColor = m_colorSensor.getColor();
-         tempMatch = m_colorMatcher.matchClosestColor(smartColor);
+        smartColor = m_colorSensor.getColor();
+        tempMatch = m_colorMatcher.matchClosestColor(smartColor);
 
-         if (tempMatch.confidence >= 0.96 ){
+        if (tempMatch.confidence >= 0.96 ){
             lastSmartColor = tempMatch.color;
-         }
-         SmartDashboard.putString("Color Seen", lastSmartColor.toString());
-         return lastSmartColor;
+            SmartDashboard.putString("Color Seen", lastSmartColor.toString());
+        }
+        return lastSmartColor;
     }
 
 
@@ -576,7 +567,7 @@ public class ColorWheel extends Subsystem{
         turnToYellow();
         manualColor();
 
-        if (minion.r3() || minion.l3()){
+        if (controller.runColorWheelPosition || controller.runColorWheelRotations || controller.runColorWheelLeftManual || controller.runColorWheelRightManual){
             if ((position != Rot.Init) && (redE != CRot.Init)){
                 SmartDashboard.putString("Wheel Conflicts", "TRUE");
                 stopColorArm();
@@ -595,29 +586,25 @@ public class ColorWheel extends Subsystem{
         }
 
         
-            if (lastSmartColor == kBlueTarget){
-                colorString = "Blue";
-            } else if (lastSmartColor == kYellowTarget){
-                colorString = "Yellow";
-            } else if (lastSmartColor == kRedTarget){
-                colorString = "Red";
-            } else if (lastSmartColor == kGreenTarget){
-                colorString = "Green";
-            } else if (lastSmartColor == kBlackTarget){
-                colorString = "Black";
-            }
+        if (lastSmartColor == kBlueTarget){
+            colorString = "Blue";
+        } else if (lastSmartColor == kYellowTarget){
+            colorString = "Yellow";
+        } else if (lastSmartColor == kRedTarget){
+            colorString = "Red";
+        } else if (lastSmartColor == kGreenTarget){
+            colorString = "Green";
+        } else if (lastSmartColor == kBlackTarget){
+            colorString = "Black";
+        }
 
-
-
-
-            SmartDashboard.putNumber("Red", smartColor.red);
-            SmartDashboard.putNumber("Green", smartColor.green);
-            SmartDashboard.putNumber("Blue", smartColor.blue);
-            SmartDashboard.putNumber("Confidence", tempMatch.confidence);
-            SmartDashboard.putString("Detected Color", colorString);
-            SmartDashboard.putNumber("Rotations", wheelCount);
-            SmartDashboard.putString("Req Color", colorFlag.toString());
-        
-
+        SmartDashboard.putNumber("Red", smartColor.red);
+        SmartDashboard.putNumber("Green", smartColor.green);
+        SmartDashboard.putNumber("Blue", smartColor.blue);
+        SmartDashboard.putNumber("Confidence", tempMatch.confidence);
+        SmartDashboard.putString("Detected Color", colorString);
+        SmartDashboard.putNumber("Rotations", wheelCount);
+        SmartDashboard.putString("Req Color", colorFlag.toString());
+    
     }
 }
