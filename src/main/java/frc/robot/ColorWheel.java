@@ -576,7 +576,7 @@ public class ColorWheel extends Subsystem{
         turnToYellow();
         manualColor();
 
-        if (minion.r3() || minion.l3()){
+        if (controller.runColorWheelPosition || controller.runColorWheelRotations || controller.runColorWheelLeftManual || controller.runColorWheelRightManual){
             if ((position != Rot.Init) && (redE != CRot.Init)){
                 SmartDashboard.putString("Wheel Conflicts", "TRUE");
                 stopColorArm();
