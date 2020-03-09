@@ -15,6 +15,8 @@ public class Robot extends TimedRobot {
   private GaCoDrive pilot        = new GaCoDrive();
   private GaCoDrive copilot      = new GaCoDrive();
   private GaCoDrive minion       = new GaCoDrive(); 
+  private Controller controller  = new Controller();
+
   //init subsystems
   private DriveTrain    driveTrain   = new DriveTrain();
   private FuelSystem    fuelSystem   = new FuelSystem();
@@ -22,19 +24,22 @@ public class Robot extends TimedRobot {
   private Climber       climber      = new Climber();
   private Vision        turretVision = new Vision("limelight-turret");
   private Auto          auto         = new Auto();
-  private Controller    controller   = new Controller();
+  
 
   @Override
   public void robotInit() {
+
     //initalize all classes
     pilot.init(0, true);
     copilot.init(1, false);
     minion.init(2, false);
-    driveTrain.init(pilot, copilot, minion, controller, turretVision, fuelSystem);
-    fuelSystem.init(pilot, copilot, minion, controller, turretVision, driveTrain);
-    //colorWheel.init(pilot, copilot, minion, controller);
-    climber.init(pilot, copilot, minion, controller);  
     controller.init(pilot, copilot, minion);
+
+    //initalize all subsystems
+    driveTrain.init(controller, turretVision, fuelSystem);
+    fuelSystem.init(controller, turretVision, driveTrain);
+    colorWheel.init(controller);
+    climber.init(controller);  
   }
   
   @Override
@@ -79,10 +84,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    controller.readInputs();
+    
     driveTrain.teleopPeriodic();
     fuelSystem.teleopPeriodic();
-    //colorWheel.teleopPeriodic();
+    colorWheel.teleopPeriodic();
     climber.teleopPeriodic();
-    controller.getButtons();
   }  
 }

@@ -29,9 +29,6 @@ collector right 0,1
 
 public class FuelSystem extends Subsystem {
 
-  private GaCoDrive pilot;
-  private GaCoDrive copilot;
-  private GaCoDrive minion;
   private Controller controller;
 
   private boolean visionEnabled     = true;
@@ -123,10 +120,7 @@ public class FuelSystem extends Subsystem {
 
  
   //initalize fuel system 
-  public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Controller controller, Vision turretVision, DriveTrain driveTrain){
-    this.pilot   = pilot;
-    this.copilot = copilot;
-    this.minion  = minion;
+  public void init(Controller controller, Vision turretVision, DriveTrain driveTrain){
     this.controller = controller;
     this.turretVision   = turretVision;
     this.driveTrain     = driveTrain;
@@ -140,7 +134,7 @@ public class FuelSystem extends Subsystem {
     rightShooter.restoreFactoryDefaults();
     
     //leftShooter.Config();
-   // rightShooter.Config();
+    // rightShooter.Config();
     //invert left motor so that positive values shoots the balls out 
     leftShooter.setInverted(true);
       

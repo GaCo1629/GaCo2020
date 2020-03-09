@@ -32,16 +32,10 @@ public class Climber extends Subsystem{
     private double leftLiftPosition;
     private double rightLiftPosition;
 
-    private double lastLeftLiftPosition  = 0;
-    private double lastRightLiftPosition = 0;
-
     private Timer timer = new Timer();
     private double currentTime = 0;
     private boolean firstLoop = true;
 
-    private GaCoDrive pilot;
-    private GaCoDrive copilot;
-    private GaCoDrive minion;
     private Controller controller;
 
     //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
@@ -52,10 +46,8 @@ public class Climber extends Subsystem{
     }
 
 
-    public void init(GaCoDrive pilot, GaCoDrive copilot, GaCoDrive minion, Controller controller) {
-        this.pilot   = pilot;
-        this.copilot = copilot;
-        this.minion  = minion;
+    public void init(Controller controller) {
+
         this.controller = controller;
 
         leftLift  = new CANSparkMax(LEFT_LIFT_CAN_ID,  CANSparkMaxLowLevel.MotorType.kBrushless);
@@ -105,16 +97,6 @@ public class Climber extends Subsystem{
         }
     }
 
-    public void runClimberTest(){
-        if(minion.rightTrigger()){
-            setPower(1);
-        } else if (minion.rightBumper()) {
-            setPower(-1);
-        } else {
-            setPower(0);
-        }
-    }
-
     public void setPower(double power){
         leftLift.set(power);
         rightLift.set(climberPID.run(rightLiftPosition, leftLiftPosition));
@@ -144,17 +126,12 @@ public class Climber extends Subsystem{
             firstLoop = true;
         }
 
-        if(minion.leftStick()){
-            resetEncoders();
-        }
         //Driver 2 - (Button) Extend Up Climber
         //Driver 2 - (Button) Climb up
         //Driver 2 (Stick/buttons) reposition robot position
     }
 
     public void updateValues(){
-        lastLeftLiftPosition  = leftLiftPosition;
-        lastRightLiftPosition = rightLiftPosition;
         leftLiftPosition  = leftLiftEncoder.getPosition();
         rightLiftPosition = rightLiftEncoder.getPosition();
     }
