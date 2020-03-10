@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------------*/
 /* Copyright (c) 2020 GaCo                                                    */
 /*-----------------------------*/
-
+/*
 package frc.robot;
 
-import frc.robot.StartPosition;
+import frc.robot.AutoMode;
 import frc.robot.NumBalls;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -16,13 +16,10 @@ import edu.wpi.first.wpilibj.Timer;
 
 public class Auto extends TimedRobot {
     //selctable choosers to tell auto
-    private SendableChooser <StartPosition> startPosition = new SendableChooser<>();
+    private SendableChooser <AutoMode> startPosition = new SendableChooser<>();
     private SendableChooser <NumBalls> numBalls = new SendableChooser<>();
 
 
-    private StartPosition selStartPosition;
- 
-    private NumBalls selNumBalls;
     private int flag = 0;
     private double startLeftDriveEncoder = 0;
     private double startRightDriveEncoder = 0;
@@ -90,23 +87,10 @@ public class Auto extends TimedRobot {
 
 //shows values
     
-    public void show(){
+    
 
-        startPosition.setDefaultOption("Center", StartPosition.CENTER);
-        startPosition.addOption("Center", StartPosition.CENTER);
-        startPosition.addOption("Far Trench", StartPosition.FAR_TRENCH);
-        startPosition.addOption("Close Trench", StartPosition.CLOSE_TRENCH);
-         SmartDashboard.putData("Start Position", startPosition);
-         
-           //numBalls choser
-           numBalls.setDefaultOption("three", NumBalls.THREE);
-           numBalls.addOption("three", NumBalls.THREE);
-           numBalls.addOption("six", NumBalls.SIX);
-           numBalls.addOption("ten", NumBalls.TEN);
-           SmartDashboard.putData("number of balls", numBalls);
-           SmartDashboard.putNumber("auto flag", flag);
-
-    }
+  
+    
 
 
     ///// AUTO FUNCTIONS \\\\\  
@@ -169,15 +153,7 @@ public class Auto extends TimedRobot {
 
         case TEN:
         break;
-       // timeout.hasElapsed(3);
-      //  for (int i =0 ; i < 3; i++ ){
-       // if (fuelSystem.getShooterRPM()  <= 1150 || fuelSystem.getShooterRPM()  >= 950 ){
-        //    fuelSystem.runTransfer(.75, .75);
-      //  }
-       // i++;
-      //  }
-     //   fuelSystem.runTransfer(0,0);
-       // fuelSystem.setShooterRPM(0);
+    
     }
         
         
@@ -204,3 +180,4 @@ public class Auto extends TimedRobot {
 
 
 }
+*/
