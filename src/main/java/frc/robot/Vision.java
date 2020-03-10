@@ -23,8 +23,9 @@ public class Vision {
     public double pipeline;
     public double dimensional;
     public boolean targetVisible = false;
-    private final double MIN_WIDTH = 23;
-    private final double MAX_WIDTH = -5;
+    public boolean limelightIsZoomed = false;
+    private final double MIN_WIDTH = 370;
+    private final double MAX_WIDTH = 50;
     private final int LIST_LENGTH_AVERAGE_Y = 10;
     public double averageLimelightY = 0;
     private double limelightCounter = 0;
@@ -40,24 +41,45 @@ public class Vision {
     public double getDistanceFromTarget() {
       double distanceToTarget;
       if(width <= MIN_WIDTH){
-        distanceToTarget= -5.1;
+        distanceToTarget= 49;
       } else if (width >= MAX_WIDTH){
-        distanceToTarget = 23.1;
+        distanceToTarget = 371;
        }
       else  {
-        distanceToTarget = -(.0000174948 * Math.pow(y, 5)) + (.00099589 * Math.pow(y, 4)) - (.022156 * Math.pow(y, 3)) + (.271437 * Math.pow(y, 2)) - (2.54782 * y) + 25.7234;
+        if(limelightIsZoomed){
+          width /= 2;
+          distanceToTarget = 106+ (-1.52*width) +( 0.0103*Math.pow(width, 2)) + -0.000033*Math.pow(width, 3) + 0.0000000406*Math.pow(width, 4);
+        } else {
+          distanceToTarget = 106+ (-1.52*width) +( 0.0103*Math.pow(width, 2)) + -0.000033*Math.pow(width, 3) + 0.0000000406*Math.pow(width, 4);
+        }
       }
       return distanceToTarget;    
+    }
+
+    public void zoomInLimelight(){
+      limelightIsZoomed = true;
+    }
+
+    public void zoomOutLimelight(){
+      limelightIsZoomed = false;
     }
 
     public void updateTarget(){
       //Set Up Tables
       NetworkTable      table = NetworkTableInstance.getDefault().getTable(limelightName);
+      NetworkTableEntry p     = table.getEntry("pipeline");
       NetworkTableEntry tv    = table.getEntry("tv");
       NetworkTableEntry tx    = table.getEntry("tx");
       NetworkTableEntry ty    = table.getEntry("ty");
       NetworkTableEntry thor  = table.getEntry("thor");
       NetworkTableEntry ts    = table.getEntry("ts");
+
+      if(limelightIsZoomed){
+        p.setDouble(1);
+      } else {
+        p.setDouble(0);
+      }
+
      
       //Set Variable to Current Values
       valid = tv.getDouble(0.0);
@@ -68,16 +90,6 @@ public class Vision {
       width = thor.getDouble(0.0);
       skew = ts.getDouble(0.0);
       targetVisible = true;
-
-      //get limelight y average for the last 10 cycles
-      recentLimelightY.add(0, y);
-      while(recentLimelightY.size() >= LIST_LENGTH_AVERAGE_Y + 1){
-        recentLimelightY.remove(LIST_LENGTH_AVERAGE_Y);
-      }
-      for(int i = 0; i < recentLimelightY.size(); i++){
-        limelightCounter += recentLimelightY.get(i);
-      }
-      averageLimelightY = limelightCounter/recentLimelightY.size();
    
       //Smart Dashboard Display
       SmartDashboard.putNumber("LimelightX", x);
@@ -85,6 +97,9 @@ public class Vision {
       SmartDashboard.putNumber("Average of last 10 Limelight y", averageLimelightY);
       SmartDashboard.putNumber("TargetWidth", width);
       SmartDashboard.putNumber("TargetSkew", skew);
+      SmartDashboard.putNumber("Distance to Target Limelight", getDistanceFromTarget());
+
+
 
     } else {
       targetVisible = false;

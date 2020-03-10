@@ -500,7 +500,7 @@ public class FuelSystem extends Subsystem {
 
     //check to see if a ball is detected at the bottom and on is not detected at the top
     } else if(lowerBallDetected && !upperBallDetected){
-      runTransfer(1,0);
+      runTransfer(1,.1);
       runCollector      = true;
       fireOneFlag       = false;
       prepairToFireFlag = false;
@@ -515,8 +515,8 @@ public class FuelSystem extends Subsystem {
 
     }
 
-    // Run the collector unless there is a ball at either end of transfer
-    if(runCollector && !(upperBallDetected || lowerBallDetected)){
+    // Run the collector unless there is a ball at the top of the transfer
+    if(runCollector && !(upperBallDetected)){
       runCollector();
     } else if (reverseCollector){
       reverseCollector();
@@ -604,6 +604,12 @@ public class FuelSystem extends Subsystem {
 
     if(controller.toggleAutoVision){
       toggleVision();
+    }
+
+    if(controller.zoomLimelight){
+      turretVision.zoomInLimelight();
+    } else {
+      turretVision.zoomOutLimelight();
     }
 
     if(turretVision.targetVisible && visionEnabled){

@@ -67,6 +67,8 @@ public class Controller{
     public boolean resetRobotHeading               = false;
     public boolean powerMode                       = false;
     public boolean slowMode                        = false;
+
+    public boolean zoomLimelight                   = false;
     //35
 
     //constructor
@@ -128,6 +130,8 @@ public class Controller{
         resetRobotHeading               = false;
         powerMode                       = false;
         slowMode                        = false;
+
+        zoomLimelight                   = false;
 
     // =============================================================
     // Pilot Buttons
@@ -301,11 +305,11 @@ public class Controller{
             }
 
             if(minion.x()){
-                setShooterRPM4600 = true;
+                longRangeShooterDefult = true;
             }
 
             if(minion.b()){
-                longRangeShooterDefult = true;
+                zoomLimelight = true;
             }
 
             if(minion.y()){
