@@ -29,6 +29,11 @@ collector right 0,1
 
 public class FuelSystem extends Subsystem {
 
+  public boolean correctRPM           = false;
+  public boolean correctTurretHeading = false;
+  public boolean validDistance        = false;
+  public boolean readyToShoot         = false;
+
   private Controller controller;
 
   private boolean visionEnabled     = true;
@@ -92,13 +97,9 @@ public class FuelSystem extends Subsystem {
   private double turretHeadingModifier = 0;
   public double ballsInIndex          = 0;
 
-  private boolean prepairToFireFlag = false;
-  private boolean fireOneFlag       = false;
+  private boolean prepairToFireFlag   = false;
+  private boolean fireOneFlag         = false;
 
-  public boolean correctRPM           = false;
-  public boolean correctTurretHeading = false;
-  public boolean validDistance        = false;
-  public boolean readyToShoot         = false;
   private boolean runCollector        = false;
   private boolean reverseCollector    = false;
   private boolean collectorIsRunning  = false;
@@ -185,11 +186,24 @@ public class FuelSystem extends Subsystem {
   public void robotPeriodic(){
   
   }
+
+  @Override
+  public void autonomousInit() {
+    correctRPM           = false;
+    correctTurretHeading = false;
+    validDistance        = false;
+    readyToShoot         = false;
+  }
   
   @Override
   public void teleopInit() {
-
+    correctRPM           = false;
+    correctTurretHeading = false;
+    validDistance        = false;
+    readyToShoot         = false;
   }
+
+  
   // =========================================================
   // Turret Control
   // =========================================================
@@ -222,7 +236,8 @@ public class FuelSystem extends Subsystem {
 
     targetSpeedRPM = targetRPM;
     shooterMotorPower = shooterPID.run(shooterRPM, targetRPM);
-    setShooterSpeed(shooterPID.run(shooterRPM, targetRPM));
+    setShooterSpeed(shooterPID.run(shooterRPM, targetRPM));  // SLOPPY CODE.  Call twice??
+    
   }
 
   //clips a value based on range
@@ -271,7 +286,6 @@ public class FuelSystem extends Subsystem {
     //inverse detector states so that true indicates that a ball has been detected
     lowerBallDetected = !lowerBallDetector.get();
     upperBallDetected = !upperBallDetector.get();
-
 
     if(autoRPMEnabled || autoTurretEnabled){
       visionEnabled = true;

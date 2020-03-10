@@ -132,9 +132,10 @@ public class Robot extends TimedRobot {
   }  
 
 
-  /////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-  //////////////actual auto functions.\\\\\\\\\\\\\\\\\\\\\
-  /////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+  //=============================================================
+  //            actual auto functions.
+  //=============================================================
+
   public boolean useLimeLight = true;
   public boolean shootNow = false;
   public int shotCounter = 0;
@@ -151,12 +152,13 @@ public class Robot extends TimedRobot {
   public SMShooting currentShooterState = SMShooting.INIT;
 
   public SMShooting runShooterControl(){
+    fuelSystem.collectorUpDown();
+
     switch (currentShooterState){
       case INIT:
         //check for time to shoot
         if (shootNow){
           fuelSystem.setShooterRPM(4000);
-          fuelSystem.shooterOnRPM();
           shootNow = false;
           currentShooterState = SMShooting.GETTING_READY;
         }
@@ -169,6 +171,7 @@ public class Robot extends TimedRobot {
           currentShooterState = SMShooting.GETTING_READY;
         }
         fuelSystem.setShooterRPM(4000);
+
         //turns on transfer if uper ball is not detected. 
         if(!fuelSystem.upperBallDetected){
           fuelSystem.runTransfer(1, 1);
@@ -178,7 +181,7 @@ public class Robot extends TimedRobot {
         break;
 
       case SHOOTING:
-        //check if we have shot disired shots
+        //check if we have shot desired shots
         if(fuelSystem.ballsFired > shotsWanted){
           fuelSystem.setShooterRPM(0);
           fuelSystem.runTransfer(0, 0);
