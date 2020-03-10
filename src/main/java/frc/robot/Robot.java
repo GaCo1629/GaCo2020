@@ -4,8 +4,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.AutoMode;
 import frc.robot.NumBalls;
+import frc.robot.AutoMode;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
@@ -28,14 +28,13 @@ public class Robot extends TimedRobot {
   private Climber       climber      = new Climber();
   private Vision        turretVision = new Vision("limelight-turret");
   //private Auto          auto         = new Auto();
- public Timer timeout = new Timer();
+  public Timer timeout = new Timer();
   
-  private AutoMode selAutoMode;
-  private int flag = 0;
+  private AutoMode selAutoMode = AutoMode.NONE;
   
- // private NumBalls selNumBalls;
+  // private NumBalls selNumBalls;
   private SendableChooser <AutoMode> autoMode = new SendableChooser<>();
- // private SendableChooser <NumBalls> numBalls = new SendableChooser<>();
+  // private SendableChooser <NumBalls> numBalls = new SendableChooser<>();
 
 
   @Override
@@ -56,8 +55,6 @@ public class Robot extends TimedRobot {
     //set up autonomus options
     autoMode.setDefaultOption("simple shoot", AutoMode.SIMPLE_SHOOT);
     autoMode.addOption("simple shoot", AutoMode.SIMPLE_SHOOT);
-    //autoMode.addOption("Far Trench", AutoMode.FAR_TRENCH);
-   // autoMode.addOption("Close Trench", AutoMode.CLOSE_TRENCH);
     autoMode.addOption("none", AutoMode.NONE);
     SmartDashboard.putData("auto mode", autoMode);
      
@@ -83,18 +80,17 @@ public class Robot extends TimedRobot {
     driveTrain.show();
     fuelSystem.show();
     climber.show();
-
-  
   }
 
 
   @Override
   public void autonomousInit() {
-    // TODO Auto-generated method stub
-    //super.autonomousInit();
-    driveTrain.autonomousInit();
+
     super.autonomousInit();
+    driveTrain.autonomousInit();
+
     selAutoMode = autoMode.getSelected();
+
     //selNumBalls = numBalls.getSelected();
     fuelSystem.setBallsInRobot(3);
 
@@ -139,31 +135,30 @@ public class Robot extends TimedRobot {
   /////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
   //////////////actual auto functions.\\\\\\\\\\\\\\\\\\\\\
   /////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
- public boolean useLimeLight = true;
- public boolean shootNow = false;
- public int shotCounter = 0;
- public int shotsWanted = 0;
+  public boolean useLimeLight = true;
+  public boolean shootNow = false;
+  public int shotCounter = 0;
+  public int shotsWanted = 0;
 
 
-
-
- //SHOOTING STATE MACHINE
- enum SMShooting{
+  //SHOOTING STATE MACHINE
+  enum SMShooting{
    INIT,
    GETTING_READY,
    SHOOTING
- }
- public SMShooting currentShooterState = SMShooting.INIT;
+  }
+
+  public SMShooting currentShooterState = SMShooting.INIT;
 
   public SMShooting runShooterControl(){
     switch (currentShooterState){
       case INIT:
         //check for time to shoot
         if (shootNow){
-        fuelSystem.setShooterRPM(4000);
-        fuelSystem.shooterOnRPM();
-        shootNow = false;
-        currentShooterState = SMShooting.GETTING_READY;
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.shooterOnRPM();
+          shootNow = false;
+          currentShooterState = SMShooting.GETTING_READY;
         }
         break;
 
