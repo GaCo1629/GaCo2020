@@ -57,8 +57,10 @@ public class FuelSystem extends Subsystem {
   private boolean lastUpperBallDetectorState = true;
   private boolean lastLowerBallDetectorState = true;
 
-  private boolean upperBallDetected     = true;
-  private boolean lowerBallDetected     = true;
+  public boolean upperBallDetected     = true;
+  public boolean lowerBallDetected     = true;
+  public int ballsFired                = 0;
+
 
   private final double COLLECTOR_SPEED = 1.0;
 
@@ -70,7 +72,7 @@ public class FuelSystem extends Subsystem {
   private final double MAX_TURRET_ANGLE         = 100;
   private final double TURRET_PROPORTIONAL_GAIN = .002;
   private final double TURRET_INTEGRAL_GAIN     = 0;
-
+  
   private final double SHOOTER_RPM_TOLERANCE    = 50;
   private final double TURRET_DEGREE_TOLERANCE  = .5;
 
@@ -159,6 +161,8 @@ public class FuelSystem extends Subsystem {
     //reset turret heading variables
     turretHeading       = 0;
     targetTurretHeading = 0;
+    ballsFired          = 0;
+
 
     //reset shooter RPM variables
     shooterRPM          = 0;
@@ -302,6 +306,7 @@ public class FuelSystem extends Subsystem {
 
     if(!upperBallDetected && lastUpperBallDetectorState){
       ballsInIndex--;
+      ballsFired++;
       fire = false;
     }
 
