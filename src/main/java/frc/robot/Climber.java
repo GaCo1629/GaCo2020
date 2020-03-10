@@ -18,7 +18,7 @@ public class Climber extends Subsystem{
     private final int LEFT_LIFT_CAN_ID  = 11;
     private final int RIGHT_LIFT_CAN_ID = 18;
 
-    private final int TOP_ENCODER_POSITION   = 560;
+    private final int TOP_ENCODER_POSITION   = 227;
 
     //min rpm speed
     private final double STOPPED_MOTOR_SPEED = 10;
@@ -68,7 +68,7 @@ public class Climber extends Subsystem{
     //extnnd up to get ready to climb
     public void extendUp(){
         if(leftLiftPosition < TOP_ENCODER_POSITION){
-            setPower(1);
+            setPower(.75);
         } else {
             setPower(0);
         }
@@ -79,8 +79,8 @@ public class Climber extends Subsystem{
         if(firstLoop){
             timer.reset();
             firstLoop = false;
-            rightLift.set(-.2);
-            leftLift.set(-.2);
+            rightLift.set(-.75);
+            leftLift.set(-.75);
         }
 
         currentTime = timer.get();
@@ -116,10 +116,10 @@ public class Climber extends Subsystem{
             extendUp();
             firstLoop = true;
         } else if(controller.manualClimberUp){
-            setPower(1);
+            setPower(.75);
             firstLoop = true;
         } else if(controller.manualClimberDown){
-            setPower(-1);
+            setPower(-.75);
             firstLoop = true;
         } else {
             setPower(0);

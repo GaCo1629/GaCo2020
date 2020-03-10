@@ -193,6 +193,7 @@ public class FuelSystem extends Subsystem {
     correctTurretHeading = false;
     validDistance        = false;
     readyToShoot         = false;
+    ballsFired =0;
   }
   
   @Override
@@ -201,6 +202,7 @@ public class FuelSystem extends Subsystem {
     correctTurretHeading = false;
     validDistance        = false;
     readyToShoot         = false;
+    ballsFired = 0;
   }
 
   
@@ -236,7 +238,7 @@ public class FuelSystem extends Subsystem {
 
     targetSpeedRPM = targetRPM;
     shooterMotorPower = shooterPID.run(shooterRPM, targetRPM);
-    setShooterSpeed(shooterPID.run(shooterRPM, targetRPM));  // SLOPPY CODE.  Call twice??
+    setShooterSpeed(shooterMotorPower);  // SLOPPY CODE.  Call twice??
     
   }
 
@@ -331,7 +333,7 @@ public class FuelSystem extends Subsystem {
 
   public void setTurretHeading(double newHeading){
     turretEncoder.setPosition(0);
-    turretHeading         = 0;
+    turretHeading         = newHeading;
     targetTurretHeading   = newHeading;
     turretHeadingModifier = newHeading;
   }
@@ -558,6 +560,15 @@ public class FuelSystem extends Subsystem {
     return shooterRPM;
   }
 
+  public void turnOffShooter(){
+    leftShooter.set(0);
+    rightShooter.set(0);
+  }
+
+  public void setTurretPower(double power){
+    turret.set(0);
+  }
+
   @Override
   public void teleopPeriodic(){
     //Driver 1 - (button/trigger) track and collect
@@ -677,7 +688,7 @@ public class FuelSystem extends Subsystem {
     SmartDashboard.putBoolean("Upper Ball Detector", upperBallDetected);
     SmartDashboard.putBoolean("Correct Turret Heading", correctTurretHeading);
     SmartDashboard.putBoolean("Correct RPM", correctRPM);
-
+    SmartDashboard.putNumber("Shots fire", ballsFired);
 
 
     SmartDashboard.putNumber("Shooter Power Input", shooterMotorPower);

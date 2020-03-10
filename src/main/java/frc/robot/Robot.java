@@ -85,9 +85,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-
-    super.autonomousInit();
+    fuelSystem.autonomousInit();
     driveTrain.autonomousInit();
+    colorWheel.autonomousInit();
+    driveTrain.autonomousInit();
+    fuelSystem.setTurretHeading(90);
 
     selAutoMode = autoMode.getSelected();
 
@@ -102,7 +104,7 @@ public class Robot extends TimedRobot {
 
       case SIMPLE_SHOOT:
       SmartDashboard.putString("selAutoMode", "simple shoot selected");
-      simpleShoot(1);
+      simpleShoot(3);
       break;
 
     }
@@ -111,7 +113,20 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
-  
+    
+    switch (selAutoMode){
+
+      case NONE:
+     
+      break;
+
+      case SIMPLE_SHOOT:
+      if (runShooterControl() != SMShooting.INIT ){
+        runShooterControl();
+      }
+      break;
+
+    }
   }
 
   @Override
@@ -132,9 +147,9 @@ public class Robot extends TimedRobot {
   }  
 
 
-  //=============================================================
-  //            actual auto functions.
-  //=============================================================
+  //=============================================================\\
+  //            actual auto functions.                            \\
+  //=============================================================  \\
 
   public boolean useLimeLight = true;
   public boolean shootNow = false;
@@ -152,13 +167,15 @@ public class Robot extends TimedRobot {
   public SMShooting currentShooterState = SMShooting.INIT;
 
   public SMShooting runShooterControl(){
-    fuelSystem.collectorUpDown();
+    fuelSystem.updateVariables();
+    fuelSystem.show();
 
     switch (currentShooterState){
       case INIT:
         //check for time to shoot
         if (shootNow){
           fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
           shootNow = false;
           currentShooterState = SMShooting.GETTING_READY;
         }
@@ -166,29 +183,41 @@ public class Robot extends TimedRobot {
 
       case GETTING_READY:
         //check ready to shoot
-        if(fuelSystem.correctRPM){
-          fuelSystem.runTransfer(1, 1);
-          currentShooterState = SMShooting.GETTING_READY;
-        }
-        fuelSystem.setShooterRPM(4000);
+        if(fuelSystem.correctRPM && fuelSystem.correctTurretHeading){
+          fuelSystem.runTransfer(.9, .9);
+          currentShooterState = SMShooting.SHOOTING;
+        }else{
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
 
-        //turns on transfer if uper ball is not detected. 
-        if(!fuelSystem.upperBallDetected){
-          fuelSystem.runTransfer(1, 1);
-        } else {
-          fuelSystem.runTransfer(0, 0);
+          //turns on transfer if uper ball is not detected. 
+          if(!fuelSystem.upperBallDetected){
+            fuelSystem.runTransfer(.9, .9);
+          } else {
+            fuelSystem.runTransfer(0, 0);
+          }
         }
         break;
 
       case SHOOTING:
         //check if we have shot desired shots
-        if(fuelSystem.ballsFired > shotsWanted){
+        if (fuelSystem.ballsFired >= shotsWanted){
           fuelSystem.setShooterRPM(0);
           fuelSystem.runTransfer(0, 0);
+          fuelSystem.setShooterSpeed(0);
           currentShooterState = SMShooting.INIT;
+        }else{
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
+          fuelSystem.setTurretPower(0);
+          if (fuelSystem.correctRPM){
+            fuelSystem.runTransfer(.9, .9);
+          } else {
+            fuelSystem.runTransfer(0, 0);
+          }
         }
-       fuelSystem.setShooterRPM(4000);
-       break;
+        break;
+       
     }
     return currentShooterState;
   }
@@ -197,9 +226,7 @@ public class Robot extends TimedRobot {
   private void simpleShoot(int shots){
     shootNow =true;
     shotsWanted = shots;
-    while (runShooterControl() != SMShooting.INIT){
-      runShooterControl();
-    }
+    
    
   }
  
