@@ -1,183 +1,240 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) 2020 GaCo                                                    */
 /*-----------------------------*/
-/*
+/* Copyright (c) 2020 GaCo     */
+/*-----------------------------*/
+
 package frc.robot;
 
-import frc.robot.AutoMode;
-import frc.robot.NumBalls;
-
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.Timer;
 
 
+public class Auto extends Subsystem {
 
-public class Auto extends TimedRobot {
-    //selctable choosers to tell auto
-    private SendableChooser <AutoMode> startPosition = new SendableChooser<>();
-    private SendableChooser <NumBalls> numBalls = new SendableChooser<>();
-
-
-    private int flag = 0;
-    private double startLeftDriveEncoder = 0;
-    private double startRightDriveEncoder = 0;
-   
-    private Timer timeout; // timer
-
-// intiliaze the needed classes
+    // intiliaze the needed classes
     private DriveTrain    driveTrain;
     private FuelSystem    fuelSystem;
     private Vision        turretVision;
-   
+
+    private AutoMode selAutoMode = AutoMode.NONE;
+    
+    // private NumBalls selNumBalls;
+    private SendableChooser <AutoMode> autoMode = new SendableChooser<>();
+    // private SendableChooser <NumBalls> numBalls = new SendableChooser<>();
+
+
 
     public void init(DriveTrain driveTrain, FuelSystem fuelSystem, Vision turretVision){
-        //start postion choser
-        timeout = new Timer();
         this.driveTrain = driveTrain;
         this.fuelSystem = fuelSystem;
         this.turretVision = turretVision;
-        flag = 0;
-        show();
+
+        //set up autonomus options
+        autoMode.setDefaultOption("simple shoot", AutoMode.SIMPLE_SHOOT);
+        autoMode.addOption("simple shoot", AutoMode.SIMPLE_SHOOT);
+        autoMode.addOption("Smart shoot", AutoMode.SMART_SHOOT);
+        autoMode.addOption("none", AutoMode.NONE);
+        SmartDashboard.putData("auto mode", autoMode);
+        
+        //numBalls choser
+        // numBalls.setDefaultOption("three", NumBalls.THREE);
+        // numBalls.addOption("three", NumBalls.THREE);
+        // numBalls.addOption("six", NumBalls.SIX);
+        // numBalls.addOption("ten", NumBalls.TEN);
+        // SmartDashboard.putData("number of balls", numBalls);
+
+        SmartDashboard.putString("selAutoMode", ".---");
     }
 
     @Override
     public void autonomousInit(){
-        selStartPosition = startPosition.getSelected();
-        selNumBalls = numBalls.getSelected();
-        fuelSystem.setBallsInRobot(3);
-     
+        // Determine the desired Autonomous Action
+        selAutoMode = autoMode.getSelected();
+        currentShooterState = SMShooting.INIT;
 
+        //selNumBalls = numBalls.getSelected();
+        fuelSystem.setBallsInRobot(3);
+
+        switch (selAutoMode){
+
+        case NONE:
+        SmartDashboard.putString("selAutoMode", "None selecter");
+        break;
+
+        case SIMPLE_SHOOT:
+        SmartDashboard.putString("selAutoMode", "simple shoot selected");
+        shootNow =true;
+        shotsWanted = 2;
+        break;
+
+        case SMART_SHOOT:
+        SmartDashboard.putString("selAutoMode", "smart shoot selected");
+        shootNow =true;
+        shotsWanted = 2;
+        break;
+        }
     }
 
     @Override
     public void autonomousPeriodic(){
-        //fuelSystem.runTransfer(1, 1);
-        //Timer.delay(2);
-        //fuelSystem.runTransfer(0, 0);
-        timeout.reset();
-        timeout.start();
+        switch (selAutoMode){
 
-       switch (selStartPosition){
-            //run code for figuring out where to go based on having center postion
-            case CENTER: 
-            centerLogic();
-            break;
-
-            //runs logic for if we start infront of our color trence
-            case CLOSE_TRENCH:
-            closeLogic();
-            break;
-
-            // run logic for if we start in other teams trench
-            case FAR_TRENCH:
-            farLogic();
-            break;
-
-            // do nothing if no balls
             case NONE:
-            //do nothing
+           
             break;
+      
+            case SIMPLE_SHOOT:
+            if (runSimpleShooter() != SMShooting.INIT ){
+              runSimpleShooter();
             }
-            
+            break;
+      
+            case SMART_SHOOT:
+            if (runSmartShooter() != SMShooting.INIT ){
+              runSmartShooter();
+            }
+            break;
+      
+          }
+    }
+    
+  //=============================================================\\
+  //            actual auto functions.                            \\
+  //=============================================================  \\
+
+  public boolean useLimeLight = true;
+  public boolean shootNow = false;
+  public int shotCounter = 0;
+  public int shotsWanted = 0;
+
+
+  //SHOOTING STATE MACHINE
+  enum SMShooting{
+   INIT,
+   GETTING_READY,
+   SHOOTING
+  }
+
+  public SMShooting currentShooterState = SMShooting.INIT;
+
+  public SMShooting runSimpleShooter(){
+    
+    switch (currentShooterState){
+      case INIT:
+        //check for time to shoot
+        if (shootNow){
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
+          shootNow = false;
+          currentShooterState = SMShooting.GETTING_READY;
         }
+        break;
+
+      case GETTING_READY:
+        //check ready to shoot
+        if(fuelSystem.correctRPM && fuelSystem.correctTurretHeading){
+          fuelSystem.runTransfer(.9, .9);
+          currentShooterState = SMShooting.SHOOTING;
+        }else{
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
+
+          //turns on transfer if uper ball is not detected. 
+          if(!fuelSystem.upperBallDetected){
+            fuelSystem.runTransfer(.9, .9);
+          } else {
+            fuelSystem.runTransfer(0, 0);
+          }
+        }
+        break;
+
+      case SHOOTING:
+        //check if we have shot desired shots
+        if (fuelSystem.ballsFired >= shotsWanted){
+          fuelSystem.setShooterRPM(0);
+          fuelSystem.runTransfer(0, 0);
+          fuelSystem.setShooterSpeed(0);
+          currentShooterState = SMShooting.INIT;
+        }else{
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
+          fuelSystem.setTurretPower(0);
+          if (fuelSystem.correctRPM){
+            fuelSystem.runTransfer(.9, .9);
+          } else {
+            fuelSystem.runTransfer(0, 0);
+          }
+        }
+        break;
        
+    }
+    return currentShooterState;
+  }
+  //////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
 
-
-//shows values
+  public SMShooting runSmartShooter(){
     
-    
-
-  
-    
-
-
-    ///// AUTO FUNCTIONS \\\\\  
-    ///auto logic
-    //sets and does cases based on start position
-    private void centerLogic(){
-    switch (selNumBalls){
-        
-        case NONE:
-
+    switch (currentShooterState){
+      case INIT:
+        //check for time to shoot
+        if (shootNow){
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
+          shootNow = false;
+          currentShooterState = SMShooting.GETTING_READY;
+        }
         break;
 
-        case THREE:
-        fuelSystem.turnOffVision();
-
-        if(flag == 0){
-            timeout.reset();
-            fuelSystem.setShooterRPM(4000);
-            fuelSystem.shooterOnRPM();
-            fuelSystem.turnTurretTo(-90);
-            if(fuelSystem.correctRPM && fuelSystem.correctTurretHeading){
-                flag ++;
-                fuelSystem.turnTurretTo(fuelSystem.getTurretHeading());
-            }
+      case GETTING_READY:
+        //check ready to shoot
+        if (turretVision.targetVisible){
+          fuelSystem.setRPMBasedOnVision();
+          fuelSystem.turnTurretToVisionTarget();
+        } else {
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
         }
-        if(flag == 1){
-            fuelSystem.toggleVision();
-            flag++;
+        if(fuelSystem.readyToShoot){
+          fuelSystem.runTransfer(.9, .9);
+          currentShooterState = SMShooting.SHOOTING;
+        } else {
+          //turns on transfer if uper ball is not detected. 
+          if(!fuelSystem.upperBallDetected){
+            fuelSystem.runTransfer(.9, .9);
+          } else {
+            fuelSystem.runTransfer(0, 0);
+          }
         }
-        if(flag == 2){
-            timeout.reset();
-            if(turretVision.targetVisible){
-                    fuelSystem.setShooterRPM(fuelSystem.getShooterRPM(turretVision.getDistanceFromTarget()));
-                } else {
-                    fuelSystem.shooterOnRPM();
-                }
-            if(fuelSystem.readyToShoot){
-                fuelSystem.runTransfer(1, 1);
-            } else {
-                fuelSystem.runTransfer(0, 0);
-            }
-            if(fuelSystem.ballsInIndex < 1 || timeout.get() > 4){
-                flag++;
-            }
-            if(flag == 3){
-                if(timeout.get() < 6 && fuelSystem.ballsInIndex > 0){
-                    fuelSystem.runTransfer(1, 1);
-                } else {
-                    fuelSystem.runTransfer(0, 0);
-                    flag++;
-                }
-            }
-            if(flag == 4){
-                
-            }
-
-        }
-        case SIX:
         break;
 
-        case TEN:
+      case SHOOTING:
+        //check if we have shot desired shots
+        if (turretVision.targetVisible){
+          fuelSystem.setRPMBasedOnVision();
+          fuelSystem.turnTurretToVisionTarget();
+        } else {
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
+        }
+
+        if (fuelSystem.ballsFired >= shotsWanted){
+          fuelSystem.setShooterRPM(0);
+          fuelSystem.runTransfer(0, 0);
+          fuelSystem.setShooterSpeed(0);
+          currentShooterState = SMShooting.INIT;
+        }else{
+          
+          if (fuelSystem.correctRPM){
+            fuelSystem.runTransfer(.9, .9);
+          } else {
+            fuelSystem.runTransfer(0, 0);
+          }
+        }
         break;
-    
+       
     }
-        
-        
-
-    }
-
-    
-    private void closeLogic(){
-        switch (selNumBalls){
-
-        }
-    
-
-    }
-    private void farLogic(){
-        switch (selNumBalls){
-
-        }
-    
-
-    }
-// AUTO MOVE
-
-
+    return currentShooterState;
+  }
 
 }
-*/
