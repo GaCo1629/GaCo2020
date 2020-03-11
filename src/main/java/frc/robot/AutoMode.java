@@ -8,6 +8,7 @@ package frc.robot;
 
 public enum AutoMode {
     NONE,
-    SIMPLE_SHOOT
+    SIMPLE_SHOOT,
+    SMART_SHOOT
 	
 } 

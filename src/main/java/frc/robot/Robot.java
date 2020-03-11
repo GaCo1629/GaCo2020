@@ -55,6 +55,7 @@ public class Robot extends TimedRobot {
     //set up autonomus options
     autoMode.setDefaultOption("simple shoot", AutoMode.SIMPLE_SHOOT);
     autoMode.addOption("simple shoot", AutoMode.SIMPLE_SHOOT);
+    autoMode.addOption("Smart shoot", AutoMode.SMART_SHOOT);
     autoMode.addOption("none", AutoMode.NONE);
     SmartDashboard.putData("auto mode", autoMode);
      
@@ -92,6 +93,7 @@ public class Robot extends TimedRobot {
     fuelSystem.setTurretHeading(90);
 
     selAutoMode = autoMode.getSelected();
+    currentShooterState = SMShooting.INIT;
 
     //selNumBalls = numBalls.getSelected();
     fuelSystem.setBallsInRobot(3);
@@ -104,7 +106,14 @@ public class Robot extends TimedRobot {
 
       case SIMPLE_SHOOT:
       SmartDashboard.putString("selAutoMode", "simple shoot selected");
-      simpleShoot(3);
+      shootNow =true;
+      shotsWanted = 2;
+      break;
+
+      case SMART_SHOOT:
+      SmartDashboard.putString("selAutoMode", "smart shoot selected");
+      shootNow =true;
+      shotsWanted = 2;
       break;
 
     }
@@ -113,6 +122,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
+    fuelSystem.updateVariables();
+    fuelSystem.show();
+
     
     switch (selAutoMode){
 
@@ -121,8 +133,14 @@ public class Robot extends TimedRobot {
       break;
 
       case SIMPLE_SHOOT:
-      if (runShooterControl() != SMShooting.INIT ){
-        runShooterControl();
+      if (runSimpleShooter() != SMShooting.INIT ){
+        runSimpleShooter();
+      }
+      break;
+
+      case SMART_SHOOT:
+      if (runSmartShooter() != SMShooting.INIT ){
+        runSmartShooter();
       }
       break;
 
@@ -166,10 +184,8 @@ public class Robot extends TimedRobot {
 
   public SMShooting currentShooterState = SMShooting.INIT;
 
-  public SMShooting runShooterControl(){
-    fuelSystem.updateVariables();
-    fuelSystem.show();
-
+  public SMShooting runSimpleShooter(){
+    
     switch (currentShooterState){
       case INIT:
         //check for time to shoot
@@ -221,11 +237,76 @@ public class Robot extends TimedRobot {
     }
     return currentShooterState;
   }
+  //////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
+
+  public SMShooting runSmartShooter(){
+    
+    switch (currentShooterState){
+      case INIT:
+        //check for time to shoot
+        if (shootNow){
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
+          shootNow = false;
+          currentShooterState = SMShooting.GETTING_READY;
+        }
+        break;
+
+      case GETTING_READY:
+        //check ready to shoot
+        if (turretVision.targetVisible){
+          fuelSystem.setRPMBasedOnVision();
+          fuelSystem.turnTurretToVisionTarget();
+        } else {
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
+        }
+        if(fuelSystem.readyToShoot){
+          fuelSystem.runTransfer(.9, .9);
+          currentShooterState = SMShooting.SHOOTING;
+        } else {
+          //turns on transfer if uper ball is not detected. 
+          if(!fuelSystem.upperBallDetected){
+            fuelSystem.runTransfer(.9, .9);
+          } else {
+            fuelSystem.runTransfer(0, 0);
+          }
+        }
+        break;
+
+      case SHOOTING:
+        //check if we have shot desired shots
+        if (turretVision.targetVisible){
+          fuelSystem.setRPMBasedOnVision();
+          fuelSystem.turnTurretToVisionTarget();
+        } else {
+          fuelSystem.setShooterRPM(4000);
+          fuelSystem.turnTurretTo(0);
+        }
+
+        if (fuelSystem.ballsFired >= shotsWanted){
+          fuelSystem.setShooterRPM(0);
+          fuelSystem.runTransfer(0, 0);
+          fuelSystem.setShooterSpeed(0);
+          currentShooterState = SMShooting.INIT;
+        }else{
+          
+          if (fuelSystem.correctRPM){
+            fuelSystem.runTransfer(.9, .9);
+          } else {
+            fuelSystem.runTransfer(0, 0);
+          }
+        }
+        break;
+       
+    }
+    return currentShooterState;
+  }
 
 
   private void simpleShoot(int shots){
-    shootNow =true;
-    shotsWanted = shots;
+  
     
    
   }

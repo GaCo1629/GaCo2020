@@ -644,13 +644,13 @@ public class FuelSystem extends Subsystem {
 
     if(turretVision.targetVisible && visionEnabled){
         if(autoRPMEnabled){
-          setShooterRPM(getShooterRPM(turretVision.getDistanceFromTarget()) + automatedShooterRPMModifier);
+         setRPMBasedOnVision();
         } else {
           shooterOnRPM();
         }
 
         if(autoTurretEnabled) {
-          turnTurretTo(turretHeading + turretVision.x);
+          turnTurretToVisionTarget();
         } else {
           turnTurretPID();
         }
@@ -659,6 +659,14 @@ public class FuelSystem extends Subsystem {
       turnTurretPID();
       shooterOnRPM();
     }
+  }
+  
+  public void setRPMBasedOnVision(){
+    setShooterRPM(getShooterRPM(turretVision.getDistanceFromTarget()) + automatedShooterRPMModifier);
+  }
+
+  public void turnTurretToVisionTarget(){
+    turnTurretTo(turretHeading + turretVision.x);
   }
 
   public void turnOffVision(){
