@@ -253,9 +253,7 @@ public class DriveTrain extends Subsystem{
     }
   }
 
-  public void setPowerLevels(double axialPower, double yawPower){
-    
-  }
+ 
   // =============================================================
   // Auto METHODS
   // =============================================================
