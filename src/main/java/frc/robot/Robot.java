@@ -71,11 +71,13 @@ public class Robot extends TimedRobot {
   }
   
   @Override
-  public void robotPeriodic(){
+  public void robotPeriodic(){    
+    
+    // Do all system wide monitoring here
+    controller.readInputs();
     turretVision.updateTarget();
-
-    fuelSystem.updateVariables();
     driveTrain.readSensors();
+    fuelSystem.updateVariables();
     climber.updateValues();
 
     driveTrain.show();
@@ -86,12 +88,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    driveTrain.autonomousInit();
     fuelSystem.autonomousInit();
-    driveTrain.autonomousInit();
     colorWheel.autonomousInit();
-    driveTrain.autonomousInit();
-    fuelSystem.setTurretHeading(90);
 
+    // Determine the desired Autonomous Action
     selAutoMode = autoMode.getSelected();
     currentShooterState = SMShooting.INIT;
 
@@ -115,16 +116,11 @@ public class Robot extends TimedRobot {
       shootNow =true;
       shotsWanted = 2;
       break;
-
     }
- 
   }
 
   @Override
   public void autonomousPeriodic() {
-    fuelSystem.updateVariables();
-    fuelSystem.show();
-
     
     switch (selAutoMode){
 
@@ -149,15 +145,14 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    super.teleopInit();
-    driveTrain.setHeading(0);
-    fuelSystem.setTurretHeading(0);
+    driveTrain.teleopInit();
+    fuelSystem.teleopInit();
+    colorWheel.teleopInit();
+    climber.teleopInit();
   }
 
   @Override
   public void teleopPeriodic() {
-    controller.readInputs();
-    
     driveTrain.teleopPeriodic();
     fuelSystem.teleopPeriodic();
     colorWheel.teleopPeriodic();

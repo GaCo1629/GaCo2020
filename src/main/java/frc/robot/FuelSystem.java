@@ -29,19 +29,10 @@ collector right 0,1
 
 public class FuelSystem extends Subsystem {
 
-  public boolean correctRPM           = false;
-  public boolean correctTurretHeading = false;
-  public boolean validDistance        = false;
-  public boolean readyToShoot         = false;
-
-  private Controller controller;
-
-  private boolean visionEnabled     = true;
-  private boolean autoTurretEnabled = true;
-  private boolean autoRPMEnabled    = true;
-
+  // Subsystem Objects
   private Vision     turretVision;
   private DriveTrain driveTrain;
+  private Controller controller;
 
   private VictorSP lowerTransfer;
   private VictorSP upperTransfer;
@@ -59,16 +50,16 @@ public class FuelSystem extends Subsystem {
   private DigitalInput lowerBallDetector;
   private DigitalInput upperBallDetector;
 
-  private boolean lastUpperBallDetectorState = true;
-  private boolean lastLowerBallDetectorState = true;
+  private Timer collectorTimer = new Timer();  
+  private Timer indexingTimer = new Timer();  
 
-  public boolean upperBallDetected     = true;
-  public boolean lowerBallDetected     = true;
-  public int ballsFired                = 0;
+   //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
+  PIDController shooterPID = new PIDController(.0004,.000001,.0002,5400,200, 0, false, "Shooter");
+  PIDController turretPID  = new PIDController(.04, .001, 0, 0, 10, .05, false, "Turret"); 
 
+  // Subsystem Constants ========================================================================
 
   private final double COLLECTOR_SPEED = 1.0;
-
   private final double TURRET_REVS_PER_DEGREE   = 1.27866;
   private final double MIN_DISTANCE_TO_TARGET   = 10;
   private final double MAX_DISTANCE_TO_TARGET   = 40;
@@ -88,39 +79,89 @@ public class FuelSystem extends Subsystem {
   private static final int U_TRANSFER_ID = 3;
   private static final int L_TRANSFER_ID = 2;
 
-  private double targetSpeedRPM     = 0;
-  private double shooterRPM         = 0;
-  private double automatedShooterRPMModifier = 0;
+  // Subsystem Variables
 
-  private double turretHeading         = 0;
-  private double targetTurretHeading   = 0;
-  private double turretHeadingModifier = 0;
-  public double ballsInIndex          = 0;
+  private boolean visionEnabled;
+  private boolean autoTurretEnabled;
+  private boolean autoRPMEnabled;
 
-  private boolean prepairToFireFlag   = false;
-  private boolean fireOneFlag         = false;
+  public boolean correctRPM;
+  public boolean correctTurretHeading;
+  public boolean validDistance;
+  public boolean readyToShoot;
+  public boolean upperBallDetected;
+  public boolean lowerBallDetected;
+  public double  ballsInIndex;
+  public int     ballsFired;
 
-  private boolean runCollector        = false;
-  private boolean reverseCollector    = false;
-  private boolean collectorIsRunning  = false;
-  private boolean fire                = false;
+  private boolean lastUpperBallDetectorState;
+  private boolean lastLowerBallDetectorState;
 
-  private double shooterMotorPower = 0;
+  private double targetSpeedRPM;
+  private double shooterRPM;
+  private double automatedShooterRPMModifier;
 
+  private double turretHeading;
+  private double targetTurretHeading;
+  private double turretHeadingModifier;
+ 
+  private boolean prepairToFireFlag;
+  private boolean fireOneFlag;
+
+  private boolean runCollector;
+  private boolean reverseCollector;
+  private boolean collectorIsRunning;
+  private boolean fire;
+
+  private double shooterMotorPower;
   private double tempRPM;
-
-  private Timer collectorTimer = new Timer();  
-  private Timer indexingTimer = new Timer();  
-
-
-  //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
-  PIDController shooterPID = new PIDController(.0004,.000001,.0002,5400,200, 0, false, "Shooter");
-  PIDController turretPID  = new PIDController(.04, .001, 0, 0, 10, .05, false, "Turret");
 
   //constructor
   public FuelSystem () {
   }
 
+  private void initializeAllMembersToSafeValues() {
+    // Subsystem Variables
+    visionEnabled            = false;
+    autoTurretEnabled        = false;
+    autoRPMEnabled           = false;
+
+    correctRPM               = false;
+    correctTurretHeading     = false;
+    validDistance            = false;
+    readyToShoot             = false;
+    upperBallDetected        = false;
+    lowerBallDetected        = false;
+    ballsInIndex             = 0;
+    ballsFired               = 0;
+
+    lastUpperBallDetectorState = false;
+    lastLowerBallDetectorState = false;
+
+    targetSpeedRPM          = 0;
+    shooterRPM              = 0;
+    automatedShooterRPMModifier = 0;
+
+    turretHeading           = 0;
+    targetTurretHeading     = 0;
+    turretHeadingModifier   = 0;
+  
+    prepairToFireFlag       = false;
+    fireOneFlag             = false;
+
+    runCollector            = false;
+    reverseCollector        = false;
+    collectorIsRunning      = false;
+    fire                    = false;
+
+    shooterMotorPower       = 0;
+    tempRPM                 = 0 ;
+
+    setTurretPower(0);
+    stopCollector(); 
+    runTransfer(0,0);
+    setShooterSpeed(0);
+  }
  
   //initalize fuel system 
   public void init(Controller controller, Vision turretVision, DriveTrain driveTrain){
@@ -136,8 +177,6 @@ public class FuelSystem extends Subsystem {
     leftShooter.restoreFactoryDefaults();
     rightShooter.restoreFactoryDefaults();
     
-    //leftShooter.Config();
-    // rightShooter.Config();
     //invert left motor so that positive values shoots the balls out 
     leftShooter.setInverted(true);
       
@@ -158,29 +197,15 @@ public class FuelSystem extends Subsystem {
     turret.setInverted(true);
 
     lowerCollector = new DoubleSolenoid(1,1,0);
-
-    //reset turret heading variables
-    turretHeading       = 0;
-    targetTurretHeading = 0;
-    ballsFired          = 0;
-
-
-    //reset shooter RPM variables
-    shooterRPM          = 0;
-    targetSpeedRPM      = 2300;
-    autoTurretEnabled   = true;
-    autoRPMEnabled      = true;
-    fire                = false;
-
     lowerCollector.set(DoubleSolenoid.Value.kReverse);
 
-    readyToShoot = false;
-
-    collectorTimer.start();    
-    indexingTimer.start();
-
+    collectorTimer.start();  
     collectorTimer.reset();
+
+    indexingTimer.start();
     indexingTimer.reset();
+
+    initializeAllMembersToSafeValues();
   }
 
   public void robotPeriodic(){
@@ -189,20 +214,13 @@ public class FuelSystem extends Subsystem {
 
   @Override
   public void autonomousInit() {
-    correctRPM           = false;
-    correctTurretHeading = false;
-    validDistance        = false;
-    readyToShoot         = false;
-    ballsFired =0;
+    initializeAllMembersToSafeValues();
+    setTurretHeading(90);  // Auto always starts with shooter off to right side
   }
   
   @Override
   public void teleopInit() {
-    correctRPM           = false;
-    correctTurretHeading = false;
-    validDistance        = false;
-    readyToShoot         = false;
-    ballsFired = 0;
+    initializeAllMembersToSafeValues();
   }
 
   
