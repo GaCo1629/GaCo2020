@@ -103,7 +103,6 @@ public class FuelSystem extends Subsystem {
 
   private double turretHeading;
   private double targetTurretHeading;
-  private double turretHeadingModifier;
  
   private boolean prepairToFireFlag;
   private boolean fireOneFlag;
@@ -144,7 +143,6 @@ public class FuelSystem extends Subsystem {
 
     turretHeading           = 0;
     targetTurretHeading     = 0;
-    turretHeadingModifier   = 0;
   
     prepairToFireFlag       = false;
     fireOneFlag             = false;
@@ -246,16 +244,19 @@ public class FuelSystem extends Subsystem {
   //sets the shooter to the correct spid based on target or min or max
   public void setShooterRPM(double targetRPM){
 
-    if(targetRPM > MAX_SHOOTER_RPM){
+    if(targetSpeedRPM == 0){
+      targetSpeedRPM = 0;
+    }else if(targetRPM > MAX_SHOOTER_RPM){
       targetRPM = MAX_SHOOTER_RPM;
-    }
-
-    if(targetRPM < MIN_SHOOTER_RPM){
+    }else if(targetRPM < MIN_SHOOTER_RPM){
       targetRPM = MIN_SHOOTER_RPM;
     }
 
     targetSpeedRPM = targetRPM;
     shooterMotorPower = shooterPID.run(shooterRPM, targetRPM);
+    if(shooterMotorPower < 0){
+      shooterMotorPower = 0;
+    }
     setShooterSpeed(shooterMotorPower);  // SLOPPY CODE.  Call twice??
     
   }
@@ -291,7 +292,7 @@ public class FuelSystem extends Subsystem {
 
   public void updateVariables(){
     shooterRPM = shooterEncoder.getVelocity();
-    turretHeading = (turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE) + turretHeadingModifier;
+    turretHeading = (turretEncoder.getPosition()/TURRET_REVS_PER_DEGREE);
     lastLowerBallDetectorState = lowerBallDetected;
     lastUpperBallDetectorState = upperBallDetected;
 
@@ -350,10 +351,9 @@ public class FuelSystem extends Subsystem {
   }
 
   public void setTurretHeading(double newHeading){
-    turretEncoder.setPosition(0);
+    turretEncoder.setPosition(newHeading / TURRET_REVS_PER_DEGREE);
     turretHeading         = newHeading;
     targetTurretHeading   = newHeading;
-    turretHeadingModifier = newHeading;
   }
 
   //turn turret

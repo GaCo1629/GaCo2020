@@ -34,6 +34,7 @@ public class Controller{
     public boolean collectorUp                     = false;
     public boolean collectorDown                   = false;
     public boolean toggleAutoVision                = false;
+    public boolean setShooterRPM0                  = false;
     public boolean setShooterRPM3400               = false;
     public boolean setShooterRPM3800               = false;
     public boolean setShooterRPM4200               = false;
@@ -97,6 +98,7 @@ public class Controller{
         collectorUp                     = false;
         collectorDown                   = false;
         toggleAutoVision                = false;
+        setShooterRPM0                  = false;
         setShooterRPM3400               = false;
         setShooterRPM3800               = false;
         setShooterRPM4200               = false;
@@ -313,7 +315,7 @@ public class Controller{
             }
 
             if(minion.y()){
-                
+                setShooterRPM0 = true;
             }
 
             if(minion.rightTrigger() && !lastMinionRightTrigger){
