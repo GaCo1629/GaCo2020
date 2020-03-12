@@ -97,11 +97,14 @@ public class Vision {
         targetWidth = MAX_WIDTH;
       }
   
+      // Determine range from Width data.
       range = 106 + 
               (-1.52 * targetWidth) +
               ( 0.0103 * Math.pow(targetWidth, 2)) +
               -0.000033 * Math.pow(targetWidth, 3) + 
               0.0000000406 * Math.pow(targetWidth, 4);
+
+      range -= 1;  // Observed correction factor (phil)
     
       //Smart Dashboard Display
       SmartDashboard.putNumber("LimelightX", x);
