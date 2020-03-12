@@ -163,7 +163,7 @@ public class Auto extends Subsystem {
       case GETTING_READY:
         //check ready to shoot
         if(fuelSystem.correctRPM && fuelSystem.correctTurretHeading){
-          fuelSystem.runTransfer(.9, .9);
+          fuelSystem.runTransfer(.7, .7);
           currentShooterState = SMShooting.SHOOTING;
         }else{
           fuelSystem.setShooterRPM(4000);
@@ -171,7 +171,7 @@ public class Auto extends Subsystem {
 
           //turns on transfer if uper ball is not detected. 
           if(!fuelSystem.upperBallDetected){
-            fuelSystem.runTransfer(.9, .9);
+            fuelSystem.runTransfer(.7, .7);
           } else {
             fuelSystem.runTransfer(0, 0);
           }
@@ -197,7 +197,7 @@ public class Auto extends Subsystem {
           fuelSystem.turnTurretTo(0);
           fuelSystem.setTurretPower(0);
           if (fuelSystem.correctRPM){
-            fuelSystem.runTransfer(.9, .9);
+            fuelSystem.runTransfer(.7, .7);
           } else {
             fuelSystem.runTransfer(0, 0);
           }
@@ -209,7 +209,7 @@ public class Auto extends Subsystem {
             driveTrain.moveRobot(0,0);
             currentShooterState = SMShooting.INIT;
           } else {
-            driveTrain.moveRobot(0.4*Math.signum(selDistance) , 0);   
+            driveTrain.moveRobot(0.3 * Math.signum(selDistance) , 0);   
           }
 
         break;
@@ -293,7 +293,7 @@ public class Auto extends Subsystem {
           driveTrain.moveRobot(0,0);
           currentShooterState = SMShooting.INIT;
         } else {
-          driveTrain.moveRobot(0.4*Math.signum(selDistance) , 0);   
+          driveTrain.moveRobot(0.3 * Math.signum(selDistance) , 0);   
         }
 
         break;
