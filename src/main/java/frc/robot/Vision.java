@@ -88,7 +88,7 @@ public class Vision {
       double targetWidth = width;
 
       if (limelightIsZoomed) {
-        targetWidth /= 2;
+        targetWidth *= 1.5;
       }
   
       if (targetWidth <= MIN_WIDTH) {

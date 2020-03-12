@@ -141,8 +141,7 @@ public class FuelSystem extends Subsystem {
     shooterRPM              = 0;
     automatedShooterRPMModifier = 0;
 
-    turretHeading           = 0;
-    targetTurretHeading     = 0;
+    targetTurretHeading     = getTurretHeading();
   
     prepairToFireFlag       = false;
     fireOneFlag             = false;
@@ -244,8 +243,8 @@ public class FuelSystem extends Subsystem {
   //sets the shooter to the correct spid based on target or min or max
   public void setShooterRPM(double targetRPM){
 
-    if(targetSpeedRPM == 0){
-      targetSpeedRPM = 0;
+    if(targetRPM == 0){
+      targetRPM = 0;
     }else if(targetRPM > MAX_SHOOTER_RPM){
       targetRPM = MAX_SHOOTER_RPM;
     }else if(targetRPM < MIN_SHOOTER_RPM){
@@ -351,7 +350,7 @@ public class FuelSystem extends Subsystem {
   }
 
   public void setTurretHeading(double newHeading){
-    turretEncoder.setPosition(newHeading / TURRET_REVS_PER_DEGREE);
+    turretEncoder.setPosition(newHeading * TURRET_REVS_PER_DEGREE);
     turretHeading         = newHeading;
     targetTurretHeading   = newHeading;
   }
@@ -449,6 +448,10 @@ public class FuelSystem extends Subsystem {
     
     if (controller.shooterRPMPlus100) {
       targetSpeedRPM +=  100;
+    }
+
+    if(controller.setShooterRPM0){
+      targetSpeedRPM = 0;
     }
       
     if (targetSpeedRPM > 6200 ){
