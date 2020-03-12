@@ -78,6 +78,7 @@ public class Auto extends Subsystem {
         selDelayTime = delayTime.getSelected();
         currentShooterState = SMShooting.INIT;
         driveTime.start();
+        driveTime.reset();
 
         //selNumBalls = numBalls.getSelected();
         fuelSystem.setBallsInRobot(3);
@@ -91,13 +92,13 @@ public class Auto extends Subsystem {
         case SIMPLE_SHOOT:
         SmartDashboard.putString("selAutoMode", "simple shoot selected");
         shootNow =true;
-        shotsWanted = 2;
+        shotsWanted = 3;
         break;
 
         case SMART_SHOOT:
         SmartDashboard.putString("selAutoMode", "smart shoot selected");
         shootNow =true;
-        shotsWanted = 2;
+        shotsWanted = 3;
         break;
         }
     }
@@ -149,8 +150,9 @@ public class Auto extends Subsystem {
     
     switch (currentShooterState){
       case INIT:
+
         //check for time to shoot
-        if (shootNow){
+        if (shootNow && (driveTime.get() >= selDelayTime)){
           fuelSystem.setShooterRPM(4000);
           fuelSystem.turnTurretTo(0);
           shootNow = false;
@@ -224,7 +226,7 @@ public class Auto extends Subsystem {
     switch (currentShooterState){
       case INIT:
         //check for time to shoot
-        if (shootNow){
+        if (shootNow && (driveTime.get() >= selDelayTime)){
           fuelSystem.setShooterRPM(4000);
           fuelSystem.turnTurretTo(0);
           shootNow = false;
