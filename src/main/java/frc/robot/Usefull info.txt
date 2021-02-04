@@ -3,6 +3,7 @@ http://devsite.ctr-electronics.com/maven/release/com/ctre/phoenix/Phoenix-latest
 https://www.kauailabs.com/dist/frc/2020/navx_frc.json
 http://revrobotics.com/content/sw/color-sensor-v3/sdk/REVColorSensorV3.json
 
+***|Set the switch on the back of the logitech 310 controller to X|***
 CONTROLS
 FuelSystem :
     Pilot
