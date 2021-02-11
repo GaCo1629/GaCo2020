@@ -1,10 +1,9 @@
 Programming Sub-Team To-Do List:  
 
 Date:       Description
-2/11/2021   Add reset Gyro Button (Left Bumper Minion Modded)
+2/11/2021   $Add reset Gyro Button (Left Bumper Minion Modded)
             Add disable auto turret
             Troubleshoot Climber
-            
 
 
 

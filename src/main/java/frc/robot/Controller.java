@@ -129,6 +129,7 @@ public class Controller{
         manualClimberDown               = false;
         homeClimber                     = false;
     
+        
         resetRobotHeading               = false;
         powerMode                       = false;
         slowMode                        = false;
@@ -210,6 +211,10 @@ public class Controller{
   
         if(pilot.rightStick()){
   
+        }
+
+        if(pilot.start_button() && pilot.back_button()){
+            resetRobotHeading = true;
         }
   
         // =============================================================

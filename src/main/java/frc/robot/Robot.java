@@ -4,10 +4,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.NumBalls;
-import frc.robot.AutoMode;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
 /**
  * This is a demo program showing the use of the RobotDrive class, specifically

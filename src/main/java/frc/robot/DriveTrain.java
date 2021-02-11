@@ -72,7 +72,6 @@ public class DriveTrain extends Subsystem{
   private final double GYRO_SCALE                           = 1.00;
   private final double HEADING_GAIN                         = 0.05; //tweak this value to increase or decreasu auto correct power
   private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.85; // was.75
-  private final double DEGREES_TOLERANCE                    = 1.5;
 
   //encoder inches per tic
   private final double INCHES_PER_AXIAL_REV = 0.39671806;
@@ -100,7 +99,6 @@ public class DriveTrain extends Subsystem{
   private double lastTime                  = 0;
   private double targetHeading             = 0;
   private boolean autoHeading              = false;
-  private double requiredHeadingCorrection = 0;
   private double robotHeadingModifier      = 0;
   private boolean turning                  = false; 
     
@@ -128,16 +126,14 @@ public class DriveTrain extends Subsystem{
   public double maxDriveCurrent = 0;
   public double yawDegrees = 0;
 
-  //  Driving variables
-  private double driveAxial;      // Power for fwd/rev driving
-  private double driveYaw;        // Power for rotating
-
   double LF1  = 0;
   double RF1  = 0;
   
   private final double MIN_HEADING_ERROR = 3;
   private final double MAX_YAW_POWER = 0.5;  // was .5
-  private final double VRAMP = 0.03;  //  full speed in 33 inches was .024
+  
+  //Used in getPowerProfile()
+  //private final double VRAMP = 0.03;  //  full speed in 33 inches was .024
 
   public final double  SAFE_POWER           =  1.0; //was .9
 
@@ -209,7 +205,6 @@ public class DriveTrain extends Subsystem{
     //reset all gyro and auto heading variables
     turning                   = false;
     autoHeading               = false;
-    requiredHeadingCorrection = 0;
     robotHeadingModifier      = 0;
     timer.reset();
   }
@@ -218,7 +213,6 @@ public class DriveTrain extends Subsystem{
   public void autonomousInit() {
     turning                   = false;
     autoHeading               = false;
-    requiredHeadingCorrection = 0;
     robotHeadingModifier      = 0;
     timer.reset();      
     super.autonomousInit();
@@ -400,13 +394,14 @@ public class DriveTrain extends Subsystem{
   }
   
   //turns to the correct angle
+  //not currently used
   public void turnToHeading(double heading, double timeout) {
     double endTime = timer.get() + timeout;
 
     while (/*Subsystem.isEnabled() &&*/  (timer.get() <= endTime)) {
 
       readSensors(); 
-      driveRobot(0.0, getYawPower(heading));
+      moveRobot(0.0, getYawPower(heading));
 
       // exit loop if we are close enough
       if (Math.abs(heading - getHeading()) <= MIN_HEADING_ERROR)
@@ -416,25 +411,11 @@ public class DriveTrain extends Subsystem{
   }
   
   public void stopRobot() {
-    driveRobot(0,0);
+    moveRobot(0,0);
     headingLock = getHeading();
   }
 
   
-  // applies the desired power to the wheels.
-  public void driveRobot(double ax,  double yaw) {
-    driveAxial = ax;
-    driveYaw = yaw;
-    driveRobot();
-  }
-   
-  public void driveRobot() {
-    driveRobot(0);
-  }
-
-  public void driveRobot(double gyroHeading) {
-    //robot.driveTank(driveAxial, driveYaw, gyroHeading);
-  }
 
   //calculate yaw power based on disired heading
   private double getYawPower(double desired) {
@@ -488,40 +469,10 @@ public class DriveTrain extends Subsystem{
 
       return heading;
   }
-  // Drive a distance in a direction, while rotating robot to finalHeading.
-  public  boolean driveVector(double vectorDistance, double maxSpeed, double direction, double finalHeading, double timeout){
-    double endTime = timer.get() + timeout;
-    double vectorPower = 0;
 
-    //limit speed for now
-    maxSpeed *= SAFE_POWER;
-
-
-    resetMotion(); //remember where we started
-    while (/*myRobot.isEnabled() &&*/ (timer.get() <= endTime)) {
-
-    //  periodic();  // get latest robot data
-
-      driveYaw = clip(getYawPower(finalHeading), 0.2);  // slow turn rate
-      vectorPower = getPowerProfile(vectorDistance, maxSpeed, vectorInches, VRAMP);
-      
-      driveAxial = vectorPower * Math.cos(direction * (Math.PI / 180.0));
-
-      driveRobot(-currentHeading);
-      
-      if(vectorPower == 0){
-        break;
-      }
-    }
-
-    // Stop the robot
-    stopRobot();
-
-    return (timer.get() <= endTime);  // return true if we reached the target before timing out
-  }
 
   // adjust power to provide smooth acc/decell curves
-  private double getPowerProfile(double dTotal, double pTop, double dMotion, double vRamp) {
+  /*private double getPowerProfile(double dTotal, double pTop, double dMotion, double vRamp) {
     double sign = Math.signum(dTotal);
     double dAcc = pTop / VRAMP;
     double udTotal = Math.abs(dTotal);
@@ -547,6 +498,6 @@ public class DriveTrain extends Subsystem{
     reqPower = clip(reqPower, pTop);
 
     return (reqPower * sign);
-  }
+  }*/
   
 }

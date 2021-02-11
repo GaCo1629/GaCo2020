@@ -36,6 +36,9 @@ public class GaCoDrive{
     final int L3 = 9;
     final int R3 = 10;
 
+    final int START = 11;
+    final int BACK = 12;
+
     private boolean isLogitech;
 
     //constructor
@@ -188,6 +191,13 @@ public class GaCoDrive{
     public boolean r3(){
         return stick.getRawButton(R3);
     }
+
+    public boolean start_button(){
+        return stick.getRawButton(START);
+    }
     
+    public boolean back_button(){
+        return stick.getRawButton(BACK);
+    }
     
 }

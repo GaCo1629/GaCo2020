@@ -66,8 +66,6 @@ public class FuelSystem extends Subsystem {
   private final double MAX_SHOOTER_RPM          = 5700;
   private final double MIN_SHOOTER_RPM          = 2000;
   private final double MAX_TURRET_ANGLE         = 100;
-  private final double TURRET_PROPORTIONAL_GAIN = .002;
-  private final double TURRET_INTEGRAL_GAIN     = 0;
   
   private final double SHOOTER_RPM_TOLERANCE    = 50;
   private final double TURRET_DEGREE_TOLERANCE  = .5;
@@ -299,7 +297,7 @@ public class FuelSystem extends Subsystem {
       autoTurretEnabled = false;
     }
 
-    if(controller.setShooterRPM3400 || controller.setShooterRPM3800 || controller.setShooterRPM4200 || controller.setShooterRPM4600 || controller.longRangeShooterDefult || controller.shooterRPMMinus100 || controller.shooterRPMPlus100){
+    if(controller.setShooterRPM0 || controller.setShooterRPM3400 || controller.setShooterRPM3800 || controller.setShooterRPM4200 || controller.setShooterRPM4600 || controller.longRangeShooterDefult || controller.shooterRPMMinus100 || controller.shooterRPMPlus100){
       autoRPMEnabled = false;
     }
 
@@ -568,12 +566,12 @@ public class FuelSystem extends Subsystem {
   }
 
   public void toggleVision(){
-    if(!autoTurretEnabled || !autoRPMEnabled){
-      autoTurretEnabled = true;
-      autoRPMEnabled    = true;
-    } else {
+    if((autoTurretEnabled && autoRPMEnabled)){
       autoTurretEnabled = false;
       autoRPMEnabled    = false;
+    } else {
+      autoTurretEnabled = true;
+      autoRPMEnabled    = true;
     }
   }
 
