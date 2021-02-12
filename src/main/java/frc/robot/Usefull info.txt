@@ -1,10 +1,14 @@
 Programming Sub-Team To-Do List:  
 
 Date:       Description
-2/11/2021   $Add reset Gyro Button (Left Bumper Minion Modded)
-            Add disable auto turret
-            Troubleshoot Climber
-
+2/04/2021   Troubleshoot Climber
+2/11/2021   Add basic Auto move methods.  
+                Drive for time at heading, 
+                Drive for distance at heading, 
+                Turn to heading,
+                Hold Heading,
+                Sweeping Turn,
+                More.....
 
 
 https://www.revrobotics.com/content/sw/max/sdk/REVRobotics.json
