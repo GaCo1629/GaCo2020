@@ -12,7 +12,7 @@ import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import java.util.*;
 
 public class DriveTrain extends Subsystem{
 
@@ -115,6 +115,9 @@ public class DriveTrain extends Subsystem{
   public Point robotLocation = new Point(0,0,0);
   private double turretHeadingFieldCentric;
 
+    // Autonomous variables
+  private List<Step> path;
+
     //  General Variables
   public boolean targetLocked; //
   public double currentHeading;  // Current Gyro heading
@@ -132,6 +135,8 @@ public class DriveTrain extends Subsystem{
   private final double MIN_HEADING_ERROR = 3;
   private final double MAX_YAW_POWER = 0.5;  // was .5
   
+
+
   //Used in getPowerProfile()
   //private final double VRAMP = 0.03;  //  full speed in 33 inches was .024
 
@@ -251,7 +256,15 @@ public class DriveTrain extends Subsystem{
   // =============================================================
   // Auto METHODS
   // =============================================================
+  //Will work eventually
+  @Override
+  public void autonomousPeriodic(){
+    //This is where we will follow the path
+  }
 
+  public void setPath(List<Step> initPath){
+   path = initPath;
+  }
   
   // =============================================================
   //  GENERAL DRIVE METHODS

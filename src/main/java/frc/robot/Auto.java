@@ -7,7 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.Timer;
-
+import java.util.*;
 
 public class Auto extends Subsystem {
 
@@ -27,7 +27,7 @@ public class Auto extends Subsystem {
     private SendableChooser <Integer> distance = new SendableChooser<>();
     private SendableChooser <Integer> delayTime = new SendableChooser<>();
 
-
+    private List <Step> path = new ArrayList<>();
 
     public void init(DriveTrain driveTrain, FuelSystem fuelSystem, Vision turretVision){
         this.driveTrain = driveTrain;
@@ -100,9 +100,21 @@ public class Auto extends Subsystem {
         shootNow =true;
         shotsWanted = 3;
         break;
-        }
-    }
 
+      case DRIVE_PATH:
+      //(StepMode initMode, double initSpeed, double initDistance, double initHeading, double initTimeout){
+          path.add(new Step(StepMode.STRAIGHT, 1.0, 1.0, 0.0, 5.0));
+          path.add(new Step(StepMode.PIVOT, 1.0, 0, 90.0, 5.0));
+          path.add(new Step(StepMode.STOP, 0, 0, 0, 3.0));
+          
+        break; 
+
+      default:
+        break;
+        }
+        driveTrain.setPath(path);
+    }
+    
     @Override
     public void autonomousPeriodic(){
         switch (selAutoMode){
