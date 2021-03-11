@@ -116,7 +116,11 @@ public class DriveTrain extends Subsystem{
   private double turretHeadingFieldCentric;
 
     // Autonomous variables
-  private List<Step> path;
+  private ArrayList<Step> path  = null;
+  private boolean followingPath = false;
+  private int currentIndex      = 0;
+  private Timer stepTime;
+
 
     //  General Variables
   public boolean targetLocked; //
@@ -199,6 +203,10 @@ public class DriveTrain extends Subsystem{
     //start timer thats used to adjust axial inputs
     timer = new Timer();
     timer.start();
+
+    //start timer thats used to monitor step progress
+    stepTime = new Timer();
+    stepTime.start();
   }
 
   // =============================================================
@@ -219,6 +227,9 @@ public class DriveTrain extends Subsystem{
     turning                   = false;
     autoHeading               = false;
     robotHeadingModifier      = 0;
+    path                      = null;
+    followingPath             = false;
+    currentIndex              = 0;
     timer.reset();      
     super.autonomousInit();
   }
@@ -260,10 +271,46 @@ public class DriveTrain extends Subsystem{
   @Override
   public void autonomousPeriodic(){
     //This is where we will follow the path
+    if (followingPath){
+      Step currentStep = path.get(currentIndex);
+      switch (currentStep.mode){
+        case STOP:
+        stopRobot();
+        nextStep();
+        break;
+
+        case STRAIGHT:
+        if (stepTime.get() >= currentStep.timeout){
+          nextStep();
+        } else {
+          limitAcceleration(currentStep.speed, 0);
+          moveRobot();
+        }
+        break;
+
+        default:
+        break;
+      }
+    }
   }
 
-  public void setPath(List<Step> initPath){
-   path = initPath;
+  //Set up path
+  public void setPath(ArrayList<Step> initPath){
+    path          = initPath;
+    followingPath = true;
+    currentIndex   = 0;
+    stepTime.reset();
+  }
+
+  //Go to next step unless at end
+  public void nextStep(){
+    if (path.size() - 1 == currentIndex){
+      followingPath = false;
+      stopRobot();
+    } else {
+      currentIndex++;
+      stepTime.reset();
+    }
   }
   
   // =============================================================
@@ -272,7 +319,7 @@ public class DriveTrain extends Subsystem{
 
   //sets heading to input value
   public void setHeading(double newHeading){
-      robotHeadingModifier -= robotHeading;
+    robotHeadingModifier -= robotHeading;
   }    
 
   //use the target heading and robot heading to modify the yaw value to continue driving strait
@@ -380,6 +427,8 @@ public class DriveTrain extends Subsystem{
       SmartDashboard.putNumber ("Left Encoder Position", leftEncoder);
       SmartDashboard.putNumber ("Right Encoder Position", rightEncoder);
       SmartDashboard.putNumber ("Heading Change RPM", getHeadingChange());
+      SmartDashboard.putBoolean("Following Path", followingPath);
+      SmartDashboard.putNumber("Current Step Index", currentIndex);
 
   }
 

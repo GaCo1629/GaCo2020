@@ -27,7 +27,7 @@ public class Auto extends Subsystem {
     private SendableChooser <Integer> distance = new SendableChooser<>();
     private SendableChooser <Integer> delayTime = new SendableChooser<>();
 
-    private List <Step> path = new ArrayList<>();
+    private ArrayList<Step> path = new ArrayList<>();
 
     public void init(DriveTrain driveTrain, FuelSystem fuelSystem, Vision turretVision){
         this.driveTrain = driveTrain;
@@ -35,11 +35,12 @@ public class Auto extends Subsystem {
         this.turretVision = turretVision;
 
         //set up autonomus options
-        autoMode.setDefaultOption("simple shoot", AutoMode.SIMPLE_SHOOT);
-        autoMode.addOption("simple shoot", AutoMode.SIMPLE_SHOOT);
-        autoMode.addOption("Smart shoot", AutoMode.SMART_SHOOT);
-        autoMode.addOption("none", AutoMode.NONE);
-        SmartDashboard.putData("auto mode", autoMode);
+        autoMode.setDefaultOption("Simple Shoot", AutoMode.SIMPLE_SHOOT);
+        autoMode.addOption("Simple Shoot", AutoMode.SIMPLE_SHOOT);
+        autoMode.addOption("Smart Shoot", AutoMode.SMART_SHOOT);
+        autoMode.addOption("Drive Path", AutoMode.DRIVE_PATH);
+        autoMode.addOption("None", AutoMode.NONE);
+        SmartDashboard.putData("Auto Mode", autoMode);
         
      
         distance.setDefaultOption("5 feet fwd", 60);
@@ -72,52 +73,52 @@ public class Auto extends Subsystem {
 
     @Override
     public void autonomousInit(){
-        // Determine the desired Autonomous Action
-        selAutoMode = autoMode.getSelected();
-        selDistance = distance.getSelected();
-        selDelayTime = delayTime.getSelected();
-        currentShooterState = SMShooting.INIT;
-        driveTime.start();
-        driveTime.reset();
+      // Determine the desired Autonomous Action
+      selAutoMode = autoMode.getSelected();
+      selDistance = distance.getSelected();
+      selDelayTime = delayTime.getSelected();
+      currentShooterState = SMShooting.INIT;
+      driveTime.start();
+      driveTime.reset();
 
-        //selNumBalls = numBalls.getSelected();
-        fuelSystem.setBallsInRobot(3);
+      //selNumBalls = numBalls.getSelected();
+      fuelSystem.setBallsInRobot(3);
 
-        switch (selAutoMode){
+      switch (selAutoMode){
 
         case NONE:
-        SmartDashboard.putString("selAutoMode", "None selecter");
-        break;
+          //SmartDashboard.putString("selAutoMode", "None selecter");
+          break;
 
         case SIMPLE_SHOOT:
-        SmartDashboard.putString("selAutoMode", "simple shoot selected");
-        shootNow =true;
-        shotsWanted = 3;
-        break;
+          /*SmartDashboard.putString("selAutoMode", "simple shoot selected");
+          shootNow =true;
+          shotsWanted = 3;*/
+          break;
 
         case SMART_SHOOT:
-        SmartDashboard.putString("selAutoMode", "smart shoot selected");
-        shootNow =true;
-        shotsWanted = 3;
-        break;
+          /*SmartDashboard.putString("selAutoMode", "smart shoot selected");
+          shootNow =true;
+          shotsWanted = 3;*/
+          break;
 
-      case DRIVE_PATH:
-      //(StepMode initMode, double initSpeed, double initDistance, double initHeading, double initTimeout){
-          path.add(new Step(StepMode.STRAIGHT, 1.0, 1.0, 0.0, 5.0));
-          path.add(new Step(StepMode.PIVOT, 1.0, 0, 90.0, 5.0));
-          path.add(new Step(StepMode.STOP, 0, 0, 0, 3.0));
-          
-        break; 
+        case DRIVE_PATH:
+          //(StepMode initMode, double initSpeed, double initDistance, double initHeading, double initTimeout){
+          path.add(new Step(StepMode.STRAIGHT, 0.25, 1.0, 0.0, 2.0));
+          //path.add(new Step(StepMode.PIVOT, 1.0, 0, 90.0, 5.0));
+          path.add(new Step(StepMode.STOP, 0, 0, 0, 0));
+          driveTrain.setPath(path); 
+          break; 
 
-      default:
-        break;
+        default:
+          break;
         }
         driveTrain.setPath(path);
     }
     
     @Override
     public void autonomousPeriodic(){
-        switch (selAutoMode){
+        /*switch (selAutoMode){
 
             case NONE:
            
@@ -135,7 +136,7 @@ public class Auto extends Subsystem {
             }
             break;
       
-          }
+          }*/
     }
     
   //=============================================================\\
