@@ -87,23 +87,24 @@ public class Auto extends Subsystem {
       switch (selAutoMode){
 
         case NONE:
-          //SmartDashboard.putString("selAutoMode", "None selecter");
+          SmartDashboard.putString("selAutoMode", "None selecter");
           break;
 
         case SIMPLE_SHOOT:
-          /*SmartDashboard.putString("selAutoMode", "simple shoot selected");
-          shootNow =true;
+          SmartDashboard.putString("selAutoMode", "simple shoot selected");
+          /*shootNow =true;
           shotsWanted = 3;*/
           break;
 
         case SMART_SHOOT:
-          /*SmartDashboard.putString("selAutoMode", "smart shoot selected");
-          shootNow =true;
+          SmartDashboard.putString("selAutoMode", "smart shoot selected");
+          /*shootNow =true;
           shotsWanted = 3;*/
           break;
 
         case DRIVE_PATH:
           //(StepMode initMode, double initSpeed, double initDistance, double initHeading, double initTimeout){
+          SmartDashboard.putString("selAutoMode", "Drive Path Selected");
           path.add(new Step(StepMode.STRAIGHT, 0.25, 1.0, 0.0, 2.0));
           //path.add(new Step(StepMode.PIVOT, 1.0, 0, 90.0, 5.0));
           path.add(new Step(StepMode.STOP, 0, 0, 0, 0));
