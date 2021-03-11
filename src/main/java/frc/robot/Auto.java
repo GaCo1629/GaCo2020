@@ -105,6 +105,7 @@ public class Auto extends Subsystem {
         case DRIVE_PATH:
           //(StepMode initMode, double initSpeed, double initDistance, double initHeading, double initTimeout){
           SmartDashboard.putString("selAutoMode", "Drive Path Selected");
+          path.clear();
           path.add(new Step(StepMode.STRAIGHT, 0.25, 1.0, 0.0, 2.0));
           //path.add(new Step(StepMode.PIVOT, 1.0, 0, 90.0, 5.0));
           path.add(new Step(StepMode.STOP, 0, 0, 0, 0));
