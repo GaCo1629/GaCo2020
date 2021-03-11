@@ -36,8 +36,8 @@ public class GaCoDrive{
     final int L3 = 9;
     final int R3 = 10;
 
-    final int START = 11;
-    final int BACK = 12;
+    final int START = 7;
+    final int BACK = 8;
 
     private boolean isLogitech;
 
