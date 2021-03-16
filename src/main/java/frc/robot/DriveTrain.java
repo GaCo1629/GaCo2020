@@ -284,6 +284,7 @@ public class DriveTrain extends Subsystem{
           nextStep();
         } else {
           limitAcceleration(currentStep.speed, 0);
+          yawDrive = headingPID.run(robotHeading, currentStep.heading);
           moveRobot();
         }
         break;
