@@ -17,7 +17,6 @@ private double integralActiveZone;
 private boolean angleWrapOn = false;
 
 private double proportional         = 0;
-private double proportionalModifier = 0;
 private double integral             = 0;
 private double derivative           = 0;
 private double feedForward          = 0;
@@ -61,9 +60,7 @@ private boolean firstTime = true;
 
         if(firstTime){
             firstTime = false;
-            if(kf != 0){
-                return target/kf;
-            }
+            return target*kf;
         }
 
         returnVal = 0;
@@ -73,17 +70,11 @@ private boolean firstTime = true;
             error = angleWrap180(error);
         }
 
-        proportional = error               * (kp + proportionalModifier);
+        proportional = error               * (kp);
         integral     = error               * ki;
         derivative   = (lastVal - current) * kd;
-        if(kf != 0){
-            feedForward  = (target/kf);
-        }
+        feedForward  = (target*kf);
 
-        //if it is moving twords the target rpm set derviative to 0
-        if(Math.abs(lastError) > Math.abs(error)){
-            derivative = 0;
-        }
 
         if(Math.abs(error) < integralActiveZone){
         runningIntegral += integral;
@@ -96,9 +87,9 @@ private boolean firstTime = true;
 
         lastVal              = current;
         lastError            = error;
-        proportionalModifier = 0;
 
-        if(Math.abs(error) < tolerance){
+        //If this is not motor speed control
+        if((kf != 0) && (Math.abs(error) < tolerance)){
             returnVal = 0;
         }
 
@@ -116,10 +107,6 @@ private boolean firstTime = true;
         }else{
             return input;
         }    
-    }
-
-    public void modifyProportional(double modifier){
-        proportionalModifier = modifier;
     }
 
     private void displayValues(){

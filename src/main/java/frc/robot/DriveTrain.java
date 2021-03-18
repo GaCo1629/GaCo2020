@@ -147,7 +147,7 @@ public class DriveTrain extends Subsystem{
   public final double  SAFE_POWER           =  1.0; //was .9
 
   //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
-  PIDController headingPID = new PIDController(.05, 0, 0, 0, 5, 1, true, "Gyro");
+  PIDController headingPID = new PIDController(.01, 0, 0, 0, 5, 1, true, "Gyro");
 
   //constructor
   public  DriveTrain () {
