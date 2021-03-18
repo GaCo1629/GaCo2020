@@ -71,7 +71,7 @@ public class DriveTrain extends Subsystem{
   //set gyro final variables
   private final double GYRO_SCALE                           = 1.00;
   private final double HEADING_GAIN                         = 0.05; //tweak this value to increase or decreasu auto correct power
-  private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.20; // was.75
+  private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.85; // was.75
 
   //encoder inches per tic
   private final double INCHES_PER_AXIAL_REV = 0.39671806;
