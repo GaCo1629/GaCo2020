@@ -57,14 +57,14 @@ public class DriveTrain extends Subsystem{
   private final int RIGHT_DRIVE_BACK_CAN_ID   = 15;
   
   //set final power levels for modifing power levels  
-  private final double AXIAL_SLOW_POWER_LEVEL    = 0.2;
+  private final double AXIAL_SLOW_POWER_LEVEL    = 0.3;
   private final double YAW_SLOW_POWER_LEVEL      = 0.2;
 
   private final double AXIAL_REGULAR_POWER_LEVEL = 0.5;
-  private final double YAW_REGULAR_POWER_LEVEL   = 0.3;
+  private final double YAW_REGULAR_POWER_LEVEL   = 0.25;
 
   private final double AXIAL_FAST_POWER_LEVEL    = 0.7;
-  private final double YAW_FAST_POWER_LEVEL      = 0.4;
+  private final double YAW_FAST_POWER_LEVEL      = 0.35;
 
 
   //set gyro final variables
@@ -224,10 +224,10 @@ public class DriveTrain extends Subsystem{
   }
 
   public void adjustPowerLevel(){
-    if (controller.powerMode){
+    if (controller.slowMode){
       axialPowerLevel = AXIAL_SLOW_POWER_LEVEL;
       yawPowerLevel   = YAW_SLOW_POWER_LEVEL;
-    } else if (controller.slowMode){
+    } else if (controller.powerMode){
       axialPowerLevel = AXIAL_FAST_POWER_LEVEL;
       yawPowerLevel   = YAW_FAST_POWER_LEVEL;
     } else {

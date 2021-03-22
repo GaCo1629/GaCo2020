@@ -145,7 +145,7 @@ public class Controller{
         }
   
         if(pilot.leftBumper()){
-            powerMode = true;
+            slowMode = true;
         }
   
         if(pilot.a()){
@@ -170,7 +170,7 @@ public class Controller{
         }
       
         if(pilot.rightBumper()){
-            slowMode = true;
+            powerMode = true;
         }
   
         if(pilot.dpadUp()){
