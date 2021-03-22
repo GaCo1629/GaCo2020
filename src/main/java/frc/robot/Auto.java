@@ -83,6 +83,7 @@ public class Auto extends Subsystem {
 
       //selNumBalls = numBalls.getSelected();
       fuelSystem.setBallsInRobot(3);
+      driveTrain.resetHeading();
 
       switch (selAutoMode){
 
@@ -115,8 +116,6 @@ public class Auto extends Subsystem {
         default:
           break;
         }
-        driveTrain.setHeading(0);
-        driveTrain.setPath(path);
     }
     
     @Override

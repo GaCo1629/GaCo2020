@@ -123,9 +123,7 @@ public class DriveTrain extends Subsystem{
 
 
     //  General Variables
-  public boolean targetLocked; //
-  public double currentHeading;  // Current Gyro heading
-  public double currentPitch;  // Current Gyro pitch.  +ve = front up
+  public boolean targetLocked;   //
   public double headingLock;     // Current locked heading (from Gyro)
   public double axialInches = 0; // used to track motion
   
@@ -238,7 +236,7 @@ public class DriveTrain extends Subsystem{
   public void teleopPeriodic(){
     
     if(controller.resetRobotHeading){
-      setHeading(0);
+      resetHeading();
     }
     
     //reduce axial and yaw joystick input according to power level
@@ -318,11 +316,6 @@ public class DriveTrain extends Subsystem{
   //  GENERAL DRIVE METHODS
   // =============================================================
 
-  //sets heading to input value
-  public void setHeading(double newHeading){
-    robotHeadingModifier -= robotHeading;
-  }    
-
   //use the target heading and robot heading to modify the yaw value to continue driving strait
   public void runHoldHeading(){
     if (Math.abs(yawDrive) > 0.05) {
@@ -351,15 +344,7 @@ public class DriveTrain extends Subsystem{
     rightEncoder = rightDriveEncoder.getPosition();
 
     //update robot heading
-    robotHeading = angleWrap180((gyro.getAngle() * GYRO_SCALE) + robotHeadingModifier);
-
-    //update robot location if limelight is visible
-    if(turretVision.targetVisible){
-      turretHeadingFieldCentric = angleWrap180(robotHeading + fuelSystem.getTurretHeading());
-      x = turretVision.getDistanceFromTarget() * Math.cos(turretHeadingFieldCentric);
-      y = turretVision.getDistanceFromTarget() * Math.sin(turretHeadingFieldCentric);
-      robotLocation.set(x, y, robotHeading);
-    }
+    robotHeading = getHeading();
   }
 
   public double getHeadingChange(){
@@ -367,6 +352,18 @@ public class DriveTrain extends Subsystem{
     return test1;
   }
 
+  //return the corrected angle of the gyro
+  public double getHeading(){
+    return  (gyro.getAngle() * GYRO_SCALE);
+  } 
+
+  //resets gyro and sets headings to zero
+  public void resetHeading() {
+  gyro.zeroYaw();
+  headingLock = 0;
+  robotHeading = 0;
+  }
+  
   public void limitAcceleration(double axial, double yaw){
     axialDrive = axial;
     yawDrive = yaw;
@@ -444,8 +441,13 @@ public class DriveTrain extends Subsystem{
       }
       return angle;
   }
+  
+  public void stopRobot() {
+    moveRobot(0,0);
+    headingLock = getHeading();
+  }
 
- 
+ /*
   ////// using code from 2018 to make auto functions\\\\\\
   public double encoderToInches( double inches){
     return inches*INCHES_PER_AXIAL_REV;
@@ -463,7 +465,7 @@ public class DriveTrain extends Subsystem{
   public void turnToHeading(double heading, double timeout) {
     double endTime = timer.get() + timeout;
 
-    while (/*Subsystem.isEnabled() &&*/  (timer.get() <= endTime)) {
+    while (.Subsystem.isEnabled() &&  (timer.get() <= endTime)) {
 
       readSensors(); 
       moveRobot(0.0, getYawPower(heading));
@@ -475,10 +477,6 @@ public class DriveTrain extends Subsystem{
     stopRobot();
   }
   
-  public void stopRobot() {
-    moveRobot(0,0);
-    headingLock = getHeading();
-  }
 
   
 
@@ -488,20 +486,7 @@ public class DriveTrain extends Subsystem{
     return (clip(output, MAX_YAW_POWER));
   }
 
-  //resets gyro and sets headings to zero
-  public void resetHeading() {
-    gyro.zeroYaw();
-    headingLock = 0;
-    currentHeading = 0;
-    resetMotion();
-  }
-
-  //return the corrected angle of the gyro
-  public double getHeading(){
-    currentHeading = gyro.getAngle() * GYRO_SCALE ;
-    return  (currentHeading);
-  }  //return the corrected angle of the gyro
-
+  
   public double lockHeading(){
     headingLock = currentHeading;
     return  (headingLock);
@@ -534,7 +519,7 @@ public class DriveTrain extends Subsystem{
 
       return heading;
   }
-
+*/
 
   // adjust power to provide smooth acc/decell curves
   /*private double getPowerProfile(double dTotal, double pTop, double dMotion, double vRamp) {
