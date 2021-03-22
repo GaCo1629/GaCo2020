@@ -30,7 +30,8 @@ public class DriveTrain extends Subsystem{
   private Vision        turretVision;
   private FuelSystem    fuelSystem;
 
-  //declaring motors
+  // Declare Hardware Interfaces
+
   //one master and two slaves per side
   private CANSparkMax leftDriveMaster;
   private CANSparkMax leftDriveFront;
@@ -43,10 +44,8 @@ public class DriveTrain extends Subsystem{
   private CANEncoder leftDriveEncoder;
   private CANEncoder rightDriveEncoder;
 
-  public double leftEncoder;
-  public double rightEncoder;
-
-  //gyro
+  private double leftEncoder;
+  private double rightEncoder;
   private AHRS gyro; 
 
   //declare motor can IDs
@@ -69,21 +68,20 @@ public class DriveTrain extends Subsystem{
 
 
   //set gyro final variables
-  private final double GYRO_SCALE                           = 1.00;
-  private final double HEADING_GAIN                         = 0.05; //tweak this value to increase or decreasu auto correct power
-  private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.85; // was.75
+  private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.9; // was.75
 
   //encoder inches per tic
   private final double INCHES_PER_AXIAL_REV = 0.39671806;
-  double lastDistanceTraveled = 0;
+
+  double  lastDistanceTraveled = 0;
   boolean robotIsMoving = false;
-  final double MAX_STOPPED_DISTANCE = 0.1; // Must move less inches in a cycle to be considered stopped.
-  double distanceTarget = 0;
+  final   double MAX_STOPPED_DISTANCE = 0.1; // Must move less inches in a cycle to be considered stopped.
+  double  distanceTarget = 0;
 	boolean distanceCorrect = true;
-	double headingTarget = 0;
+	double  headingTarget = 0;
 	boolean headingCorrect = true;
-	double drivePower = 0;
-	double timeout = 0;
+	double  drivePower = 0;
+	double  timeout = 0;
 
   //set default axial and yaw power level to the regular power level
   private double axialPowerLevel = AXIAL_REGULAR_POWER_LEVEL;
@@ -97,10 +95,10 @@ public class DriveTrain extends Subsystem{
   //declare variables for gyro and heading correction
   private Timer timer;
   private double lastTime                  = 0;
-  private double targetHeading             = 0;
-  private boolean autoHeading              = false;
-  private double robotHeadingModifier      = 0;
-  private boolean turning                  = false; 
+  private double headingLock               = 0;     // used for manual driving
+  private boolean autoHeading              = false; // enable heading hold
+  private boolean turning                  = false; // still slowing down after turn
+  private double  robotTurnRate            = 0;
     
   public final double  AXIAL_SCALE          =  0.7;
   public final double  YAW_SCALE            =  0.5;
@@ -110,21 +108,16 @@ public class DriveTrain extends Subsystem{
   public double y             = 0;
   public double robotHeading  = 0;
 
-  private double test1;
+  public Point robotLocation  = new Point(0,0,0);
 
-  public Point robotLocation = new Point(0,0,0);
-  private double turretHeadingFieldCentric;
-
-    // Autonomous variables
+  // Autonomous variables
   private ArrayList<Step> path  = null;
   private boolean followingPath = false;
   private int currentIndex      = 0;
   private Timer stepTime;
 
-
-    //  General Variables
+  //  General Variables
   public boolean targetLocked;   //
-  public double headingLock;     // Current locked heading (from Gyro)
   public double axialInches = 0; // used to track motion
   
   public double vectorInches = 0;
@@ -134,16 +127,6 @@ public class DriveTrain extends Subsystem{
   double LF1  = 0;
   double RF1  = 0;
   
-  private final double MIN_HEADING_ERROR = 3;
-  private final double MAX_YAW_POWER = 0.5;  // was .5
-  
-
-
-  //Used in getPowerProfile()
-  //private final double VRAMP = 0.03;  //  full speed in 33 inches was .024
-
-  public final double  SAFE_POWER           =  1.0; //was .9
-
   //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
   PIDController headingPID = new PIDController(.01, 0.0005, 0, 0, 3, 1, true, "Gyro");
 
@@ -216,25 +199,13 @@ public class DriveTrain extends Subsystem{
     //reset all gyro and auto heading variables
     turning                   = false;
     autoHeading               = false;
-    robotHeadingModifier      = 0;
     timer.reset();
-  }
-
-  @Override
-  public void autonomousInit() {
-    turning                   = false;
-    autoHeading               = false;
-    robotHeadingModifier      = 0;
-    path                      = null;
-    followingPath             = false;
-    currentIndex              = 0;
-    timer.reset();      
-    super.autonomousInit();
   }
 
   @Override
   public void teleopPeriodic(){
     
+    // look for manual heading reset
     if(controller.resetRobotHeading){
       resetHeading();
     }
@@ -243,8 +214,12 @@ public class DriveTrain extends Subsystem{
     adjustPowerLevel();
     axialDrive = controller.joystickForward * axialPowerLevel;
     yawDrive   = controller.joystickTurn * yawPowerLevel;
-
     limitAcceleration();
+
+    // implement heading lock if driving straight
+    runHoldHeading();
+
+    // send power commands to wheels
     moveRobot();
   }
 
@@ -261,11 +236,43 @@ public class DriveTrain extends Subsystem{
     }
   }
 
- 
+  //use the target heading and robot heading to modify the yaw value to continue driving strait
+  public void runHoldHeading(){
+    if (Math.abs(yawDrive) > 0.05) {
+      turning = true;
+      headingLock = robotHeading;
+      autoHeading = false;
+    } else {
+      // Allow the robot to stop rotating and then lock in the heading.
+      if (turning) {
+        if (Math.abs(robotTurnRate) < 2) {
+          headingLock = robotHeading;
+          turning = false;
+          autoHeading = true;
+        }
+      }
+    }
+
+    if(autoHeading){
+      yawDrive = headingPID.run(robotHeading, headingLock);
+    }
+  }
+
   // =============================================================
   // Auto METHODS
   // =============================================================
-  //Will work eventually
+  
+  @Override
+  public void autonomousInit() {
+    turning                   = false;
+    autoHeading               = false;
+    path                      = null;
+    followingPath             = false;
+    currentIndex              = 0;
+    timer.reset();    
+    resetHeading();  
+  }
+
   @Override
   public void autonomousPeriodic(){
     //This is where we will follow the path
@@ -315,29 +322,7 @@ public class DriveTrain extends Subsystem{
   // =============================================================
   //  GENERAL DRIVE METHODS
   // =============================================================
-
-  //use the target heading and robot heading to modify the yaw value to continue driving strait
-  public void runHoldHeading(){
-    if (Math.abs(yawDrive) > 0.05) {
-      turning = true;
-      targetHeading = robotHeading;
-      autoHeading = false;
-    } else {
-      // Allow the robot to stop rotating and then lock in the heading.
-      if (turning) {
-        if (Math.abs(gyro.getRawGyroZ()) < 75) {
-          targetHeading = robotHeading;
-          turning = false;
-          autoHeading = true;
-        }
-      }
-    }
-
-    if(autoHeading){
-      yawDrive = headingPID.run(robotHeading, targetHeading);
-    }
-  }
-  
+    
   public void readSensors(){
     //update drive encoders
     leftEncoder  = leftDriveEncoder.getPosition();
@@ -345,23 +330,19 @@ public class DriveTrain extends Subsystem{
 
     //update robot heading
     robotHeading = getHeading();
-  }
-
-  public double getHeadingChange(){
-    test1 = gyro.getRate()*(180/3.14);
-    return test1;
+    robotTurnRate = gyro.getRawGyroZ();
   }
 
   //return the corrected angle of the gyro
   public double getHeading(){
-    return  (gyro.getAngle() * GYRO_SCALE);
+    return  (gyro.getAngle());
   } 
 
   //resets gyro and sets headings to zero
   public void resetHeading() {
-  gyro.zeroYaw();
-  headingLock = 0;
-  robotHeading = 0;
+    gyro.zeroYaw();
+    headingLock = 0;
+    robotHeading = 0;
   }
   
   public void limitAcceleration(double axial, double yaw){
@@ -388,6 +369,11 @@ public class DriveTrain extends Subsystem{
     lastAxial = axialDrive;
   }
 
+  public void stopRobot() {
+    moveRobot(0,0);
+    headingLock = getHeading();
+  }
+
   public void moveRobot(double axial, double yaw) {
     axialDrive = axial;
     yawDrive = yaw;
@@ -396,63 +382,52 @@ public class DriveTrain extends Subsystem{
   
   public void moveRobot(){
 
-   //calculate left and right motor powers
-   double left  = axialDrive + yawDrive;
-   double right = axialDrive - yawDrive;
+    //calculate left and right motor powers
+    double left  = axialDrive + yawDrive;
+    double right = axialDrive - yawDrive;
 
-   //scale them down so that the maxium of left/right is equal to one
-   double max = Math.max(Math.abs(left), Math.abs(right));
+    //scale them down so that the maxium of left/right is equal to one
+    double max = Math.max(Math.abs(left), Math.abs(right));
 
-   if(max > 1){
-     left  /= max;
-     right /= max;
-   }
+    if(max > 1){
+      left  /= max;
+      right /= max;
+    }
 
-   //set motors to calculated values
-   leftDriveMaster.set(left);
-   rightDriveMaster.set(right);
-
+    //set motors to calculated values
+    leftDriveMaster.set(left);
+    rightDriveMaster.set(right);
   }
 
   @Override
   public void show() {
-      SmartDashboard.putNumber ("Robot X", x);
-      SmartDashboard.putNumber ("Robot Y", y);
-      SmartDashboard.putNumber ("Heading", robotHeading);
-      SmartDashboard.putNumber ("Axial", axialDrive);
-      SmartDashboard.putNumber ("Yaw", yawDrive);
-      SmartDashboard.putBoolean("Truning", turning);
-      SmartDashboard.putBoolean("Auto Heading On?", autoHeading);
-      SmartDashboard.putNumber ("Target Heading", targetHeading);
-      SmartDashboard.putNumber ("Left Encoder Position", leftEncoder);
-      SmartDashboard.putNumber ("Right Encoder Position", rightEncoder);
-      SmartDashboard.putNumber ("Heading Change RPM", getHeadingChange());
-      SmartDashboard.putBoolean("Following Path", followingPath);
-      SmartDashboard.putNumber("Current Step Index", currentIndex);
+    SmartDashboard.putNumber ("Robot X", x);
+    SmartDashboard.putNumber ("Robot Y", y);
+    SmartDashboard.putNumber ("Heading", robotHeading);
+    SmartDashboard.putNumber ("Axial", axialDrive);
+    SmartDashboard.putNumber ("Yaw", yawDrive);
+    SmartDashboard.putBoolean("Truning", turning);
+    SmartDashboard.putBoolean("Auto Heading On?", autoHeading);
+    SmartDashboard.putNumber ("Target Heading", headingLock);
+    SmartDashboard.putNumber ("Left Encoder Position", leftEncoder);
+    SmartDashboard.putNumber ("Robot Turn Rate", robotTurnRate);
+    SmartDashboard.putNumber ("Right Encoder Position", rightEncoder);
+    SmartDashboard.putBoolean("Following Path", followingPath);
+    SmartDashboard.putNumber("Current Step Index", currentIndex);
 
   }
 
   public double angleWrap180(double angle){
-      while(angle <= -180){
-          angle += 360;
-      }
-      while(angle >= 180){
-          angle -=360;
-      }
-      return angle;
+    while(angle <= -180){
+        angle += 360;
+    }
+    while(angle >= 180){
+        angle -=360;
+    }
+    return angle;
   }
   
-  public void stopRobot() {
-    moveRobot(0,0);
-    headingLock = getHeading();
-  }
-
- /*
-  ////// using code from 2018 to make auto functions\\\\\\
-  public double encoderToInches( double inches){
-    return inches*INCHES_PER_AXIAL_REV;
-  }
-
+  /*
   
   // Reset both Encoders & timer
 	void resetEncoders() {
@@ -460,65 +435,14 @@ public class DriveTrain extends Subsystem{
 		rightDriveEncoder.setPosition(0);
   }
   
-  //turns to the correct angle
-  //not currently used
-  public void turnToHeading(double heading, double timeout) {
-    double endTime = timer.get() + timeout;
-
-    while (.Subsystem.isEnabled() &&  (timer.get() <= endTime)) {
-
-      readSensors(); 
-      moveRobot(0.0, getYawPower(heading));
-
-      // exit loop if we are close enough
-      if (Math.abs(heading - getHeading()) <= MIN_HEADING_ERROR)
-        break;
-    }
-    stopRobot();
-  }
-  
-
-  
-
-  //calculate yaw power based on disired heading
-  private double getYawPower(double desired) {
-    double output = (normalizeHeading(desired - getHeading())) * HEADING_GAIN;
-    return (clip(output, MAX_YAW_POWER));
-  }
-
-  
-  public double lockHeading(){
-    headingLock = currentHeading;
-    return  (headingLock);
-  }
-
   // resest the measurment for any motion profile
   private void resetMotion() {
     LF1 = leftDriveEncoder.getPosition();
-   RF1= rightDriveEncoder.getPosition();
+    RF1= rightDriveEncoder.getPosition();
     
     axialInches = 0;
-    yawDegrees = 0;
   }
-  // Provide an easy way to limit values to +/- limit
-  public double clip(double raw, double limit) {
-    if (raw > limit)
-      return limit;
-    else if (raw < -limit)
-      return -limit;
-    else
-      return raw;
-  }
-    
-	
-  public double normalizeHeading(double heading) {
-    while (heading > 180)
-      heading -= 360;
-    while (heading < -180)
-      heading += 360;
-
-      return heading;
-  }
+  
 */
 
   // adjust power to provide smooth acc/decell curves
@@ -549,5 +473,5 @@ public class DriveTrain extends Subsystem{
 
     return (reqPower * sign);
   }*/
-  
+
 }
