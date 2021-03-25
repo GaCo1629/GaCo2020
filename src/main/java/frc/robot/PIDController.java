@@ -15,6 +15,7 @@ private double kd;
 private double kf;
 private double integralActiveZone;
 private boolean angleWrapOn = false;
+private double outputLimit; 
 
 private double proportional         = 0;
 private double integral             = 0;
@@ -41,7 +42,7 @@ private boolean firstTime = true;
      **/
 
     // constructor
-    public PIDController(double proportional, double integral, double derivative, double forwardFeedInRPM, double integralActiveZone, double tolerance, boolean angleWrapOn, String name){
+    public PIDController(double proportional, double integral, double derivative, double forwardFeedInRPM, double integralActiveZone, double tolerance, boolean angleWrapOn, String name, double limit){
         kp  = proportional;
         ki  = integral;
         kd  = derivative;
@@ -51,6 +52,7 @@ private boolean firstTime = true;
         this.name = name;
         this.tolerance = tolerance;
         this.angleWrapOn = angleWrapOn;
+        outputLimit = limit;
     
     }
 
@@ -78,7 +80,7 @@ private boolean firstTime = true;
 
         if(Math.abs(error) < integralActiveZone){
         runningIntegral += integral;
-        runningIntegral = clip1(runningIntegral);
+        runningIntegral = clip(runningIntegral);
         } else {
             runningIntegral = 0;
         }
@@ -93,17 +95,17 @@ private boolean firstTime = true;
             returnVal = 0;
         }
 
-        returnVal = clip1(returnVal);
+        returnVal = clip(returnVal);
         displayValues();
         
         return returnVal;
     }
 
-    private double clip1(double input){
-        if(input > 1){
-            return 1;
-        }else if(input < -1){
-            return -1;
+    private double clip(double input){
+        if(input > outputLimit){
+            return outputLimit;
+        }else if(input < -outputLimit){
+            return -outputLimit;
         }else{
             return input;
         }    

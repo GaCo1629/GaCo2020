@@ -71,7 +71,7 @@ public class DriveTrain extends Subsystem{
   private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.9; // was.75
 
   //encoder inches per tic
-  private final double INCHES_PER_AXIAL_REV = 0.39671806;
+  private final double FEET_PER_AXIAL_REV = 0.2007;
 
   double  lastDistanceTraveled = 0;
   boolean robotIsMoving = false;
@@ -115,6 +115,10 @@ public class DriveTrain extends Subsystem{
   private boolean followingPath = false;
   private int currentIndex      = 0;
   private Timer stepTime;
+  private double stepTraveled   = 0;
+  private double leftEncoderStart   = 0;
+  private double rightEncoderStart  = 0;
+
 
   //  General Variables
   public boolean targetLocked;   //
@@ -128,7 +132,7 @@ public class DriveTrain extends Subsystem{
   double RF1  = 0;
   
   //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
-  PIDController headingPID = new PIDController(.01, 0.0005, 0, 0, 3, 1, true, "Gyro");
+  PIDController headingPID = new PIDController(.01, 0.0005, 0, 0, 3, 1, true, "Gyro", 0.25);
 
   //constructor
   public  DriveTrain () {
@@ -270,7 +274,8 @@ public class DriveTrain extends Subsystem{
     followingPath             = false;
     currentIndex              = 0;
     timer.reset();    
-    resetHeading();  
+    resetHeading();
+    startMotion();  
   }
 
   @Override
@@ -279,23 +284,47 @@ public class DriveTrain extends Subsystem{
     if (followingPath){
       Step currentStep = path.get(currentIndex);
       switch (currentStep.mode){
-        case STOP:
-        stopRobot();
-        nextStep();
-        break;
-
-        case STRAIGHT:
-        if (stepTime.get() >= currentStep.timeout){
+        case E_STOP:
+          stopRobot();
           nextStep();
-        } else {
-          limitAcceleration(currentStep.speed, 0);
+          break;
+
+        case BRAKE:
+          double currentSpeed = limitAcceleration(0, 0);
           yawDrive = headingPID.run(robotHeading, currentStep.heading);
           moveRobot();
-        }
-        break;
+          if (Math.abs(currentSpeed) <= 0.001){
+            stopRobot();
+            nextStep();
+          }
+          break;
+
+        case DRIVE_STRAIGHT:
+          if (stepTime.get() >= currentStep.timeout){
+            nextStep();
+          } else if ((currentStep.distance != 0) && (Math.abs(stepTraveled) >= currentStep.distance)) {
+            nextStep();
+          } else {
+            limitAcceleration(currentStep.speed, 0);
+            yawDrive = headingPID.run(robotHeading, currentStep.heading);
+            moveRobot();
+          }
+          break;
+
+        case TURN_TO_HEADING:
+          if (stepTime.get() >= currentStep.timeout){
+            nextStep();
+          } else if (Math.abs(currentStep.heading - robotHeading) < 1){
+            nextStep();
+          } else {
+            limitAcceleration(0, 0);
+            yawDrive = headingPID.run(robotHeading, currentStep.heading);
+            moveRobot();
+          }
+          break;
 
         default:
-        break;
+          break;
       }
     }
   }
@@ -306,6 +335,7 @@ public class DriveTrain extends Subsystem{
     followingPath = true;
     currentIndex   = 0;
     stepTime.reset();
+    startMotion();
   }
 
   //Go to next step unless at end
@@ -316,6 +346,7 @@ public class DriveTrain extends Subsystem{
     } else {
       currentIndex++;
       stepTime.reset();
+      startMotion();
     }
   }
   
@@ -328,9 +359,25 @@ public class DriveTrain extends Subsystem{
     leftEncoder  = leftDriveEncoder.getPosition();
     rightEncoder = rightDriveEncoder.getPosition();
 
+    //update distance traveled
+    double leftWheelTraveled = leftEncoder - leftEncoderStart;
+    double rightWheelTraveled = rightEncoder - rightEncoderStart;
+    double avgTraveled = (leftWheelTraveled + rightWheelTraveled)/2;
+    stepTraveled = avgTraveled * FEET_PER_AXIAL_REV;
+
     //update robot heading
     robotHeading = getHeading();
     robotTurnRate = gyro.getRawGyroZ();
+  }
+
+  public double inchesToFeet(double inches){
+    return inches/12;
+  }
+
+  public void startMotion(){
+    leftEncoderStart = leftEncoder;
+    rightEncoderStart = rightEncoder;
+    stepTraveled = 0;
   }
 
   //return the corrected angle of the gyro
@@ -345,18 +392,18 @@ public class DriveTrain extends Subsystem{
     robotHeading = 0;
   }
   
-  public void limitAcceleration(double axial, double yaw){
+  public double limitAcceleration(double axial, double yaw){
     axialDrive = axial;
     yawDrive = yaw;
-    limitAcceleration();
+    return limitAcceleration();
   }
 
-  public void limitAcceleration(){
+  public double limitAcceleration(){
       
-    double tempTime = timer.get();
+    double thisTime = timer.get();
 
     //adjust axial to avoid tipping
-    double deltaTime  = tempTime - lastTime;
+    double deltaTime  = thisTime - lastTime;
     double deltaPower = axialDrive - lastAxial;
 
     if(deltaTime != 0){
@@ -365,8 +412,10 @@ public class DriveTrain extends Subsystem{
       }
     }
 
-    lastTime = tempTime;
+    lastTime = thisTime;
     lastAxial = axialDrive;
+
+    return(axialDrive);
   }
 
   public void stopRobot() {
@@ -414,7 +463,7 @@ public class DriveTrain extends Subsystem{
     SmartDashboard.putNumber ("Right Encoder Position", rightEncoder);
     SmartDashboard.putBoolean("Following Path", followingPath);
     SmartDashboard.putNumber("Current Step Index", currentIndex);
-
+    SmartDashboard.putNumber("Step Traveled", stepTraveled);
   }
 
   public double angleWrap180(double angle){

@@ -1,10 +1,11 @@
 package frc.robot;
 
 public enum StepMode {
-    STOP,
+    E_STOP,
+    BRAKE,
     PAUSE_AT_HEADING,
-    STRAIGHT,
-    SWEEP_HEADING,
-    SWEEP_DISTANCE,
-    PIVOT
+    DRIVE_STRAIGHT,
+    SWEEP_TO_HEADING,
+    SWEEP_FOR_DISTANCE,
+    TURN_TO_HEADING
 }

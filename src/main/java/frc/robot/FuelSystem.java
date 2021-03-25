@@ -54,8 +54,8 @@ public class FuelSystem extends Subsystem {
   private Timer indexingTimer = new Timer();  
 
    //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
-  PIDController shooterPID = new PIDController(.0004, .000001, .0002, 1/5400, 200, 0, false, "Shooter");
-  PIDController turretPID  = new PIDController(.04, .001, 0, 0, 10, .05, false, "Turret");
+  PIDController shooterPID = new PIDController(.0004, .000001, .0002, 1/5400, 200, 0, false, "Shooter", 1);
+  PIDController turretPID  = new PIDController(.04, .001, 0, 0, 10, .05, false, "Turret", 1);
 
   // Subsystem Constants ========================================================================
 

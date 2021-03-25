@@ -39,7 +39,7 @@ public class Climber extends Subsystem{
     private Controller controller;
 
     //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
-    PIDController climberPID = new PIDController(.2, .005, 0, 0, 5, .01, false, "climber");
+    PIDController climberPID = new PIDController(.2, .005, 0, 0, 5, .01, false, "climber", 1);
 
     // constructor
     public Climber(){
