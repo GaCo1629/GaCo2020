@@ -70,8 +70,10 @@ public class DriveTrain extends Subsystem{
   //set gyro final variables
   private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.9; // was.75
 
-  //encoder inches per tic
+  //driving constants
   private final double FEET_PER_AXIAL_REV = 0.2007;
+  private final double HALF_WHEEL_BASE = 1.917;
+
 
   double  lastDistanceTraveled = 0;
   boolean robotIsMoving = false;
@@ -118,7 +120,7 @@ public class DriveTrain extends Subsystem{
   private double stepTraveled   = 0;
   private double leftEncoderStart   = 0;
   private double rightEncoderStart  = 0;
-
+  private double headingStart = 0;
 
   //  General Variables
   public boolean targetLocked;   //
@@ -323,6 +325,29 @@ public class DriveTrain extends Subsystem{
           }
           break;
 
+        case SWEEP_FOR_DISTANCE:
+          if (stepTime.get() >= currentStep.timeout){
+            nextStep();
+          } else if ((currentStep.distance != 0) && (Math.abs(stepTraveled) >= currentStep.distance)) {
+            nextStep();
+          } else {
+            limitAcceleration(currentStep.speed, HALF_WHEEL_BASE / currentStep.radius);
+            moveRobot();
+          }
+          break;
+
+        case SWEEP_TO_HEADING:
+          if (stepTime.get() >= currentStep.timeout){
+            nextStep();
+          } else if (Math.abs(currentStep.heading - robotHeading) < 1){
+            nextStep();
+          } else {
+            limitAcceleration(currentStep.speed, HALF_WHEEL_BASE / currentStep.radius);
+            moveRobot();
+          }
+          break;
+
+
         default:
           break;
       }
@@ -378,6 +403,7 @@ public class DriveTrain extends Subsystem{
     leftEncoderStart = leftEncoder;
     rightEncoderStart = rightEncoder;
     stepTraveled = 0;
+    headingStart = robotHeading;
   }
 
   //return the corrected angle of the gyro
