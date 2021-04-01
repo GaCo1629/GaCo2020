@@ -74,7 +74,7 @@ public class DriveTrain extends Subsystem{
 
   //driving constants
   private final double FEET_PER_AXIAL_REV = 0.2007;
-  private final double HALF_WHEEL_BASE = 1.917;
+  private final double HALF_WHEEL_BASE = (1.917 * 0.75);
 
 
   double  lastDistanceTraveled = 0;
@@ -136,7 +136,7 @@ public class DriveTrain extends Subsystem{
   double RF1  = 0;
   
   //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
-  PIDController headingPID = new PIDController(.005, 0.0005, 0, 0, 3, 1, true, "Gyro", 0.25);
+  PIDController headingPID = new PIDController(.008, 0.0007, 0, 0, 3, 1, true, "Gyro", 0.15);
 
   //constructor
   public  DriveTrain () {
@@ -333,7 +333,8 @@ public class DriveTrain extends Subsystem{
           } else if ((currentStep.distance != 0) && (Math.abs(stepTraveled) >= currentStep.distance)) {
             nextStep();
           } else {
-            limitAcceleration(currentStep.speed, HALF_WHEEL_BASE / currentStep.radius);
+            double yaw = (HALF_WHEEL_BASE / currentStep.radius) * limitAcceleration(currentStep.speed, 0);
+            yawDrive = yaw;
             moveRobot();
           }
           break;
@@ -347,11 +348,12 @@ public class DriveTrain extends Subsystem{
                     ){  //Stop if close to target and have crossed over the target heading
             nextStep();
           } else {
-            double yaw = (HALF_WHEEL_BASE / currentStep.radius) * currentStep.speed;
+            //Calculate turn rate based on radius and current limited speed
+            double yaw = (HALF_WHEEL_BASE / currentStep.radius) * limitAcceleration(currentStep.speed, 0);
             if (Math.abs(headingError) < 15){
               yaw *= (Math.abs(headingError) / 15);
             }
-            limitAcceleration(currentStep.speed, yaw);
+            yawDrive = yaw;
             moveRobot();
           }
           break;

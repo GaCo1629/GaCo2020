@@ -104,17 +104,26 @@ public class Auto extends Subsystem {
           break;
 
         case DRIVE_PATH:
-          //(StepMode initMode, double initSpeed, double initDistance, double initHeading, double initTimeout){
+          //(StepMode initMode, double initSpeed, double initDistance, double initHeading, double initTimeout, double radius){
           SmartDashboard.putString("selAutoMode", "Drive Path Selected");
           path.clear();
-          path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 7.5, 0.0, 4.0, 0));
+          /*path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 5, 0.0, 4.0, 0));
+          path.add(new Step(StepMode.SWEEP_FOR_DISTANCE, 0.25, 11.0, 0, 4.0, 7));
+          path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 5, 90.0, 4.0, 0));
           path.add(new Step(StepMode.SWEEP_TO_HEADING, 0.25, 0.0, 180.0, 9, 7.5));
           path.add(new Step(StepMode.SWEEP_TO_HEADING, 0.25, 0.0, 360.0, 9, 7.5));
           path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 2.5, 360.0, 4.0, 0));
           path.add(new Step(StepMode.BRAKE, 0.0, 0.0, 0.0, 2.0, 0.0));
           //path.add(new Step(StepMode.TURN_TO_HEADING, 0, 0, -90, 2, 0));
-          //path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, driveTrain.inchesToFeet(10), -90, 2, 0));
-          //path.add(new Step(StepMode.BRAKE, 0, 0, -90, 0, 0));
+          //path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, driveTrain.inchesToFeet(10), -90, 2, 0));*/
+          
+          path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 2.5, 0.0, 3.0, 0));
+          path.add(new Step(StepMode.SWEEP_TO_HEADING, 0.25, 0.0, -90.0, 3.0, -5));
+          path.add(new Step(StepMode.SWEEP_TO_HEADING, 0.25, 0.0, 90.0, 6.0, 5));
+          path.add(new Step(StepMode.SWEEP_TO_HEADING, 0.25, 0.0, 0.0, 3.0, -5));
+          path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 2.5, 0.0, 3.0, 0));
+
+          path.add(new Step(StepMode.BRAKE, 0.0, 0.0, 0.0, 0.0, 1.0));
           path.add(new Step(StepMode.E_STOP, 0, 0, 0, 0, 0));
           driveTrain.setPath(path); 
           break; 
