@@ -66,6 +66,8 @@ public class DriveTrain extends Subsystem{
   private final double AXIAL_FAST_POWER_LEVEL    = 0.7;
   private final double YAW_FAST_POWER_LEVEL      = 0.35;
 
+  private final double GYRO_SCALE                = 1.01528;
+
 
   //set gyro final variables
   private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.9; // was.75
@@ -134,7 +136,7 @@ public class DriveTrain extends Subsystem{
   double RF1  = 0;
   
   //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
-  PIDController headingPID = new PIDController(.01, 0.0005, 0, 0, 3, 1, true, "Gyro", 0.25);
+  PIDController headingPID = new PIDController(.005, 0.0005, 0, 0, 3, 1, true, "Gyro", 0.25);
 
   //constructor
   public  DriveTrain () {
@@ -345,7 +347,11 @@ public class DriveTrain extends Subsystem{
                     ){  //Stop if close to target and have crossed over the target heading
             nextStep();
           } else {
-            limitAcceleration(currentStep.speed, (HALF_WHEEL_BASE / currentStep.radius) * currentStep.speed);
+            double yaw = (HALF_WHEEL_BASE / currentStep.radius) * currentStep.speed;
+            if (Math.abs(headingError) < 15){
+              yaw *= (Math.abs(headingError) / 15);
+            }
+            limitAcceleration(currentStep.speed, yaw);
             moveRobot();
           }
           break;
@@ -411,7 +417,7 @@ public class DriveTrain extends Subsystem{
 
   //return the corrected angle of the gyro
   public double getHeading(){
-    return  (gyro.getAngle());
+    return  (gyro.getAngle() * GYRO_SCALE);
   } 
 
   //resets gyro and sets headings to zero

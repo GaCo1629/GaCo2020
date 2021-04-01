@@ -107,10 +107,11 @@ public class Auto extends Subsystem {
           //(StepMode initMode, double initSpeed, double initDistance, double initHeading, double initTimeout){
           SmartDashboard.putString("selAutoMode", "Drive Path Selected");
           path.clear();
-          path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 10.0, 0.0, 4.0, 0));
-          path.add(new Step(StepMode.SWEEP_TO_HEADING, 0.25, 0.0, 90.0, 4.0, 7.5));
-          path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 5.0, 90.0, 4.0, 0));
-          path.add(new Step(StepMode.BRAKE, 0, 0, 90.0, 0, 0));
+          path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 7.5, 0.0, 4.0, 0));
+          path.add(new Step(StepMode.SWEEP_TO_HEADING, 0.25, 0.0, 180.0, 9, 7.5));
+          path.add(new Step(StepMode.SWEEP_TO_HEADING, 0.25, 0.0, 360.0, 9, 7.5));
+          path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 2.5, 360.0, 4.0, 0));
+          path.add(new Step(StepMode.BRAKE, 0.0, 0.0, 0.0, 2.0, 0.0));
           //path.add(new Step(StepMode.TURN_TO_HEADING, 0, 0, -90, 2, 0));
           //path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, driveTrain.inchesToFeet(10), -90, 2, 0));
           //path.add(new Step(StepMode.BRAKE, 0, 0, -90, 0, 0));
