@@ -337,12 +337,15 @@ public class DriveTrain extends Subsystem{
           break;
 
         case SWEEP_TO_HEADING:
+          double headingError = normalizeHeading(currentStep.heading - robotHeading);
           if (stepTime.get() >= currentStep.timeout){
             nextStep();
-          } else if (Math.abs(currentStep.heading - robotHeading) < 1){
+          } else if ((Math.abs(headingError) < 45) &&
+                     (Math.signum(headingError) != Math.signum(currentStep.radius))
+                    ){  //Stop if close to target and have crossed over the target heading
             nextStep();
           } else {
-            limitAcceleration(currentStep.speed, HALF_WHEEL_BASE / currentStep.radius);
+            limitAcceleration(currentStep.speed, (HALF_WHEEL_BASE / currentStep.radius) * currentStep.speed);
             moveRobot();
           }
           break;
@@ -492,7 +495,7 @@ public class DriveTrain extends Subsystem{
     SmartDashboard.putNumber("Step Traveled", stepTraveled);
   }
 
-  public double angleWrap180(double angle){
+  public double normalizeHeading(double angle){
     while(angle <= -180){
         angle += 360;
     }
