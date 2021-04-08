@@ -117,13 +117,19 @@ public class Auto extends Subsystem {
           //path.add(new Step(StepMode.TURN_TO_HEADING, 0, 0, -90, 2, 0));
           //path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, driveTrain.inchesToFeet(10), -90, 2, 0));*/
           
+          /*
           path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 2.5, 0.0, 3.0, 0));
           path.add(new Step(StepMode.SWEEP_TO_HEADING, 0.25, 0.0, -90.0, 3.0, -5));
           path.add(new Step(StepMode.SWEEP_TO_HEADING, 0.25, 0.0, 90.0, 6.0, 5));
           path.add(new Step(StepMode.SWEEP_TO_HEADING, 0.25, 0.0, 0.0, 3.0, -5));
           path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 2.5, 0.0, 3.0, 0));
+          */
 
-          path.add(new Step(StepMode.BRAKE, 0.0, 0.0, 0.0, 0.0, 1.0));
+          path.add(new Step(StepMode.DRIVE_STRAIGHT, 0.25, 5, 0.0, 4.0, 0));
+          path.add(new Step(StepMode.SWEEP_FOR_DISTANCE, 0.25, 47.12, 0.0, 30.0, -5.0));
+          
+
+          //path.add(new Step(StepMode.BRAKE, 0.0, 0.0, 0.0, 0.0, 1.0));
           path.add(new Step(StepMode.E_STOP, 0, 0, 0, 0, 0));
           driveTrain.setPath(path); 
           break; 

@@ -72,10 +72,9 @@ public class DriveTrain extends Subsystem{
   private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.9; // was.75
 
   //driving constants
-  private final double FEET_PER_AXIAL_REV     = 0.2007;
-  private final double WHEEL_BASE             = 1.917;		// feet (approx 23")
-  private final double TURN_CORRECTION_FACTOR = 1.5;		// Smaller make bigger circles.  Determined empirically. (Fudge factor)
-  private final double TURNING_DIFFERENTIAL     = (WHEEL_BASE / 2.0) * TURN_CORRECTION_FACTOR;
+  private final double R2KSLOPE               = -0.0391; //Derived from tests
+  private final double R2KOFFSET              = 0.522; //Derived from tests
+  private final double FEET_PER_AXIAL_REV     = 0.205; //Derived from tests
 
   double  lastDistanceTraveled = 0;
   boolean robotIsMoving = false;
@@ -332,8 +331,8 @@ public class DriveTrain extends Subsystem{
           } else if ((currentStep.distance != 0) && (Math.abs(stepTraveled) >= currentStep.distance)) {
             nextStep();
           } else {
-			axialDrive = limitAcceleration(currentStep.speed)
-            yawDrive = (TURNING_DIFFERENTIAL / currentStep.radius) * axialDrive;
+			      axialDrive = limitAcceleration(currentStep.speed);
+            yawDrive = getKFactor(currentStep.radius) * axialDrive;
             moveRobot();
           }
           break;
@@ -348,8 +347,8 @@ public class DriveTrain extends Subsystem{
             nextStep();
           } else {
             //Calculate turn rate based on radius and current limited speed
-			axialDrive = limitAcceleration(currentStep.speed)
-            yawDrive   = (TURNING_DIFFERENTIAL / currentStep.radius) * axialDrive;
+			      axialDrive = limitAcceleration(currentStep.speed);
+            yawDrive   = getKFactor(currentStep.radius) * axialDrive;
             if (Math.abs(headingError) < 10){
               yawDrive *= (Math.abs(headingError) / 15);
             }
@@ -383,6 +382,10 @@ public class DriveTrain extends Subsystem{
       stepTime.reset();
       startMotion();
     }
+  }
+
+  public double getKFactor(double radius){
+    return Math.signum(radius) * ((R2KSLOPE * Math.abs(radius)) + R2KOFFSET);
   }
 
   // =============================================================
@@ -442,7 +445,7 @@ public class DriveTrain extends Subsystem{
     double deltaPower = reqAxial - lastAxial;
     double limitedAxial = reqAxial;
 
-    if((deltaTime != 0) && (Math.abs(deltaPower/deltaTime) > MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE){
+    if((deltaTime != 0) && (Math.abs(deltaPower/deltaTime) > MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE)){
         limitedAxial = lastAxial + (Math.signum(deltaPower) * deltaTime * MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE);
     }
 
@@ -498,6 +501,10 @@ public class DriveTrain extends Subsystem{
     SmartDashboard.putBoolean("Following Path", followingPath);
     SmartDashboard.putNumber("Current Step Index", currentIndex);
     SmartDashboard.putNumber("Step Traveled", stepTraveled);
+
+    SmartDashboard.putNumber ("Left Velocity", leftDriveEncoder.getVelocity());
+    SmartDashboard.putNumber ("Right Velocity", rightDriveEncoder.getVelocity());
+
   }
 
   public double normalizeHeading(double angle){
