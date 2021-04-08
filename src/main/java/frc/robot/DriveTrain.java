@@ -46,17 +46,17 @@ public class DriveTrain extends Subsystem{
 
   private double leftEncoder;
   private double rightEncoder;
-  private AHRS gyro; 
+  private AHRS gyro;
 
   //declare motor can IDs
   private final int LEFT_DRIVE_MASTER_CAN_ID  = 13;
   private final int LEFT_DRIVE_FRONT_CAN_ID   = 12;
   private final int LEFT_DRIVE_BACK_CAN_ID    = 14;
   private final int RIGHT_DRIVE_MASTER_CAN_ID = 16;
-  private final int RIGHT_DRIVE_FRONT_CAN_ID  = 17; 
+  private final int RIGHT_DRIVE_FRONT_CAN_ID  = 17;
   private final int RIGHT_DRIVE_BACK_CAN_ID   = 15;
-  
-  //set final power levels for modifing power levels  
+
+  //set final power levels for modifing power levels
   private final double AXIAL_SLOW_POWER_LEVEL    = 0.3;
   private final double YAW_SLOW_POWER_LEVEL      = 0.2;
 
@@ -68,24 +68,24 @@ public class DriveTrain extends Subsystem{
 
   private final double GYRO_SCALE                = 1.01528;
 
-
   //set gyro final variables
   private final double MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE = 0.9; // was.75
 
   //driving constants
-  private final double FEET_PER_AXIAL_REV = 0.2007;
-  private final double HALF_WHEEL_BASE = (1.917 * 0.75);
-
+  private final double FEET_PER_AXIAL_REV     = 0.2007;
+  private final double WHEEL_BASE             = 1.917;		// feet (approx 23")
+  private final double TURN_CORRECTION_FACTOR = 1.5;		// Smaller make bigger circles.  Determined empirically. (Fudge factor)
+  private final double TURNING_DIFFERENTIAL     = (WHEEL_BASE / 2.0) * TURN_CORRECTION_FACTOR;
 
   double  lastDistanceTraveled = 0;
   boolean robotIsMoving = false;
   final   double MAX_STOPPED_DISTANCE = 0.1; // Must move less inches in a cycle to be considered stopped.
   double  distanceTarget = 0;
-	boolean distanceCorrect = true;
-	double  headingTarget = 0;
-	boolean headingCorrect = true;
-	double  drivePower = 0;
-	double  timeout = 0;
+  boolean distanceCorrect = true;
+  double  headingTarget = 0;
+  boolean headingCorrect = true;
+  double  drivePower = 0;
+  double  timeout = 0;
 
   //set default axial and yaw power level to the regular power level
   private double axialPowerLevel = AXIAL_REGULAR_POWER_LEVEL;
@@ -103,7 +103,7 @@ public class DriveTrain extends Subsystem{
   private boolean autoHeading              = false; // enable heading hold
   private boolean turning                  = false; // still slowing down after turn
   private double  robotTurnRate            = 0;
-    
+
   public final double  AXIAL_SCALE          =  0.7;
   public final double  YAW_SCALE            =  0.5;
 
@@ -127,14 +127,14 @@ public class DriveTrain extends Subsystem{
   //  General Variables
   public boolean targetLocked;   //
   public double axialInches = 0; // used to track motion
-  
+
   public double vectorInches = 0;
   public double maxDriveCurrent = 0;
   public double yawDegrees = 0;
 
   double LF1  = 0;
   double RF1  = 0;
-  
+
   //proportional, integral, derivative, forwardFeedInRPM, integralActiveZone, tolerance, angleWrapOn, name
   PIDController headingPID = new PIDController(.008, 0.0007, 0, 0, 3, 1, true, "Gyro", 0.15);
 
@@ -163,7 +163,7 @@ public class DriveTrain extends Subsystem{
     rightDriveFront.restoreFactoryDefaults();
     rightDriveBack.restoreFactoryDefaults();
 
-    //invert right motors so that positive values move the robot forward 
+    //invert right motors so that positive values move the robot forward
     rightDriveMaster.setInverted(true);
     rightDriveFront.setInverted(true);
     rightDriveBack.setInverted(true);
@@ -180,7 +180,7 @@ public class DriveTrain extends Subsystem{
     leftDriveEncoder  = leftDriveMaster.getEncoder();
     rightDriveEncoder = rightDriveMaster.getEncoder();
 
-    //try to initalize the gyro 
+    //try to initalize the gyro
     try {
       gyro = new AHRS(SPI.Port.kMXP);
       gyro.zeroYaw();
@@ -212,17 +212,16 @@ public class DriveTrain extends Subsystem{
 
   @Override
   public void teleopPeriodic(){
-    
+
     // look for manual heading reset
     if(controller.resetRobotHeading){
       resetHeading();
     }
-    
+
     //reduce axial and yaw joystick input according to power level
     adjustPowerLevel();
-    axialDrive = controller.joystickForward * axialPowerLevel;
+    axialDrive = limitAcceleration(controller.joystickForward * axialPowerLevel);
     yawDrive   = controller.joystickTurn * yawPowerLevel;
-    limitAcceleration();
 
     // implement heading lock if driving straight
     runHoldHeading();
@@ -269,7 +268,7 @@ public class DriveTrain extends Subsystem{
   // =============================================================
   // Auto METHODS
   // =============================================================
-  
+
   @Override
   public void autonomousInit() {
     turning                   = false;
@@ -277,9 +276,9 @@ public class DriveTrain extends Subsystem{
     path                      = null;
     followingPath             = false;
     currentIndex              = 0;
-    timer.reset();    
+    timer.reset();
     resetHeading();
-    startMotion();  
+    startMotion();
   }
 
   @Override
@@ -294,10 +293,10 @@ public class DriveTrain extends Subsystem{
           break;
 
         case BRAKE:
-          double currentSpeed = limitAcceleration(0, 0);
+          axialDrive = limitAcceleration(0);
           yawDrive = headingPID.run(robotHeading, currentStep.heading);
           moveRobot();
-          if (Math.abs(currentSpeed) <= 0.001){
+          if (Math.abs(axialDrive) <= 0.001){
             stopRobot();
             nextStep();
           }
@@ -309,7 +308,7 @@ public class DriveTrain extends Subsystem{
           } else if ((currentStep.distance != 0) && (Math.abs(stepTraveled) >= currentStep.distance)) {
             nextStep();
           } else {
-            limitAcceleration(currentStep.speed, 0);
+            axialDrive = limitAcceleration(currentStep.speed);
             yawDrive = headingPID.run(robotHeading, currentStep.heading);
             moveRobot();
           }
@@ -321,7 +320,7 @@ public class DriveTrain extends Subsystem{
           } else if (Math.abs(currentStep.heading - robotHeading) < 1){
             nextStep();
           } else {
-            limitAcceleration(0, 0);
+            axialDrive = limitAcceleration(0);
             yawDrive = headingPID.run(robotHeading, currentStep.heading);
             moveRobot();
           }
@@ -333,8 +332,8 @@ public class DriveTrain extends Subsystem{
           } else if ((currentStep.distance != 0) && (Math.abs(stepTraveled) >= currentStep.distance)) {
             nextStep();
           } else {
-            double yaw = (HALF_WHEEL_BASE / currentStep.radius) * limitAcceleration(currentStep.speed, 0);
-            yawDrive = yaw;
+			axialDrive = limitAcceleration(currentStep.speed)
+            yawDrive = (TURNING_DIFFERENTIAL / currentStep.radius) * axialDrive;
             moveRobot();
           }
           break;
@@ -349,11 +348,11 @@ public class DriveTrain extends Subsystem{
             nextStep();
           } else {
             //Calculate turn rate based on radius and current limited speed
-            double yaw = (HALF_WHEEL_BASE / currentStep.radius) * limitAcceleration(currentStep.speed, 0);
-            if (Math.abs(headingError) < 15){
-              yaw *= (Math.abs(headingError) / 15);
+			axialDrive = limitAcceleration(currentStep.speed)
+            yawDrive   = (TURNING_DIFFERENTIAL / currentStep.radius) * axialDrive;
+            if (Math.abs(headingError) < 10){
+              yawDrive *= (Math.abs(headingError) / 15);
             }
-            yawDrive = yaw;
             moveRobot();
           }
           break;
@@ -385,11 +384,11 @@ public class DriveTrain extends Subsystem{
       startMotion();
     }
   }
-  
+
   // =============================================================
   //  GENERAL DRIVE METHODS
   // =============================================================
-    
+
   public void readSensors(){
     //update drive encoders
     leftEncoder  = leftDriveEncoder.getPosition();
@@ -420,7 +419,7 @@ public class DriveTrain extends Subsystem{
   //return the corrected angle of the gyro
   public double getHeading(){
     return  (gyro.getAngle() * GYRO_SCALE);
-  } 
+  }
 
   //resets gyro and sets headings to zero
   public void resetHeading() {
@@ -428,31 +427,29 @@ public class DriveTrain extends Subsystem{
     headingLock = 0;
     robotHeading = 0;
   }
-  
-  public double limitAcceleration(double axial, double yaw){
-    axialDrive = axial;
+
+  public void limitAcceleration(double axial, double yaw){
+    axialDrive = limitAcceleration(axial);
     yawDrive = yaw;
-    return limitAcceleration();
   }
 
-  public double limitAcceleration(){
-      
+  public double limitAcceleration(double reqAxial){
+
     double thisTime = timer.get();
 
     //adjust axial to avoid tipping
     double deltaTime  = thisTime - lastTime;
-    double deltaPower = axialDrive - lastAxial;
+    double deltaPower = reqAxial - lastAxial;
+    double limitedAxial = reqAxial;
 
-    if(deltaTime != 0){
-      if(Math.abs(deltaPower/deltaTime) > MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE){
-        axialDrive = lastAxial + (Math.signum(deltaPower) * deltaTime * MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE);
-      }
+    if((deltaTime != 0) && (Math.abs(deltaPower/deltaTime) > MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE){
+        limitedAxial = lastAxial + (Math.signum(deltaPower) * deltaTime * MAXIUM_AXIAL_POWER_PER_SECOND_CHANGE);
     }
 
     lastTime = thisTime;
-    lastAxial = axialDrive;
+    lastAxial = limitedAxial;
 
-    return(axialDrive);
+    return(limitedAxial);
   }
 
   public void stopRobot() {
@@ -465,7 +462,7 @@ public class DriveTrain extends Subsystem{
     yawDrive = yaw;
     moveRobot();
   }
-  
+
   public void moveRobot(){
 
     //calculate left and right motor powers
@@ -512,23 +509,23 @@ public class DriveTrain extends Subsystem{
     }
     return angle;
   }
-  
+
   /*
-  
+
   // Reset both Encoders & timer
 	void resetEncoders() {
 		leftDriveEncoder.setPosition(0);
 		rightDriveEncoder.setPosition(0);
   }
-  
+
   // resest the measurment for any motion profile
   private void resetMotion() {
     LF1 = leftDriveEncoder.getPosition();
     RF1= rightDriveEncoder.getPosition();
-    
+
     axialInches = 0;
   }
-  
+
 */
 
   // adjust power to provide smooth acc/decell curves
